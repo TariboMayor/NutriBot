@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Chatbot } from "supersimpledev";
 import "./ChatInput.css";
 
-export function ChatInput({ chatMessages, setChatMessages }) {
+function ChatInput({ chatMessages, setChatMessages }) {
   const [inputText, setInputText] = useState("");
 
   function saveInputText(event) {
@@ -10,27 +9,17 @@ export function ChatInput({ chatMessages, setChatMessages }) {
   }
 
   function sendMessage() {
-    const newChatMessages = [
-      ...chatMessages,
-      {
-        message: inputText,
-        sender: "user",
-        id: crypto.randomUUID(),
-      },
-    ];
+    if (!inputText.trim()) {
+      return;
+    }
 
-    setChatMessages(newChatMessages);
+    const newMessage = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: inputText,
+    };
 
-    const response = Chatbot.getResponse(inputText);
-
-    setChatMessages([
-      ...newChatMessages,
-      {
-        message: response,
-        sender: "robot",
-        id: crypto.randomUUID(),
-      },
-    ]);
+    setChatMessages([...chatMessages, newMessage]);
 
     setInputText("");
   }
@@ -38,8 +27,8 @@ export function ChatInput({ chatMessages, setChatMessages }) {
   return (
     <div className="chat-input-container">
       <input
-        placeholder="send a message to chatbot"
-        size="30"
+        type="text"
+        placeholder="Send a message to NutriBot..."
         onChange={saveInputText}
         value={inputText}
         className="chat-input"
@@ -51,3 +40,5 @@ export function ChatInput({ chatMessages, setChatMessages }) {
     </div>
   );
 }
+
+export default ChatInput;
