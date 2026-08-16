@@ -14,9 +14,11 @@
   height: 32px;
   min-width: 32px;
   border-radius: 8px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   font-size: 12px;
   font-weight: bold;
 }
@@ -33,7 +35,9 @@
 .message-content {
   max-width: 70%;
   padding: 10px 14px;
+
   border-radius: 16px;
+
   font-size: 14px;
   line-height: 1.5;
 }
