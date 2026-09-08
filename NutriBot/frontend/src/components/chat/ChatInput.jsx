@@ -8,21 +8,45 @@ function ChatInput({ chatMessages, setChatMessages }) {
     setInputText(event.target.value);
   }
 
-  function sendMessage() {
-    if (!inputText.trim()) {
-      return;
-    }
+ async function sendMessage() {
+  if (!inputText.trim()) {
+    return;
+  }
 
-    const newMessage = {
+  const newMessage = {
+    id: crypto.randomUUID(),
+    role: "user",
+    content: inputText,
+  };
+
+  setChatMessages([...chatMessages, newMessage]);
+
+  try {
+    const response = await fetch("http://localhost:5000/api/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: inputText,
+      }),
+    });
+
+    const data = await response.json();
+
+    const botMessage = {
       id: crypto.randomUUID(),
-      role: "user",
-      content: inputText,
+      role: "assistant",
+      content: data.reply,
     };
 
-    setChatMessages([...chatMessages, newMessage]);
-
-    setInputText("");
+    setChatMessages([...chatMessages, newMessage, botMessage]);
+  } catch (error) {
+    console.error("Error sending message:", error);
   }
+
+  setInputText("");
+}
 
   return (
     <div className="chat-input-container">
