@@ -1,3 +1,5 @@
+const nutritionKnowledge = require("../knowledge/nutritionKnowledge");
+
 const generateReply = (message) => {
   const userMessage = message.toLowerCase().trim();
 
@@ -6,15 +8,23 @@ const generateReply = (message) => {
   }
 
   if (userMessage.includes("calorie")) {
-    return "Calories are a measure of the energy provided by food and drinks.";
+    return nutritionKnowledge.calories;
   }
 
   if (userMessage.includes("bmi")) {
-    return "BMI, or Body Mass Index, is a measurement that uses height and weight to estimate a person's weight category.";
+    return nutritionKnowledge.bmi;
   }
 
   if (userMessage.includes("protein")) {
-    return "Protein is an important nutrient that helps the body build and repair tissues.";
+    return nutritionKnowledge.protein;
+  }
+
+  if (userMessage.includes("carbohydrate")) {
+    return nutritionKnowledge.carbohydrates;
+  }
+
+  if (userMessage.includes("vitamin")) {
+    return nutritionKnowledge.vitamins;
   }
 
   return "I'm still learning! Please ask me a nutrition-related question.";
