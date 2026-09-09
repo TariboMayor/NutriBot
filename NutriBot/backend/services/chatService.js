@@ -1,7 +1,7 @@
 const nutritionKnowledge = require("../knowledge/nutritionKnowledge");
 const { calculateBMI } = require("./bmiService");
 
-const generateReply = (message) => {
+const generateReply = async (message) => {
   const userMessage = message.toLowerCase().trim();
 
   // Greeting
