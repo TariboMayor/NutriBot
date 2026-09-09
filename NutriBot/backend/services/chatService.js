@@ -63,6 +63,65 @@ const generateReply = async (message) => {
     }
   }
 
+  if (userMessage.includes("fibre") || userMessage.includes("fiber")) {
+  const results = await getNutritionByTopic("fibre");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
+if (userMessage.includes("fat")) {
+  const results = await getNutritionByTopic("fats");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
+if (userMessage.includes("mineral")) {
+  const results = await getNutritionByTopic("minerals");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
+if (userMessage.includes("water")) {
+  const results = await getNutritionByTopic("water");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
+if (
+  userMessage.includes("healthy eating") ||
+  userMessage.includes("healthy diet")
+) {
+  const results = await getNutritionByTopic("healthy eating");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
+if (userMessage.includes("fruit")) {
+  const results = await getNutritionByTopic("fruits");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
+if (userMessage.includes("vegetable")) {
+  const results = await getNutritionByTopic("vegetables");
+
+  if (results.length > 0) {
+    return results[0].information;
+  }
+}
+
   return "I'm still learning! Please ask me a nutrition-related question.";
 };
 
