@@ -1,6 +1,20 @@
 const { calculateBMI } = require("./bmiService");
-
 const { getNutritionByTopic } = require("./nutritionService");
+
+const nutritionTopics = {
+  calorie: "calories",
+  protein: "protein",
+  carbohydrate: "carbohydrates",
+  vitamin: "vitamins",
+  fibre: "fibre",
+  fiber: "fibre",
+  fat: "fats",
+  mineral: "minerals",
+  water: "water",
+  "healthy eating": "healthy eating",
+  fruit: "fruits",
+  vegetable: "vegetables",
+};
 
 const generateReply = async (message) => {
   const userMessage = message.toLowerCase().trim();
@@ -31,94 +45,15 @@ const generateReply = async (message) => {
   }
 
   // Nutrition knowledge from MySQL
-  if (userMessage.includes("calorie")) {
-    const results = await getNutritionByTopic("calories");
+for (const keyword in nutritionTopics) {
+  if (userMessage.includes(keyword)) {
+    const topic = nutritionTopics[keyword];
+
+    const results = await getNutritionByTopic(topic);
 
     if (results.length > 0) {
       return results[0].information;
     }
-  }
-
-  if (userMessage.includes("protein")) {
-    const results = await getNutritionByTopic("protein");
-
-    if (results.length > 0) {
-      return results[0].information;
-    }
-  }
-
-  if (userMessage.includes("carbohydrate")) {
-    const results = await getNutritionByTopic("carbohydrates");
-
-    if (results.length > 0) {
-      return results[0].information;
-    }
-  }
-
-  if (userMessage.includes("vitamin")) {
-    const results = await getNutritionByTopic("vitamins");
-
-    if (results.length > 0) {
-      return results[0].information;
-    }
-  }
-
-  if (userMessage.includes("fibre") || userMessage.includes("fiber")) {
-  const results = await getNutritionByTopic("fibre");
-
-  if (results.length > 0) {
-    return results[0].information;
-  }
-}
-
-if (userMessage.includes("fat")) {
-  const results = await getNutritionByTopic("fats");
-
-  if (results.length > 0) {
-    return results[0].information;
-  }
-}
-
-if (userMessage.includes("mineral")) {
-  const results = await getNutritionByTopic("minerals");
-
-  if (results.length > 0) {
-    return results[0].information;
-  }
-}
-
-if (userMessage.includes("water")) {
-  const results = await getNutritionByTopic("water");
-
-  if (results.length > 0) {
-    return results[0].information;
-  }
-}
-
-if (
-  userMessage.includes("healthy eating") ||
-  userMessage.includes("healthy diet")
-) {
-  const results = await getNutritionByTopic("healthy eating");
-
-  if (results.length > 0) {
-    return results[0].information;
-  }
-}
-
-if (userMessage.includes("fruit")) {
-  const results = await getNutritionByTopic("fruits");
-
-  if (results.length > 0) {
-    return results[0].information;
-  }
-}
-
-if (userMessage.includes("vegetable")) {
-  const results = await getNutritionByTopic("vegetables");
-
-  if (results.length > 0) {
-    return results[0].information;
   }
 }
 
