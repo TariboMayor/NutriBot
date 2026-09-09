@@ -1,13 +1,27 @@
 const { generateReply } = require("../services/chatService");
 
 const chat = async (req, res) => {
-  const { message } = req.body;
+  try {
+    const { message } = req.body;
 
-  const reply = await generateReply(message);
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        error: "Please provide a message.",
+      });
+    }
 
-  res.json({
-    reply: reply,
-  });
+    const reply = await generateReply(message);
+
+    res.json({
+      reply: reply,
+    });
+  } catch (error) {
+    console.error("Chat error:", error.message);
+
+    res.status(500).json({
+      error: "Something went wrong while processing your message.",
+    });
+  }
 };
 
 module.exports = { chat };
