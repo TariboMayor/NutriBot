@@ -648,7 +648,7 @@
 
 .bmi-result {
   margin-top: 16px;
-  padding: 14px;
+  padding: 4px;
   background: #0d0d0d;
   border: 1px solid #292929;
   border-radius: 8px;
@@ -664,5 +664,12 @@
 
 .bmi-result strong {
   color: #ffc700;
-  font-size: 24px;
+  font-size: 23px;
+}
+
+.bmi-result small {
+  display: block;
+  margin-top: 6px;
+  color: #a0a0a0;
+  font-size: 12px;
 }
