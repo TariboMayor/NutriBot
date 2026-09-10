@@ -1,0 +1,40 @@
+.chat-page {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  background: #0f0f0f;
+  color: white;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-header {
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 25px;
+  border-bottom: 1px solid #2a2a2a;
+  background: #111111;
+}
+
+.chat-header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.chat-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #55b85a;
+}
+
+.chat-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}

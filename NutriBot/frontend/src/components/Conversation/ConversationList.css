@@ -1,0 +1,164 @@
+.conversation-sidebar {
+  width: 280px;
+  height: 100vh;
+  background: #111111;
+  border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 14px;
+  box-sizing: border-box;
+  color: white;
+}
+
+/* Brand */
+.conversation-brand {
+  padding: 8px 10px 20px;
+}
+
+.conversation-brand h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.conversation-brand p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: #999;
+}
+
+/* New Chat */
+.new-chat-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border: none;
+  border-radius: 8px;
+  background: #d4af37;
+  color: #111;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.new-chat-button:hover {
+  opacity: 0.9;
+}
+
+/* Search */
+.conversation-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1b1b1b;
+  border: 1px solid #2d2d2d;
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin-bottom: 15px;
+}
+
+.conversation-search input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 13px;
+}
+
+.conversation-search input::placeholder {
+  color: #777;
+}
+
+.conversation-search button {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  display: flex;
+}
+
+/* Conversation list */
+.conversation-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 9px;
+  margin-bottom: 5px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #bbb;
+}
+
+.conversation-item:hover {
+  background: #1d1d1d;
+}
+
+.conversation-item.active {
+  background: #1d1d1d;
+  color: #d4af37;
+  border-left: 3px solid #d4af37;
+}
+
+/* Conversation text */
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-info p {
+  margin: 0;
+  font-size: 13px;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.conversation-info span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #777;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Delete button */
+.delete-conversation {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  opacity: 0;
+}
+
+.conversation-item:hover .delete-conversation {
+  opacity: 1;
+}
+
+.delete-conversation:hover {
+  color: #ff5c5c;
+}
+
+/* Empty state */
+.no-conversations {
+  text-align: center;
+  color: #666;
+  padding: 30px 10px;
+}
+
+.no-conversations p {
+  font-size: 12px;
+  margin-top: 8px;
+}
