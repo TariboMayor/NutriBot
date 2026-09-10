@@ -1,3 +1,4 @@
+import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard,
   MessageCircle,
@@ -56,20 +57,27 @@ function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
+  {menuItems.map((item) => {
+    const Icon = item.icon;
 
-          return (
-            <button
-              key={item.id}
-              className={item.name === "Dashboard" ? "active" : ""}
-            >
-              <Icon size={18} />
-              <span>{item.name}</span>
-            </button>
-          );
-        })}
-      </nav>
+    return (
+      <NavLink
+        key={item.id}
+        to={
+          item.name === "Dashboard"
+            ? "/dashboard"
+            : item.name === "Chat with NutriBot"
+            ? "/chat"
+            : "#"
+        }
+        className={({ isActive }) => (isActive ? "active" : "")}
+      >
+        <Icon size={18} />
+        <span>{item.name}</span>
+      </NavLink>
+    );
+  })}
+</nav>
 
       <div className="sidebar-bottom">
         <div className="user-profile">

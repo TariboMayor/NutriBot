@@ -1,3 +1,4 @@
+import "./Dashboard.css";
 import Sidebar from "../components/dashboard/Sidebar";
 import DashboardHeader from "../components/dashboard/DashboardHeader";
 import MetricCards from "../components/dashboard/MetricCards";
