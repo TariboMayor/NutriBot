@@ -1,52 +1,74 @@
 import { useState } from "react";
 import "./ChatInput.css";
 
-function ChatInput({ chatMessages, setChatMessages }) {
+function ChatInput({ activeConversation, setConversations }) {
   const [inputText, setInputText] = useState("");
 
   function saveInputText(event) {
     setInputText(event.target.value);
   }
 
- async function sendMessage() {
-  if (!inputText.trim()) {
-    return;
-  }
+  async function sendMessage() {
+    if (!inputText.trim()) {
+      return;
+    }
 
-  const newMessage = {
-    id: crypto.randomUUID(),
-    role: "user",
-    content: inputText,
-  };
-
-  setChatMessages([...chatMessages, newMessage]);
-
-  try {
-    const response = await fetch("http://localhost:5000/api/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: inputText,
-      }),
-    });
-
-    const data = await response.json();
-
-    const botMessage = {
+    const newMessage = {
       id: crypto.randomUUID(),
-      role: "assistant",
-      content: data.reply,
+      role: "user",
+      content: inputText,
     };
 
-    setChatMessages([...chatMessages, newMessage, botMessage]);
-  } catch (error) {
-    console.error("Error sending message:", error);
-  }
+    // Add the user's message
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id === activeConversation?.id
+          ? {
+              ...conversation,
+              messages: [...conversation.messages, newMessage],
+              last_message: inputText,
+            }
+          : conversation,
+      ),
+    );
 
-  setInputText("");
-}
+    try {
+      const response = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: inputText,
+        }),
+      });
+
+      const data = await response.json();
+
+      // Create Nia's message
+      const botMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: data.reply,
+      };
+
+      // Add only Nia's message
+      setConversations((prev) =>
+        prev.map((conversation) =>
+          conversation.id === activeConversation?.id
+            ? {
+                ...conversation,
+                messages: [...conversation.messages, botMessage],
+              }
+            : conversation,
+        ),
+      );
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+
+    setInputText("");
+  }
 
   return (
     <div className="chat-input-container">

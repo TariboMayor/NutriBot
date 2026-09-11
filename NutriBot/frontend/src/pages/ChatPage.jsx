@@ -5,7 +5,7 @@ import ConversationList from "../components/Conversation/ConversationList";
 import "./ChatPage.css";
 
 function ChatPage() {
-  const [chatMessages, setChatMessages] = useState([]);
+  //const [chatMessages, setChatMessages] = useState([]);
 
   const [conversations, setConversations] = useState([
     {
@@ -85,18 +85,19 @@ function ChatPage() {
   const [activeId, setActiveId] = useState("1");
 
   const activeConversation = conversations.find(
-  (conversation) => conversation.id === activeId
-);
+    (conversation) => conversation.id === activeId,
+  );
   const createConversation = () => {
     const newConversation = {
       id: Date.now().toString(),
       title: "New Conversation",
       last_message: "",
+      messages: [],
     };
 
     setConversations((prev) => [newConversation, ...prev]);
+
     setActiveId(newConversation.id);
-    setChatMessages([]);
   };
 
   const deleteConversation = (id) => {
@@ -106,7 +107,7 @@ function ChatPage() {
 
     if (activeId === id) {
       setActiveId(null);
-      setChatMessages([]);
+      // setChatMessages([]);
     }
   };
 
@@ -133,30 +134,26 @@ function ChatPage() {
         </header>
 
         <div className="chat-content">
-  {activeConversation?.messages?.length === 0 ? (
-    <div className="welcome-screen">
-      <div className="welcome-avatar">N</div>
+          {activeConversation?.messages?.length === 0 ? (
+            <div className="welcome-screen">
+              <div className="welcome-avatar">N</div>
 
-      <h1>Welcome to NutriBot 👋</h1>
+              <h1>Welcome to NutriBot 👋</h1>
 
-      <p>
-        I'm Nia, your health and nutrition assistant.
-      </p>
+              <p>I'm Nia, your health and nutrition assistant.</p>
 
-      <p>
-        Ask me about nutrition, Nigerian foods, healthy eating,
-        wellness, and more.
-      </p>
-    </div>
-  ) : (
-    <ChatMessages
-      chatMessages={activeConversation?.messages || []}
-    />
-  )}
-</div>
+              <p>
+                Ask me about nutrition, Nigerian foods, healthy eating,
+                wellness, and more.
+              </p>
+            </div>
+          ) : (
+            <ChatMessages chatMessages={activeConversation?.messages || []} />
+          )}
+        </div>
         <ChatInput
-          chatMessages={chatMessages}
-          setChatMessages={setChatMessages}
+          activeConversation={activeConversation}
+          setConversations={setConversations}
         />
       </main>
     </div>
