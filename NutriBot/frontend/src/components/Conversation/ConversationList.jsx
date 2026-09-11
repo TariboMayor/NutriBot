@@ -19,7 +19,7 @@ function ConversationList({
     <aside className="conversation-sidebar">
       {/* Logo */}
       <div className="conversation-brand">
-        <h2>NutriBot</h2>
+        <h2>Nia (NutriBot)</h2>
         <p>Your AI Health Assistant</p>
       </div>
 

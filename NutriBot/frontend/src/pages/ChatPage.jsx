@@ -5,18 +5,7 @@ import ConversationList from "../components/Conversation/ConversationList";
 import "./ChatPage.css";
 
 function ChatPage() {
-  const [chatMessages, setChatMessages] = useState([
-    {
-      id: "1",
-      role: "assistant",
-      content: "Hello! 👋 I'm Nia, a NutriBot. How can I help you today?",
-    },
-    {
-      id: "2",
-      role: "user",
-      content: "Can you give me nutrition information?",
-    },
-  ]);
+  const [chatMessages, setChatMessages] = useState([]);
 
   const [conversations, setConversations] = useState([
     {
@@ -61,41 +50,61 @@ function ChatPage() {
     }
   };
 
-  return (
-    <div className="chat-page">
+ return (
+  <div className="chat-page">
 
-      {/* Left sidebar */}
-      <ConversationList
-        conversations={conversations}
-        activeId={activeId}
-        onSelect={setActiveId}
-        onCreate={createConversation}
-        onDelete={deleteConversation}
+    <ConversationList
+      conversations={conversations}
+      activeId={activeId}
+      onSelect={setActiveId}
+      onCreate={createConversation}
+      onDelete={deleteConversation}
+    />
+
+    <main className="chat-main">
+
+      <header className="chat-header">
+        <div className="chat-header-info">
+          <div className="nia-avatar">
+            N
+          </div>
+
+          <div>
+            <h2>Nia</h2>
+            <p>● Online · NutriBot Health Assistant</p>
+          </div>
+        </div>
+      </header>
+
+      <div className="chat-content">
+        {chatMessages.length === 0 ? (
+          <div className="welcome-screen">
+            <div className="welcome-avatar">N</div>
+
+            <h1>Welcome to NutriBot 👋</h1>
+
+            <p>
+              I'm Nia, your health and nutrition assistant.
+            </p>
+
+            <p>
+              Ask me about nutrition, Nigerian foods, healthy eating,
+              wellness, and more.
+            </p>
+          </div>
+        ) : (
+          <ChatMessages chatMessages={chatMessages} />
+        )}
+      </div>
+
+      <ChatInput
+        chatMessages={chatMessages}
+        setChatMessages={setChatMessages}
       />
 
-      {/* Main chatbot */}
-      <main className="chat-main">
-
-        <header className="chat-header">
-          <div>
-            <h2>NutriBot</h2>
-            <p>● Online</p>
-          </div>
-        </header>
-
-        <div className="chat-content">
-          <ChatMessages chatMessages={chatMessages} />
-        </div>
-
-        <ChatInput
-          chatMessages={chatMessages}
-          setChatMessages={setChatMessages}
-        />
-
-      </main>
-
-    </div>
-  );
+    </main>
+  </div>
+);
 }
 
 export default ChatPage;
