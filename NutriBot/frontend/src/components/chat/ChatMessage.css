@@ -24,7 +24,7 @@
 }
 
 .message-avatar.bot {
-  background: #dff5e3;
+  background: #d4af37;
 }
 
 .message-avatar.user {
@@ -43,7 +43,7 @@
 }
 
 .message-content.bot {
-  background: #f1f1f1;
+  background: #d4af37;
   border-top-left-radius: 4px;
 }
 
