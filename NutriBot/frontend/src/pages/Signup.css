@@ -100,3 +100,21 @@
 .login-link a:hover {
   text-decoration: underline;
 }
+
+.form-message {
+  padding: 10px;
+  border-radius: 6px;
+  margin: 10px 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+.form-message.success {
+  background: #163b1a;
+  color: #6ee77b;
+}
+
+.form-message.error {
+  background: #3b1616;
+  color: #ff7777;
+}

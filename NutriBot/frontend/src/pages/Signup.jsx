@@ -3,22 +3,54 @@ import { Link } from "react-router-dom";
 import "./Signup.css";
 
 function Signup() {
+    const [message, setMessage] = useState("");
+    const [messageType, setMessageType] = useState("");
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-  function handleSignup(event) {
-    event.preventDefault();
+ async function handleSignup(event) {
+  event.preventDefault();
 
-    console.log({
-      name,
-      phone,
-      email,
-      password,
+  setMessage("");
+  setMessageType("");
+
+  try {
+    const response = await fetch("http://localhost:5000/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        phone,
+        email,
+        password,
+      }),
     });
-  }
 
+    const data = await response.json();
+
+    if (!response.ok) {
+      setMessage(data.message);
+      setMessageType("error");
+      return;
+    }
+
+    setMessage(data.message);
+    setMessageType("success");
+
+    setName("");
+    setPhone("");
+    setEmail("");
+    setPassword("");
+  } catch (error) {
+    console.error("Signup error:", error);
+    setMessage("Could not connect to the server.");
+    setMessageType("error");
+  }
+}
   return (
     <div className="signup-page">
       <div className="signup-box">
@@ -64,6 +96,11 @@ function Signup() {
             required
           />
 
+          {message && (
+  <p className={`form-message ${messageType}`}>
+    {message}
+  </p>
+)}
           <button type="submit">Create Account</button>
         </form>
 
