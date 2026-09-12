@@ -1,0 +1,146 @@
+.food-dashboard {
+  min-height: 100vh;
+  background: #0f0f0f;
+  color: white;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.food-header {
+  margin-bottom: 30px;
+}
+
+.food-header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+.food-header p {
+  margin-top: 8px;
+  color: #999;
+  font-size: 14px;
+}
+
+.food-search {
+  margin-bottom: 30px;
+}
+
+.food-search input {
+  width: 100%;
+  max-width: 500px;
+  padding: 13px 16px;
+  box-sizing: border-box;
+  border: 1px solid #333;
+  border-radius: 8px;
+  outline: none;
+  background: #1b1b1b;
+  color: white;
+  font-size: 14px;
+}
+
+.food-search input:focus {
+  border-color: #d4af37;
+}
+
+.food-search input::placeholder {
+  color: #777;
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.food-card {
+  background: #181818;
+  border: 1px solid #292929;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.food-card:hover {
+  border-color: #d4af37;
+}
+
+.food-card-top {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.food-category {
+  background: #29250f;
+  color: #d4af37;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+.food-card h2 {
+  margin: 18px 0;
+  font-size: 20px;
+}
+
+.nutrition-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.nutrition-info div {
+  background: #111;
+  padding: 10px;
+  border-radius: 7px;
+}
+
+.nutrition-info span {
+  display: block;
+  color: #777;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.nutrition-info strong {
+  font-size: 13px;
+}
+
+.food-card button {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 7px;
+  background: #d4af37;
+  color: #111;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.food-card button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 900px) {
+  .food-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .food-dashboard {
+    padding: 20px;
+  }
+
+  .food-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.food-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  margin-bottom: 15px;
+}

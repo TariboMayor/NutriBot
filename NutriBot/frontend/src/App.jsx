@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import ChatPage from "./pages/ChatPage";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import FoodDashboard from "./pages/FoodDashboard";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/chat" element={<ChatPage />} />
+        <Route path="/foods" element={<FoodDashboard />} />
       </Routes>
     </BrowserRouter>
   );
