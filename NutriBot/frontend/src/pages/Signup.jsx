@@ -1,56 +1,59 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+ import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import "./Signup.css";
 
 function Signup() {
-    const [message, setMessage] = useState("");
-    const [messageType, setMessageType] = useState("");
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
- async function handleSignup(event) {
-  event.preventDefault();
+  async function handleSignup(event) {
+    event.preventDefault();
 
-  setMessage("");
-  setMessageType("");
+    setMessage("");
+    setMessageType("");
 
-  try {
-    const response = await fetch("http://localhost:5000/api/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        phone,
-        email,
-        password,
-      }),
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          email,
+          password,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
+      if (!response.ok) {
+        setMessage(data.message);
+        setMessageType("error");
+        return;
+      }
+
+      // Show success message
       setMessage(data.message);
+      setMessageType("success");
+
+      // Wait 1.5 seconds, then go to chat
+      setTimeout(() => {
+        navigate("/chat");
+      }, 1500);
+    } catch (error) {
+      console.error("Signup error:", error);
+
+      setMessage("Could not connect to the server.");
       setMessageType("error");
-      return;
     }
-
-    setMessage(data.message);
-    setMessageType("success");
-
-    setName("");
-    setPhone("");
-    setEmail("");
-    setPassword("");
-  } catch (error) {
-    console.error("Signup error:", error);
-    setMessage("Could not connect to the server.");
-    setMessageType("error");
   }
-}
   return (
     <div className="signup-page">
       <div className="signup-box">
@@ -70,13 +73,13 @@ function Signup() {
           />
 
           <label>Phone Number</label>
-            <input
+          <input
             type="tel"
             placeholder="Enter your phone number"
             value={phone}
             onChange={(event) => setPhone(event.target.value)}
             required
-            />
+          />
 
           <label>Email</label>
           <input
@@ -97,10 +100,8 @@ function Signup() {
           />
 
           {message && (
-  <p className={`form-message ${messageType}`}>
-    {message}
-  </p>
-)}
+            <p className={`form-message ${messageType}`}>{message}</p>
+          )}
           <button type="submit">Create Account</button>
         </form>
 
