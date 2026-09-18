@@ -1,8 +1,8 @@
-function DashboardHeader() {
+function DashboardHeader({ name }) {
   return (
     <div className="dashboard-header">
       <div>
-        <h1>Hello, tariboezekiel259 👋</h1>
+        <h1>Hello, {name} 👋</h1>
         <p>Here's your health overview for today.</p>
       </div>
 

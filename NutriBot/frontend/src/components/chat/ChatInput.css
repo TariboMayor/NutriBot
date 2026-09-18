@@ -25,7 +25,7 @@
 }
 
 .chat-input:focus {
-  border-color: #d4af37;
+  border-color: #ffc700;
 }
 
 .send-button {
@@ -33,7 +33,7 @@
   padding: 0 20px;
   border: none;
   border-radius: 10px;
-  background: #d4af37;
+  background: #ffc700;
   color: #111111;
   cursor: pointer;
   font-weight: 600;

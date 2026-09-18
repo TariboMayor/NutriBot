@@ -27,7 +27,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #d4af37;
+  background: #ffc700;
   color: #111;
   font-size: 24px;
   font-weight: bold;
@@ -70,14 +70,14 @@
 }
 
 .signup-box input:focus {
-  border-color: #d4af37;
+  border-color: #ffc700;
 }
 
 .signup-box button {
   padding: 13px;
   border: none;
   border-radius: 8px;
-  background: #d4af37;
+  background: #ffc700;
   color: #111;
   font-size: 14px;
   font-weight: 600;
@@ -93,7 +93,7 @@
 }
 
 .login-link a {
-  color: #d4af37;
+  color: #ffc700;
   text-decoration: none;
 }
 
