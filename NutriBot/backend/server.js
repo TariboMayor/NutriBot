@@ -4,6 +4,7 @@ const chatRoutes = require("./routes/chatRoutes");
 const authRoutes = require("./routes/authRoutes");
 const foodRoutes = require("./routes/foodRoutes");
 const patientRoutes = require("./routes/patientRoutes");
+const hospitalRoutes = require("./routes/hospitalRoutes");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use("/api", chatRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/foods", foodRoutes);
 app.use("/api/patients", patientRoutes);
+app.use("/api/hospitals", hospitalRoutes);
 
 // Test route
 app.get("/", (req, res) => {
