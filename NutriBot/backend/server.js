@@ -10,6 +10,7 @@ const doctorRoutes = require("./routes/doctorRoutes");
 const medicalServiceRoutes = require("./routes/medicalServiceRoutes");
 const hospitalServiceRoutes = require("./routes/hospitalServiceRoutes");
 const doctorServiceRoutes = require("./routes/doctorServiceRoutes");
+const doctorAvailabilityRoutes = require("./routes/doctorAvailabilityRoutes");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/medical-services", medicalServiceRoutes);
 app.use("/api/hospital-services", hospitalServiceRoutes);
 app.use("/api/doctor-services", doctorServiceRoutes);
+app.use("/api/doctor-availability", doctorAvailabilityRoutes);
 
 // Test route
 app.get("/", (req, res) => {
