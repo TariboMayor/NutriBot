@@ -6,6 +6,7 @@ const foodRoutes = require("./routes/foodRoutes");
 const patientRoutes = require("./routes/patientRoutes");
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const hospitalStaffRoutes = require("./routes/hospitalStaffRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use("/api/foods", foodRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/hospital-staff", hospitalStaffRoutes);
+app.use("/api/doctors", doctorRoutes);
 
 // Test route
 app.get("/", (req, res) => {
