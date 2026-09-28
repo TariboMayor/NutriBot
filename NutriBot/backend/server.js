@@ -13,6 +13,8 @@ const doctorServiceRoutes = require("./routes/doctorServiceRoutes");
 const doctorAvailabilityRoutes = require("./routes/doctorAvailabilityRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const appointmentStatusRoutes = require("./routes/appointmentStatusRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+
 
 const app = express();
 
@@ -39,6 +41,11 @@ app.use(
   "/api/appointment-status",
   appointmentStatusRoutes
 );
+app.use(
+  "/api/notifications",
+  notificationRoutes
+);
+
 
 // Test route
 app.get("/", (req, res) => {

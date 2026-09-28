@@ -1,4 +1,5 @@
 const db = require("../config/db");
+const notificationService = require("../services/notificationService");
 
 // Get appointment by ID
 const getAppointment = (req, res) => {
@@ -275,6 +276,56 @@ const updateAppointmentStatus = (req, res) => {
                       });
                     });
                   }
+
+                  if (status === "CONFIRMED") {
+  notificationService.notifyAppointmentConfirmed(
+    appointmentId,
+    (notificationError) => {
+      if (notificationError) {
+        return db.rollback(() => {
+          console.error(
+            "Appointment confirmation notification error:",
+            notificationError.message
+          );
+
+          res.status(500).json({
+            message:
+              "Failed to create appointment notification",
+          });
+        });
+      }
+
+      db.commit(
+        (commitError) => {
+          if (commitError) {
+            return db.rollback(() => {
+              console.error(
+                "Commit status transaction error:",
+                commitError.message
+              );
+
+              res.status(500).json({
+                message:
+                  "Failed to complete status update",
+              });
+            });
+          }
+
+          res.json({
+            message:
+              "Appointment status updated successfully",
+            appointmentId:
+              Number(appointmentId),
+            old_status: oldStatus,
+            new_status: status,
+          });
+        }
+      );
+    }
+  );
+
+  return;
+}
 
                   db.commit(
                     (commitError) => {
