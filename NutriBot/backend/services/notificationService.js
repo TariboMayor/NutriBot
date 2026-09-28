@@ -58,8 +58,7 @@ const createNotification = (
         return callback(notificationError);
       }
 
-      const notificationId =
-        notificationResult.insertId;
+      const notificationId = notificationResult.insertId;
 
       const recipientSql = `
         INSERT INTO notification_recipients (
@@ -91,8 +90,7 @@ const createNotification = (
 
           callback(null, {
             notificationId,
-            recipientUserId:
-              recipient_user_id,
+            recipientUserId: recipient_user_id,
           });
         }
       );
@@ -148,9 +146,7 @@ const notifyAppointmentConfirmed = (
 
       if (results.length === 0) {
         return callback(
-          new Error(
-            "Appointment not found"
-          )
+          new Error("Appointment not found")
         );
       }
 
@@ -166,14 +162,10 @@ const notifyAppointmentConfirmed = (
 
       createNotification(
         {
-          hospital_id:
-            appointment.hospital_id,
-          appointment_id:
-            appointment.id,
-          notification_type:
-            "APPOINTMENT",
-          title:
-            "Appointment Confirmed",
+          hospital_id: appointment.hospital_id,
+          appointment_id: appointment.id,
+          notification_type: "APPOINTMENT",
+          title: "Appointment Confirmed",
           message,
           recipient_user_id:
             appointment.patient_user_id,
@@ -220,9 +212,7 @@ const notifyAppointmentCancelled = (
 
       if (results.length === 0) {
         return callback(
-          new Error(
-            "Appointment not found"
-          )
+          new Error("Appointment not found")
         );
       }
 
@@ -239,14 +229,11 @@ const notifyAppointmentCancelled = (
 
       createNotification(
         {
-          hospital_id:
-            appointment.hospital_id,
-          appointment_id:
-            appointment.id,
+          hospital_id: appointment.hospital_id,
+          appointment_id: appointment.id,
           notification_type:
             "APPOINTMENT_CANCELLED",
-          title:
-            "Appointment Cancelled",
+          title: "Appointment Cancelled",
           message,
           recipient_user_id:
             appointment.patient_user_id,
@@ -305,9 +292,7 @@ const notifyAppointmentRescheduled = (
 
       if (results.length === 0) {
         return callback(
-          new Error(
-            "Appointment not found"
-          )
+          new Error("Appointment not found")
         );
       }
 
@@ -323,14 +308,11 @@ const notifyAppointmentRescheduled = (
 
       createNotification(
         {
-          hospital_id:
-            appointment.hospital_id,
-          appointment_id:
-            appointment.id,
+          hospital_id: appointment.hospital_id,
+          appointment_id: appointment.id,
           notification_type:
             "APPOINTMENT_RESCHEDULED",
-          title:
-            "Appointment Rescheduled",
+          title: "Appointment Rescheduled",
           message,
           recipient_user_id:
             appointment.patient_user_id,
@@ -341,7 +323,12 @@ const notifyAppointmentRescheduled = (
   );
 };
 
-const notifyAppointmentReminder = (appointmentId, reminderType, callback) => {
+// Create appointment reminder notification
+const notifyAppointmentReminder = (
+  appointmentId,
+  reminderType,
+  callback
+) => {
   const sql = `
     SELECT
       a.id,
@@ -351,8 +338,15 @@ const notifyAppointmentReminder = (appointmentId, reminderType, callback) => {
       d.first_name AS doctor_first_name,
       d.last_name AS doctor_last_name,
       ms.name AS service_name,
-      DATE_FORMAT(a.appointment_date, '%Y-%m-%d') AS appointment_date,
-      TIME_FORMAT(a.start_time, '%H:%i') AS start_time
+      DATE_FORMAT(
+        a.appointment_date,
+        '%Y-%m-%d'
+      ) AS appointment_date,
+      TIME_FORMAT(
+        a.start_time,
+        '%H:%i'
+      ) AS start_time,
+      p.user_id AS patient_user_id
     FROM appointments a
     INNER JOIN patient_profiles p
       ON a.patient_id = p.id
@@ -367,53 +361,61 @@ const notifyAppointmentReminder = (appointmentId, reminderType, callback) => {
     WHERE a.id = ?
   `;
 
-  db.query(sql, [appointmentId], (error, results) => {
-    if (error) {
-      console.error(
-        "Get appointment for reminder notification error:",
-        error.message
+  db.query(
+    sql,
+    [appointmentId],
+    (error, results) => {
+      if (error) {
+        console.error(
+          "Get appointment for reminder notification error:",
+          error.message
+        );
+
+        return callback(error);
+      }
+
+      if (results.length === 0) {
+        return callback(
+          new Error("Appointment not found")
+        );
+      }
+
+      const appointment = results[0];
+
+      const reminderLabels = {
+        "24_HOURS": "24 hours",
+        "12_HOURS": "12 hours",
+        "2_HOURS": "2 hours",
+        "1_HOUR": "1 hour",
+      };
+
+      const reminderLabel =
+        reminderLabels[reminderType] || "upcoming";
+
+      const title = "Appointment Reminder";
+
+      const message =
+        `Reminder: Your appointment at ${appointment.hospital_name} ` +
+        `with Dr. ${appointment.doctor_first_name} ${appointment.doctor_last_name} ` +
+        `for ${appointment.service_name} is in ${reminderLabel}. ` +
+        `Appointment time: ${appointment.appointment_date} at ${appointment.start_time}.`;
+
+      createNotification(
+        {
+          sender_user_id: null,
+          hospital_id: appointment.hospital_id,
+          appointment_id: appointment.id,
+          notification_type:
+            "APPOINTMENT_REMINDER",
+          title,
+          message,
+          recipient_user_id:
+            appointment.patient_user_id,
+        },
+        callback
       );
-
-      return callback(error);
     }
-
-    if (results.length === 0) {
-      return callback(new Error("Appointment not found"));
-    }
-
-    const appointment = results[0];
-
-    const reminderLabels = {
-      "24_HOURS": "24 hours",
-      "12_HOURS": "12 hours",
-      "2_HOURS": "2 hours",
-      "1_HOUR": "1 hour",
-    };
-
-    const reminderLabel =
-      reminderLabels[reminderType] || "upcoming";
-
-    const title = "Appointment Reminder";
-
-    const message =
-      `Reminder: Your appointment at ${appointment.hospital_name} ` +
-      `with Dr. ${appointment.doctor_first_name} ${appointment.doctor_last_name} ` +
-      `for ${appointment.service_name} is in ${reminderLabel}. ` +
-      `Appointment time: ${appointment.appointment_date} at ${appointment.start_time}.`;
-
-    createNotification(
-      {
-        sender_user_id: null,
-        hospital_id: appointment.hospital_id,
-        appointment_id: appointment.id,
-        notification_type: "APPOINTMENT_REMINDER",
-        title,
-        message,
-        recipient_user_id: appointment.patient_id,
-      },
-      callback
-    );
-  });
+  );
 };
 
 module.exports = {

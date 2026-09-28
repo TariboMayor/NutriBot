@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const notificationService = require("../services/notificationService");
+const reminderService = require("../services/reminderService");
 
 // Get appointment by ID
 const getAppointment = (req, res) => {
@@ -15,7 +16,10 @@ const getAppointment = (req, res) => {
       CONCAT(d.first_name, ' ', d.last_name) AS doctor_name,
       a.hospital_service_id,
       ms.name AS service_name,
-      a.appointment_date,
+      DATE_FORMAT(
+        a.appointment_date,
+        '%Y-%m-%d'
+      ) AS appointment_date,
       a.start_time,
       a.end_time,
       a.reason,
@@ -123,8 +127,7 @@ const updateAppointmentStatus = (req, res) => {
 
   if (!validStatuses.includes(status)) {
     return res.status(400).json({
-      message:
-        "Invalid appointment status",
+      message: "Invalid appointment status",
     });
   }
 
@@ -277,56 +280,148 @@ const updateAppointmentStatus = (req, res) => {
                     });
                   }
 
+                  /*
+                    CONFIRMED
+                    -----------
+                    Create confirmation notification,
+                    then commit the transaction.
+                  */
                   if (status === "CONFIRMED") {
-  notificationService.notifyAppointmentConfirmed(
-    appointmentId,
-    (notificationError) => {
-      if (notificationError) {
-        return db.rollback(() => {
-          console.error(
-            "Appointment confirmation notification error:",
-            notificationError.message
-          );
+                    notificationService.notifyAppointmentConfirmed(
+                      appointmentId,
+                      (notificationError) => {
+                        if (notificationError) {
+                          return db.rollback(() => {
+                            console.error(
+                              "Appointment confirmation notification error:",
+                              notificationError.message
+                            );
 
-          res.status(500).json({
-            message:
-              "Failed to create appointment notification",
-          });
-        });
-      }
+                            res.status(500).json({
+                              message:
+                                "Failed to create appointment notification",
+                            });
+                          });
+                        }
 
-      db.commit(
-        (commitError) => {
-          if (commitError) {
-            return db.rollback(() => {
-              console.error(
-                "Commit status transaction error:",
-                commitError.message
-              );
+                        db.commit(
+                          (commitError) => {
+                            if (commitError) {
+                              return db.rollback(
+                                () => {
+                                  console.error(
+                                    "Commit status transaction error:",
+                                    commitError.message
+                                  );
 
-              res.status(500).json({
-                message:
-                  "Failed to complete status update",
-              });
-            });
-          }
+                                  res.status(500).json({
+                                    message:
+                                      "Failed to complete status update",
+                                  });
+                                }
+                              );
+                            }
 
-          res.json({
-            message:
-              "Appointment status updated successfully",
-            appointmentId:
-              Number(appointmentId),
-            old_status: oldStatus,
-            new_status: status,
-          });
-        }
-      );
-    }
-  );
+                            res.json({
+                              message:
+                                "Appointment status updated successfully",
+                              appointmentId:
+                                Number(
+                                  appointmentId
+                                ),
+                              old_status:
+                                oldStatus,
+                              new_status:
+                                status,
+                            });
+                          }
+                        );
+                      }
+                    );
 
-  return;
-}
+                    return;
+                  }
 
+                  /*
+                    CANCELLED
+                    ---------
+                    Commit the status change first.
+                    Then cancel any pending reminders.
+                    Then create cancellation notification.
+                  */
+                  if (status === "CANCELLED") {
+                    db.commit(
+                      (commitError) => {
+                        if (commitError) {
+                          return db.rollback(
+                            () => {
+                              console.error(
+                                "Commit status transaction error:",
+                                commitError.message
+                              );
+
+                              res.status(500).json({
+                                message:
+                                  "Failed to complete status update",
+                              });
+                            }
+                          );
+                        }
+
+                        db.query(
+                          `
+                            UPDATE reminders
+                            SET status = 'CANCELLED'
+                            WHERE appointment_id = ?
+                              AND status = 'PENDING'
+                          `,
+                          [appointmentId],
+                          (reminderError) => {
+                            if (reminderError) {
+                              console.error(
+                                "Cancel appointment reminders error:",
+                                reminderError.message
+                              );
+                            }
+
+                            notificationService.notifyAppointmentCancelled(
+                              appointmentId,
+                              reason,
+                              (notificationError) => {
+                                if (notificationError) {
+                                  console.error(
+                                    "Appointment cancellation notification error:",
+                                    notificationError.message
+                                  );
+                                }
+
+                                res.json({
+                                  message:
+                                    "Appointment status updated successfully",
+                                  appointmentId:
+                                    Number(
+                                      appointmentId
+                                    ),
+                                  old_status:
+                                    oldStatus,
+                                  new_status:
+                                    status,
+                                });
+                              }
+                            );
+                          }
+                        );
+                      }
+                    );
+
+                    return;
+                  }
+
+                  /*
+                    Other status changes
+                    -------------------
+                    Commit normally.
+                  */
                   db.commit(
                     (commitError) => {
                       if (commitError) {
@@ -802,24 +897,117 @@ const rescheduleAppointment = (req, res) => {
                                 );
                               }
 
-                              res.json({
-                                message:
-                                  "Appointment rescheduled successfully",
-                                appointmentId:
-                                  Number(
-                                    appointmentId
-                                  ),
-                                old_status:
-                                  oldStatus,
-                                new_status:
-                                  "RESCHEDULED",
-                                appointment: {
-                                  appointment_date,
-                                  start_time,
-                                  end_time:
-                                    calculatedEndTime,
-                                },
-                              });
+                              /*
+                                The appointment has now
+                                been successfully rescheduled.
+
+                                Cancel old pending reminders
+                                before creating the new ones.
+                              */
+                              db.query(
+                                `
+                                  UPDATE reminders
+                                  SET status = 'CANCELLED'
+                                  WHERE appointment_id = ?
+                                    AND status = 'PENDING'
+                                `,
+                                [appointmentId],
+                                (reminderCancelError) => {
+                                  if (
+                                    reminderCancelError
+                                  ) {
+                                    console.error(
+                                      "Cancel old appointment reminders error:",
+                                      reminderCancelError.message
+                                    );
+
+                                    return res.json({
+                                      message:
+                                        "Appointment rescheduled successfully, but old reminders could not be cancelled",
+                                      appointmentId:
+                                        Number(
+                                          appointmentId
+                                        ),
+                                      old_status:
+                                        oldStatus,
+                                      new_status:
+                                        "RESCHEDULED",
+                                      appointment: {
+                                        appointment_date,
+                                        start_time,
+                                        end_time:
+                                          calculatedEndTime,
+                                      },
+                                      reminder_warning:
+                                        reminderCancelError.message,
+                                    });
+                                  }
+
+                                  /*
+                                    Create new reminders
+                                    based on the new
+                                    appointment date/time.
+                                  */
+                                  reminderService.createAppointmentReminders(
+                                    appointmentId,
+                                    (
+                                      reminderCreateError,
+                                      reminderResult
+                                    ) => {
+                                      if (
+                                        reminderCreateError
+                                      ) {
+                                        console.error(
+                                          "Create new appointment reminders error:",
+                                          reminderCreateError.message
+                                        );
+
+                                        return res.json({
+                                          message:
+                                            "Appointment rescheduled successfully, but new reminders could not be created",
+                                          appointmentId:
+                                            Number(
+                                              appointmentId
+                                            ),
+                                          old_status:
+                                            oldStatus,
+                                          new_status:
+                                            "RESCHEDULED",
+                                          appointment: {
+                                            appointment_date,
+                                            start_time,
+                                            end_time:
+                                              calculatedEndTime,
+                                          },
+                                          reminder_warning:
+                                            reminderCreateError.message,
+                                        });
+                                      }
+
+                                      res.json({
+                                        message:
+                                          "Appointment rescheduled successfully",
+                                        appointmentId:
+                                          Number(
+                                            appointmentId
+                                          ),
+                                        old_status:
+                                          oldStatus,
+                                        new_status:
+                                          "RESCHEDULED",
+                                        appointment: {
+                                          appointment_date,
+                                          start_time,
+                                          end_time:
+                                            calculatedEndTime,
+                                        },
+                                        reminders_created:
+                                          reminderResult.remindersCreated,
+                                      });
+                                    }
+                                  );
+                                }
+                              );
                             }
                           );
                         }

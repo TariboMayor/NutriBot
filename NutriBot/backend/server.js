@@ -15,6 +15,7 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const appointmentStatusRoutes = require("./routes/appointmentStatusRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
+const reminderScheduler = require("./services/reminderScheduler");
 
 const app = express();
 
@@ -46,6 +47,8 @@ app.use(
   notificationRoutes
 );
 app.use("/api/reminders", reminderRoutes);
+
+reminderScheduler.startReminderScheduler();
 
 // Test route
 app.get("/", (req, res) => {

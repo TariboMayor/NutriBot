@@ -1,5 +1,6 @@
 const db = require("../config/db");
 const appointmentService = require("../services/appointmentService");
+const reminderService = require("../services/reminderService");
 
 // Get available appointment slots
 const getAvailableSlots = (req, res) => {
@@ -131,7 +132,10 @@ const createAppointment = (req, res) => {
 
       const service = serviceResults[0];
 
-      if (service.hospital_service_status !== "ACTIVE") {
+      if (
+        service.hospital_service_status !==
+        "ACTIVE"
+      ) {
         return res.status(400).json({
           message: "Hospital service is not active",
         });
@@ -143,7 +147,10 @@ const createAppointment = (req, res) => {
         });
       }
 
-      if (service.doctor_service_status !== "ACTIVE") {
+      if (
+        service.doctor_service_status !==
+        "ACTIVE"
+      ) {
         return res.status(400).json({
           message:
             "Doctor is not currently assigned to this service",
@@ -372,6 +379,7 @@ const createAppointment = (req, res) => {
                           });
                         }
 
+                        // Commit appointment transaction
                         db.commit(
                           (commitError) => {
                             if (commitError) {
@@ -390,27 +398,84 @@ const createAppointment = (req, res) => {
                               );
                             }
 
-                            res.status(201).json({
-                              message:
-                                "Appointment created successfully",
+                            /*
+                              The appointment has now been
+                              successfully saved.
+
+                              Create the automatic reminders
+                              after the appointment transaction
+                              has completed.
+                            */
+                            reminderService.createAppointmentReminders(
                               appointmentId,
-                              status: "PENDING",
-                              appointment: {
-                                patient_id,
-                                hospital_id,
-                                doctor_id,
-                                hospital_service_id,
-                                appointment_date,
-                                start_time,
-                                end_time:
-                                  calculatedEndTime,
-                                reason:
-                                  reason || null,
-                                patient_notes:
-                                  patient_notes ||
-                                  null,
-                              },
-                            });
+                              (
+                                reminderError,
+                                reminderResult
+                              ) => {
+                                if (reminderError) {
+                                  console.error(
+                                    "Create appointment reminders error:",
+                                    reminderError.message
+                                  );
+
+                                  /*
+                                    The appointment itself
+                                    was successfully created.
+
+                                    Do not fail the appointment
+                                    just because reminder
+                                    creation failed.
+                                  */
+                                  return res.status(201).json({
+                                    message:
+                                      "Appointment created successfully, but reminders could not be created",
+                                    appointmentId,
+                                    status: "PENDING",
+                                    appointment: {
+                                      patient_id,
+                                      hospital_id,
+                                      doctor_id,
+                                      hospital_service_id,
+                                      appointment_date,
+                                      start_time,
+                                      end_time:
+                                        calculatedEndTime,
+                                      reason:
+                                        reason || null,
+                                      patient_notes:
+                                        patient_notes ||
+                                        null,
+                                    },
+                                    reminder_error:
+                                      reminderError.message,
+                                  });
+                                }
+
+                                res.status(201).json({
+                                  message:
+                                    "Appointment created successfully",
+                                  appointmentId,
+                                  status: "PENDING",
+                                  appointment: {
+                                    patient_id,
+                                    hospital_id,
+                                    doctor_id,
+                                    hospital_service_id,
+                                    appointment_date,
+                                    start_time,
+                                    end_time:
+                                      calculatedEndTime,
+                                    reason:
+                                      reason || null,
+                                    patient_notes:
+                                      patient_notes ||
+                                      null,
+                                  },
+                                  reminders_created:
+                                    reminderResult.remindersCreated,
+                                });
+                              }
+                            );
                           }
                         );
                       }
