@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const chatRoutes = require("./routes/chatRoutes");
@@ -17,7 +18,9 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
 const reminderScheduler = require("./services/reminderScheduler");
 const messageRoutes = require("./routes/messageRoutes");
-
+const {
+  authenticateToken,
+} = require("./middleware/authMiddleware");
 
 const app = express();
 
@@ -57,6 +60,12 @@ app.use("/api/messages", messageRoutes);
 app.get("/", (req, res) => {
   res.json({
     message: "Nia backend is running!",
+  });
+});
+app.get("/api/auth-test", authenticateToken, (req, res) => {
+  res.json({
+    message: "Authentication successful!",
+    user: req.user,
   });
 });
 
