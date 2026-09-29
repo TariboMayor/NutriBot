@@ -104,11 +104,7 @@ const getAppointmentHistory = (req, res) => {
 const updateAppointmentStatus = (req, res) => {
   const appointmentId = req.params.id;
 
-  const {
-    status,
-    changed_by,
-    reason,
-  } = req.body;
+  const { status, reason } = req.body;
 
   const validStatuses = [
     "PENDING",
@@ -141,7 +137,16 @@ const updateAppointmentStatus = (req, res) => {
     });
   }
 
-  // Get current appointment status
+  if (
+    req.user.role === "PATIENT" &&
+    status !== "CANCELLED"
+  ) {
+    return res.status(403).json({
+      message:
+        "Patients can only cancel their own appointments.",
+    });
+  }
+
   const getSql = `
     SELECT
       id,
@@ -183,7 +188,6 @@ const updateAppointmentStatus = (req, res) => {
         });
       }
 
-      // Start transaction
       db.beginTransaction(
         (transactionError) => {
           if (transactionError) {
@@ -244,7 +248,6 @@ const updateAppointmentStatus = (req, res) => {
                 });
               }
 
-              // Record status history
               const historySql = `
                 INSERT INTO appointment_status_history (
                   appointment_id,
@@ -262,7 +265,7 @@ const updateAppointmentStatus = (req, res) => {
                   appointmentId,
                   oldStatus,
                   status,
-                  changed_by || null,
+                  req.user.id,
                   reason || null,
                 ],
                 (historyError) => {
@@ -280,12 +283,6 @@ const updateAppointmentStatus = (req, res) => {
                     });
                   }
 
-                  /*
-                    CONFIRMED
-                    -----------
-                    Create confirmation notification,
-                    then commit the transaction.
-                  */
                   if (status === "CONFIRMED") {
                     notificationService.notifyAppointmentConfirmed(
                       appointmentId,
@@ -342,13 +339,6 @@ const updateAppointmentStatus = (req, res) => {
                     return;
                   }
 
-                  /*
-                    CANCELLED
-                    ---------
-                    Commit the status change first.
-                    Then cancel any pending reminders.
-                    Then create cancellation notification.
-                  */
                   if (status === "CANCELLED") {
                     db.commit(
                       (commitError) => {
@@ -417,11 +407,6 @@ const updateAppointmentStatus = (req, res) => {
                     return;
                   }
 
-                  /*
-                    Other status changes
-                    -------------------
-                    Commit normally.
-                  */
                   db.commit(
                     (commitError) => {
                       if (commitError) {
@@ -471,7 +456,6 @@ const rescheduleAppointment = (req, res) => {
   const {
     appointment_date,
     start_time,
-    changed_by,
     reason,
   } = req.body;
 
@@ -860,7 +844,7 @@ const rescheduleAppointment = (req, res) => {
                         [
                           appointmentId,
                           oldStatus,
-                          changed_by || null,
+                          req.user.id,
                           reason ||
                             "Appointment rescheduled",
                         ],
@@ -897,13 +881,6 @@ const rescheduleAppointment = (req, res) => {
                                 );
                               }
 
-                              /*
-                                The appointment has now
-                                been successfully rescheduled.
-
-                                Cancel old pending reminders
-                                before creating the new ones.
-                              */
                               db.query(
                                 `
                                   UPDATE reminders
@@ -943,11 +920,6 @@ const rescheduleAppointment = (req, res) => {
                                     });
                                   }
 
-                                  /*
-                                    Create new reminders
-                                    based on the new
-                                    appointment date/time.
-                                  */
                                   reminderService.createAppointmentReminders(
                                     appointmentId,
                                     (
