@@ -28,9 +28,14 @@ const router = express.Router();
 router.get(
   "/:id",
   authenticateToken,
-  requireRole("PATIENT", "ADMIN"),
+  requireRole(
+    "PATIENT",
+    "HOSPITAL_STAFF",
+    "ADMIN"
+  ),
   authorizeAppointmentAccess({
     allowPatient: true,
+    allowHospitalStaff: true,
     allowAdmin: true,
   }),
   getAppointment
@@ -43,9 +48,14 @@ router.get(
 router.get(
   "/:id/history",
   authenticateToken,
-  requireRole("PATIENT", "ADMIN"),
+  requireRole(
+    "PATIENT",
+    "HOSPITAL_STAFF",
+    "ADMIN"
+  ),
   authorizeAppointmentAccess({
     allowPatient: true,
+    allowHospitalStaff: true,
     allowAdmin: true,
   }),
   getAppointmentHistory

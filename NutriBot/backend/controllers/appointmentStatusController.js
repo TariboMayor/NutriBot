@@ -1,6 +1,19 @@
 const db = require("../config/db");
 const notificationService = require("../services/notificationService");
 const reminderService = require("../services/reminderService");
+const allowedStatusTransitions = {
+  PENDING: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["RESCHEDULED", "COMPLETED", "CANCELLED"],
+  RESCHEDULED: ["CONFIRMED", "CANCELLED"],
+  COMPLETED: [],
+  CANCELLED: [],
+  NO_SHOW: [],
+};
+
+const isAllowedStatusTransition = (currentStatus, newStatus) => {
+  const allowed = allowedStatusTransitions[currentStatus] || [];
+  return allowed.includes(newStatus);
+};
 
 // Get appointment by ID
 const getAppointment = (req, res) => {
@@ -180,7 +193,11 @@ const updateAppointmentStatus = (req, res) => {
 
       const oldStatus =
         appointmentResults[0].status;
-
+        if (!isAllowedStatusTransition(oldStatus, status)) {
+  return res.status(400).json({
+    message: `Invalid appointment status transition: ${oldStatus} -> ${status}.`,
+  });
+}
       if (oldStatus === status) {
         return res.status(400).json({
           message:
