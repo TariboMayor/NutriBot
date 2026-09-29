@@ -2,7 +2,13 @@ const db = require("../config/db");
 
 // Get patient profile
 const getPatientProfile = (req, res) => {
-  const userId = req.params.userId;
+  const userId = Number(req.params.userId);
+
+  if (Number(req.user.id) !== userId) {
+    return res.status(403).json({
+      message: "You can only access your own patient profile.",
+    });
+  }
 
   const sql = `
     SELECT
@@ -47,8 +53,11 @@ const getPatientProfile = (req, res) => {
 
 // Create patient profile
 const createPatientProfile = (req, res) => {
+  // Never trust user_id from the request body.
+  // The authenticated JWT determines the user.
+  const userId = Number(req.user.id);
+
   const {
-    user_id,
     date_of_birth,
     gender,
     address,
@@ -58,12 +67,6 @@ const createPatientProfile = (req, res) => {
     emergency_contact_name,
     emergency_contact_phone,
   } = req.body;
-
-  if (!user_id) {
-    return res.status(400).json({
-      message: "user_id is required",
-    });
-  }
 
   const sql = `
     INSERT INTO patient_profiles (
@@ -81,7 +84,7 @@ const createPatientProfile = (req, res) => {
   `;
 
   const values = [
-    user_id,
+    userId,
     date_of_birth || null,
     gender || null,
     address || null,
@@ -116,7 +119,13 @@ const createPatientProfile = (req, res) => {
 
 // Update patient profile
 const updatePatientProfile = (req, res) => {
-  const userId = req.params.userId;
+  const userId = Number(req.params.userId);
+
+  if (Number(req.user.id) !== userId) {
+    return res.status(403).json({
+      message: "You can only update your own patient profile.",
+    });
+  }
 
   const {
     date_of_birth,
