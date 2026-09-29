@@ -21,6 +21,10 @@ const messageRoutes = require("./routes/messageRoutes");
 const {
   authenticateToken,
 } = require("./middleware/authMiddleware");
+const {
+  requireRole,
+} = require("./middleware/roleMiddleware");
+
 
 const app = express();
 
@@ -62,12 +66,7 @@ app.get("/", (req, res) => {
     message: "Nia backend is running!",
   });
 });
-app.get("/api/auth-test", authenticateToken, (req, res) => {
-  res.json({
-    message: "Authentication successful!",
-    user: req.user,
-  });
-});
+
 
 // Start server
 app.listen(PORT, () => {
