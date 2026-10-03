@@ -418,10 +418,73 @@ const notifyAppointmentReminder = (
   );
 };
 
+// Create personal reminder notification
+const notifyPersonalReminder = (
+  reminderId,
+  callback
+) => {
+  const sql = `
+    SELECT
+      id,
+      user_id,
+      title,
+      description,
+      reminder_type,
+      scheduled_for
+    FROM personal_reminders
+    WHERE id = ?
+  `;
+
+  db.query(
+    sql,
+    [reminderId],
+    (error, results) => {
+      if (error) {
+        console.error(
+          "Get personal reminder notification error:",
+          error.message
+        );
+
+        return callback(error);
+      }
+
+      if (results.length === 0) {
+        return callback(
+          new Error("Personal reminder not found")
+        );
+      }
+
+      const reminder = results[0];
+
+      const title =
+        reminder.title || "Personal Reminder";
+
+      const message =
+        reminder.description ||
+        `Your ${reminder.reminder_type
+          .toLowerCase()
+          .replace("_", " ")} reminder is due now.`;
+
+      createNotification(
+        {
+          notification_type:
+            "PERSONAL_REMINDER",
+          title,
+          message,
+          recipient_user_id:
+            reminder.user_id,
+        },
+        callback
+      );
+    }
+  );
+};
+
 module.exports = {
   createNotification,
   notifyAppointmentConfirmed,
   notifyAppointmentCancelled,
   notifyAppointmentRescheduled,
   notifyAppointmentReminder,
+  notifyPersonalReminder,
 };

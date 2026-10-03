@@ -1,0 +1,372 @@
+.wellness-page {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #101010;
+  color: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.wellness-main {
+  width: calc(100% - 220px);
+  min-height: 100vh;
+  margin-left: 220px;
+  padding: 0 32px 50px;
+  box-sizing: border-box;
+  background: #101010;
+  overflow-x: hidden;
+}
+
+.wellness-header {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #292929;
+}
+
+.wellness-label {
+  display: block;
+  color: #777777;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.wellness-header h1 {
+  margin: 7px 0 0;
+  color: #f1f1f1;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.wellness-header p {
+  margin: 7px 0 0;
+  color: #777777;
+  font-size: 12px;
+}
+
+.wellness-content {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+}
+
+/* HERO */
+
+.wellness-hero {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin-top: 30px;
+  padding: 22px;
+  border: 1px solid rgba(230, 191, 63, 0.2);
+  border-radius: 12px;
+  background: #191815;
+}
+
+.wellness-hero-icon {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: rgba(230, 191, 63, 0.12);
+  color: #e6bf3f;
+}
+
+.wellness-hero h2 {
+  margin: 0;
+  color: #eeeeee;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.wellness-hero p {
+  max-width: 700px;
+  margin: 7px 0 0;
+  color: #777777;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+/* SECTIONS */
+
+.wellness-section {
+  margin-top: 32px;
+}
+
+.wellness-section-heading {
+  margin-bottom: 16px;
+}
+
+.wellness-section-heading > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #777777;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.wellness-section-heading h2 {
+  margin: 0;
+  color: #eeeeee;
+  font-size: 19px;
+  font-weight: 650;
+}
+
+/* WELLNESS AREAS */
+
+.wellness-area-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.wellness-area-card {
+  min-width: 0;
+  min-height: 205px;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  box-sizing: border-box;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  background: #181818;
+}
+
+.wellness-area-card:hover {
+  border-color: #414141;
+}
+
+.wellness-area-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  border-radius: 9px;
+  background: rgba(230, 191, 63, 0.1);
+  color: #e6bf3f;
+}
+
+.wellness-area-card h3 {
+  margin: 0;
+  color: #dddddd;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.wellness-area-card p {
+  margin: 7px 0 0;
+  color: #707070;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.wellness-area-card button {
+  margin-top: auto;
+  padding: 13px 0 0;
+  border: 0;
+  background: transparent;
+  color: #d5b33b;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wellness-area-card button:hover {
+  color: #e6bf3f;
+}
+
+/* HABITS */
+
+.wellness-habits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wellness-habit {
+  display: flex;
+  gap: 14px;
+  padding: 17px;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  background: #181818;
+}
+
+.habit-number {
+  flex-shrink: 0;
+  color: #d5b33b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.wellness-habit strong {
+  color: #dddddd;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.wellness-habit p {
+  margin: 5px 0 0;
+  color: #707070;
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+/* NIA CARD */
+
+.wellness-nia-card {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  margin-top: 32px;
+  padding: 22px;
+  border: 1px solid rgba(230, 191, 63, 0.2);
+  border-radius: 11px;
+  background: #191815;
+}
+
+.wellness-nia-avatar {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e6bf3f;
+  color: #151515;
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.wellness-nia-content {
+  min-width: 0;
+}
+
+.wellness-nia-content > span {
+  display: block;
+  color: #777777;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.wellness-nia-content h3 {
+  margin: 5px 0 0;
+  color: #dddddd;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.wellness-nia-content p {
+  margin: 6px 0 13px;
+  color: #707070;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.wellness-nia-content button {
+  padding: 8px 11px;
+  border: 0;
+  border-radius: 6px;
+  background: #e6bf3f;
+  color: #171717;
+  font-family: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.wellness-nia-content button:hover {
+  background: #f0cd58;
+}
+
+/* TABLET */
+
+@media (max-width: 900px) {
+  .wellness-main {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .wellness-area-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wellness-habits {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+  .wellness-main {
+    width: calc(100% - 68px);
+    margin-left: 68px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .wellness-header {
+    min-height: 95px;
+  }
+
+  .wellness-header h1 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 560px) {
+  .wellness-main {
+    width: calc(100% - 68px);
+    margin-left: 68px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .wellness-header {
+    min-height: 85px;
+  }
+
+  .wellness-header h1 {
+    font-size: 20px;
+  }
+
+  .wellness-header p {
+    font-size: 10px;
+  }
+
+  .wellness-hero {
+    align-items: flex-start;
+    margin-top: 20px;
+    padding: 16px;
+  }
+
+  .wellness-hero-icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .wellness-hero h2 {
+    font-size: 16px;
+  }
+
+  .wellness-nia-card {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 17px;
+  }
+}

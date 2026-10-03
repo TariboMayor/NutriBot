@@ -16,6 +16,7 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const appointmentStatusRoutes = require("./routes/appointmentStatusRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
+const personalReminderRoutes = require("./routes/personalReminderRoutes");
 const reminderScheduler = require("./services/reminderScheduler");
 const messageRoutes = require("./routes/messageRoutes");
 const {
@@ -56,6 +57,10 @@ app.use(
   notificationRoutes
 );
 app.use("/api/reminders", reminderRoutes);
+app.use(
+  "/api/personal-reminders",
+  personalReminderRoutes
+);
 
 reminderScheduler.startReminderScheduler();
 app.use("/api/messages", messageRoutes);

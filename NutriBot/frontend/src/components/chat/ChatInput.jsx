@@ -1,86 +1,216 @@
 import { useState } from "react";
 import "./ChatInput.css";
 
-function ChatInput({ activeConversation, setConversations }) {
+function createConversationTitle(message) {
+  const cleanedMessage = message
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!cleanedMessage) {
+    return "New Conversation";
+  }
+
+  const withoutQuestionMark =
+    cleanedMessage.replace(/[?!.]+$/, "");
+
+  const words = withoutQuestionMark.split(" ");
+
+  if (words.length <= 6) {
+    return withoutQuestionMark;
+  }
+
+  return `${words.slice(0, 6).join(" ")}...`;
+}
+
+function ChatInput({
+  activeConversation,
+  setConversations,
+  suggestedMessage = "",
+  onSuggestedMessageUsed,
+}) {
   const [inputText, setInputText] = useState("");
 
+  /*
+   * When a Nia suggestion is selected, display it
+   * without using useEffect.
+   */
+  const displayedText =
+    suggestedMessage || inputText;
+
   function saveInputText(event) {
-    setInputText(event.target.value);
+    const value = event.target.value;
+
+    /*
+     * Once the user starts typing, clear the
+     * selected suggestion.
+     */
+    if (suggestedMessage) {
+      if (onSuggestedMessageUsed) {
+        onSuggestedMessageUsed();
+      }
+    }
+
+    setInputText(value);
   }
 
   async function sendMessage() {
-    if (!inputText.trim()) {
+    const messageText = displayedText.trim();
+
+    if (!messageText || !activeConversation) {
       return;
     }
+
+    /*
+     * Check whether this is the first message
+     * in this conversation.
+     */
+    const isFirstMessage =
+      activeConversation.messages.length === 0;
+
+    /*
+     * Create a title only for a brand-new
+     * conversation.
+     */
+    const conversationTitle = isFirstMessage
+      ? createConversationTitle(messageText)
+      : activeConversation.title;
 
     const newMessage = {
       id: crypto.randomUUID(),
       role: "user",
-      content: inputText,
+      content: messageText,
     };
 
-    // Add the user's message
-    setConversations((prev) =>
-      prev.map((conversation) =>
-        conversation.id === activeConversation?.id
+    /*
+     * Add the user's message immediately.
+     */
+    setConversations((previous) =>
+      previous.map((conversation) =>
+        conversation.id === activeConversation.id
           ? {
               ...conversation,
-              messages: [...conversation.messages, newMessage],
-              last_message: inputText,
+              title: conversationTitle,
+              messages: [
+                ...conversation.messages,
+                newMessage,
+              ],
+              last_message: messageText,
             }
-          : conversation,
-      ),
+          : conversation
+      )
     );
 
+    /*
+     * Clear the input immediately.
+     */
+    setInputText("");
+
+    if (onSuggestedMessageUsed) {
+      onSuggestedMessageUsed();
+    }
+
     try {
-      const response = await fetch("http://localhost:5000/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: inputText,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: messageText,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Chat request failed: ${response.status}`
+        );
+      }
 
       const data = await response.json();
 
-      // Create Nia's message
       const botMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: data.reply,
+        content:
+          data.reply ||
+          "I'm sorry, I couldn't generate a response right now.",
       };
 
-      // Add only Nia's message
-      setConversations((prev) =>
-        prev.map((conversation) =>
-          conversation.id === activeConversation?.id
+      /*
+       * Add Nia's response.
+       */
+      setConversations((previous) =>
+        previous.map((conversation) =>
+          conversation.id === activeConversation.id
             ? {
                 ...conversation,
-                messages: [...conversation.messages, botMessage],
+                messages: [
+                  ...conversation.messages,
+                  botMessage,
+                ],
               }
-            : conversation,
-        ),
+            : conversation
+        )
       );
     } catch (error) {
-      console.error("Error sending message:", error);
-    }
+      console.error(
+        "Error sending message:",
+        error
+      );
 
-    setInputText("");
+      const errorMessage = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content:
+          "I'm sorry, I couldn't connect to NutriBot right now. Please try again.",
+      };
+
+      setConversations((previous) =>
+        previous.map((conversation) =>
+          conversation.id === activeConversation.id
+            ? {
+                ...conversation,
+                messages: [
+                  ...conversation.messages,
+                  errorMessage,
+                ],
+              }
+            : conversation
+        )
+      );
+    }
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      sendMessage();
+    }
   }
 
   return (
     <div className="chat-input-container">
       <input
         type="text"
-        placeholder="Send a message to NutriBot..."
+        placeholder="Ask Nia anything..."
         onChange={saveInputText}
-        value={inputText}
+        onKeyDown={handleKeyDown}
+        value={displayedText}
         className="chat-input"
       />
 
-      <button onClick={sendMessage} className="send-button">
+      <button
+        type="button"
+        onClick={sendMessage}
+        className="send-button"
+        disabled={
+          !displayedText.trim() ||
+          !activeConversation
+        }
+      >
         Send
       </button>
     </div>

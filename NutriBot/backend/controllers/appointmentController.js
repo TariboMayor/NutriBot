@@ -615,8 +615,82 @@ const calculatedStartTime = (time) => {
 
   return value;
 };
+// Get appointments belonging to the authenticated patient
+const getMyAppointments = (req, res) => {
+  const sql = `
+    SELECT
+      a.id,
+      a.patient_id,
+      a.hospital_id,
+      a.doctor_id,
+      a.hospital_service_id,
+      a.appointment_date,
+      a.start_time,
+      a.end_time,
+      a.reason,
+      a.patient_notes,
+      a.status,
+      a.created_at,
+
+      h.name AS hospital_name,
+      h.address AS hospital_address,
+      h.city AS hospital_city,
+      h.state AS hospital_state,
+
+      CONCAT(d.first_name, ' ', d.last_name) AS doctor_name,
+      d.specialty AS doctor_specialty,
+
+      ms.name AS service_name,
+      ms.category AS service_category,
+      hs.duration_minutes,
+      hs.price
+
+    FROM appointments a
+
+    INNER JOIN patient_profiles pp
+      ON a.patient_id = pp.id
+
+    INNER JOIN hospitals h
+      ON a.hospital_id = h.id
+
+    INNER JOIN doctors d
+      ON a.doctor_id = d.id
+
+    INNER JOIN hospital_services hs
+      ON a.hospital_service_id = hs.id
+
+    INNER JOIN medical_services ms
+      ON hs.service_id = ms.id
+
+    WHERE pp.user_id = ?
+
+    ORDER BY
+      a.appointment_date DESC,
+      a.start_time DESC
+  `;
+
+  db.query(
+    sql,
+    [req.user.id],
+    (error, results) => {
+      if (error) {
+        console.error(
+          "Get patient appointments error:",
+          error.message
+        );
+
+        return res.status(500).json({
+          message: "Failed to get appointments",
+        });
+      }
+
+      res.json(results);
+    }
+  );
+};
 
 module.exports = {
   getAvailableSlots,
   createAppointment,
+  getMyAppointments,
 };

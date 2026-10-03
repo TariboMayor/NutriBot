@@ -1,0 +1,1115 @@
+/* =========================================================
+   APPOINTMENTS PAGE
+========================================================= */
+
+.appointments-page {
+  width: 100%;
+  min-height: 100vh;
+
+  padding-left: var(--nb-sidebar-width);
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(230, 191, 63, 0.06),
+      transparent 30%
+    ),
+    var(--nb-bg);
+
+  color: var(--nb-text);
+}
+
+/* =========================================================
+   MAIN CONTENT
+========================================================= */
+
+.appointments-main {
+  width: 100%;
+  max-width: 1500px;
+
+  min-height: 100vh;
+
+  margin: 0 auto;
+
+  padding: 0 clamp(22px, 4vw, 58px) 60px;
+
+  box-sizing: border-box;
+
+  overflow-x: hidden;
+}
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.appointments-header {
+  min-height: 150px;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 1px solid var(--nb-border);
+}
+
+.appointments-eyebrow {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--nb-gold);
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 0.13em;
+}
+
+.appointments-header h1 {
+  margin: 0;
+
+  color: var(--nb-text);
+
+  font-size: clamp(28px, 3vw, 38px);
+
+  font-weight: 760;
+
+  letter-spacing: -0.035em;
+}
+
+.appointments-header p {
+  max-width: 600px;
+
+  margin: 9px 0 0;
+
+  color: var(--nb-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+/* =========================================================
+   ALERTS
+========================================================= */
+
+.appointments-alert {
+  display: flex;
+  align-items: center;
+
+  margin-top: 20px;
+
+  padding: 13px 16px;
+
+  border-radius: 13px;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  box-sizing: border-box;
+}
+
+.appointments-alert-error {
+  border: 1px solid rgba(239, 107, 115, 0.2);
+
+  background: rgba(239, 107, 115, 0.07);
+
+  color: var(--nb-danger);
+}
+
+.appointments-alert-success {
+  border: 1px solid rgba(230, 191, 63, 0.2);
+
+  background: rgba(230, 191, 63, 0.07);
+
+  color: var(--nb-gold);
+}
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+.appointments-section {
+  margin-top: 42px;
+}
+
+.appointments-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 18px;
+}
+
+.appointments-section-label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: var(--nb-gold);
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.12em;
+}
+
+.appointments-section-heading h2 {
+  margin: 0;
+
+  color: var(--nb-text);
+
+  font-size: 21px;
+
+  font-weight: 720;
+
+  letter-spacing: -0.02em;
+}
+
+.appointments-section-heading p {
+  margin: 6px 0 0;
+
+  color: var(--nb-text-muted);
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+/* =========================================================
+   LOADING / EMPTY STATES
+========================================================= */
+
+.appointments-empty {
+  min-height: 190px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 30px;
+
+  border: 1px solid var(--nb-border);
+
+  border-radius: var(--nb-radius-lg);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--nb-surface),
+      var(--nb-surface-2)
+    );
+
+  text-align: center;
+
+  box-shadow: var(--nb-shadow);
+}
+
+.appointments-empty-icon {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 12px;
+
+  border-radius: 16px;
+
+  background: rgba(230, 191, 63, 0.09);
+
+  font-size: 23px;
+}
+
+.appointments-empty h3 {
+  margin: 0;
+
+  color: var(--nb-text);
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.appointments-empty p {
+  max-width: 360px;
+
+  margin: 7px 0 0;
+
+  color: var(--nb-text-muted);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+.appointments-spinner {
+  width: 22px;
+  height: 22px;
+
+  margin-bottom: 10px;
+
+  border: 2px solid var(--nb-border);
+
+  border-top-color: var(--nb-gold);
+
+  border-radius: 50%;
+
+  animation: appointmentsSpin 0.75s linear infinite;
+}
+
+@keyframes appointmentsSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================================
+   APPOINTMENT LIST
+========================================================= */
+
+.appointments-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.appointment-card {
+  min-width: 0;
+
+  padding: 18px;
+
+  border: 1px solid var(--nb-border);
+
+  border-radius: var(--nb-radius-lg);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--nb-surface),
+      var(--nb-surface-2)
+    );
+
+  box-shadow: var(--nb-shadow);
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.appointment-card:hover {
+  transform: translateY(-2px);
+
+  border-color: var(--nb-border-strong);
+
+  box-shadow: var(--nb-shadow-hover);
+}
+
+.appointment-card-top {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.appointment-hospital-icon {
+  width: 43px;
+  height: 43px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  background: rgba(230, 191, 63, 0.09);
+
+  font-size: 20px;
+}
+
+.appointment-card-title {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.appointment-card-title h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--nb-text);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.appointment-card-title span {
+  display: block;
+
+  margin-top: 4px;
+
+  overflow: hidden;
+
+  color: var(--nb-text-muted);
+
+  font-size: 10px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.appointment-status {
+  flex-shrink: 0;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: var(--nb-surface-3);
+
+  color: var(--nb-text-secondary);
+
+  font-size: 9px;
+
+  font-weight: 750;
+
+  letter-spacing: 0.04em;
+
+  text-transform: uppercase;
+}
+
+.appointment-status-confirmed,
+.appointment-status-approved {
+  background: rgba(81, 200, 120, 0.10);
+
+  color: var(--nb-success);
+}
+
+.appointment-status-pending {
+  background: rgba(230, 191, 63, 0.10);
+
+  color: var(--nb-gold);
+}
+
+.appointment-status-cancelled,
+.appointment-status-rejected {
+  background: rgba(239, 107, 115, 0.10);
+
+  color: var(--nb-danger);
+}
+
+.appointment-details {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-top: 17px;
+
+  padding-top: 15px;
+
+  border-top: 1px solid var(--nb-border);
+}
+
+.appointment-details > div {
+  min-width: 0;
+}
+
+.appointment-detail-label {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: var(--nb-text-muted);
+
+  font-size: 9px;
+
+  text-transform: uppercase;
+
+  letter-spacing: 0.06em;
+}
+
+.appointment-details strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--nb-text-secondary);
+
+  font-size: 10.5px;
+
+  font-weight: 650;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+/* =========================================================
+   BOOKING LAYOUT
+========================================================= */
+
+.appointment-booking-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(250px, 0.8fr)
+    minmax(0, 1.7fr);
+
+  gap: 18px;
+
+  align-items: start;
+}
+
+/* =========================================================
+   PANELS
+========================================================= */
+
+.hospital-panel,
+.booking-panel {
+  min-width: 0;
+
+  padding: 20px;
+
+  border: 1px solid var(--nb-border);
+
+  border-radius: var(--nb-radius-lg);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--nb-surface),
+      var(--nb-surface-2)
+    );
+
+  box-shadow: var(--nb-shadow);
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 15px;
+}
+
+.panel-heading h3 {
+  margin: 0;
+
+  color: var(--nb-text);
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+.panel-heading span {
+  color: var(--nb-text-muted);
+
+  font-size: 10px;
+}
+
+/* =========================================================
+   HOSPITAL LIST
+========================================================= */
+
+.hospital-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+
+  max-height: 570px;
+
+  overflow-y: auto;
+
+  padding-right: 3px;
+}
+
+.hospital-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.hospital-list::-webkit-scrollbar-thumb {
+  background: var(--nb-surface-3);
+
+  border-radius: 999px;
+}
+
+.hospital-option {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 11px;
+
+  border: 1px solid transparent;
+
+  border-radius: 13px;
+
+  background: transparent;
+
+  color: var(--nb-text);
+
+  font-family: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.hospital-option:hover {
+  background: var(--nb-surface-2);
+
+  border-color: var(--nb-border);
+
+  transform: translateX(2px);
+}
+
+.hospital-option.selected {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(230, 191, 63, 0.10),
+      rgba(230, 191, 63, 0.035)
+    );
+
+  border-color: rgba(230, 191, 63, 0.20);
+}
+
+.hospital-option-icon {
+  width: 37px;
+  height: 37px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 11px;
+
+  background: var(--nb-surface-3);
+
+  font-size: 17px;
+}
+
+.hospital-option.selected .hospital-option-icon {
+  background: rgba(230, 191, 63, 0.12);
+}
+
+.hospital-option-content {
+  min-width: 0;
+
+  flex: 1;
+}
+
+.hospital-option-content strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--nb-text);
+
+  font-size: 11.5px;
+
+  font-weight: 680;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.hospital-option-content small {
+  display: block;
+
+  margin-top: 4px;
+
+  overflow: hidden;
+
+  color: var(--nb-text-muted);
+
+  font-size: 9.5px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.hospital-option-arrow {
+  flex-shrink: 0;
+
+  color: var(--nb-text-muted);
+
+  font-size: 16px;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.hospital-option:hover .hospital-option-arrow,
+.hospital-option.selected .hospital-option-arrow {
+  color: var(--nb-gold);
+
+  transform: translateX(2px);
+}
+
+/* =========================================================
+   PANEL STATES
+========================================================= */
+
+.panel-loading,
+.panel-empty {
+  min-height: 180px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  text-align: center;
+}
+
+.panel-loading p,
+.panel-empty p {
+  margin: 3px 0 0;
+
+  color: var(--nb-text-muted);
+
+  font-size: 10px;
+}
+
+.panel-empty > div {
+  margin-bottom: 8px;
+
+  font-size: 26px;
+}
+
+/* =========================================================
+   FORM
+========================================================= */
+
+.appointment-form {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.form-field {
+  min-width: 0;
+}
+
+.form-field label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: var(--nb-text-secondary);
+
+  font-size: 10px;
+
+  font-weight: 650;
+}
+
+.form-field select,
+.form-field input {
+  width: 100%;
+
+  min-height: 43px;
+
+  padding: 0 12px;
+
+  border: 1px solid var(--nb-border-strong);
+
+  border-radius: 12px;
+
+  outline: none;
+
+  background: var(--nb-surface-2);
+
+  color: var(--nb-text);
+
+  font-family: inherit;
+
+  font-size: 11px;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.form-field select:focus,
+.form-field input:focus {
+  border-color: var(--nb-gold);
+
+  box-shadow:
+    0 0 0 3px rgba(230, 191, 63, 0.08);
+}
+
+.form-field select:disabled,
+.form-field input:disabled {
+  opacity: 0.48;
+
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   SLOT MESSAGE
+========================================================= */
+
+.slot-message {
+  min-height: 74px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 15px;
+
+  border: 1px dashed var(--nb-border-strong);
+
+  border-radius: 13px;
+
+  background: var(--nb-surface-2);
+
+  color: var(--nb-text-muted);
+
+  font-size: 10px;
+
+  text-align: center;
+
+  line-height: 1.5;
+
+  box-sizing: border-box;
+}
+
+.slot-message .appointments-spinner {
+  margin: 0 8px 0 0;
+}
+
+/* =========================================================
+   AVAILABLE SLOTS
+========================================================= */
+
+.slots-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 8px;
+}
+
+.slot-button {
+  min-height: 42px;
+
+  padding: 8px 7px;
+
+  border: 1px solid var(--nb-border-strong);
+
+  border-radius: 10px;
+
+  background: var(--nb-surface-2);
+
+  color: var(--nb-text-secondary);
+
+  font-family: inherit;
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.slot-button:hover {
+  transform: translateY(-1px);
+
+  border-color: var(--nb-gold);
+
+  color: var(--nb-text);
+}
+
+.slot-button.selected {
+  border-color: var(--nb-gold);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(230, 191, 63, 0.16),
+      rgba(230, 191, 63, 0.07)
+    );
+
+  color: var(--nb-gold);
+
+  box-shadow:
+    0 6px 18px rgba(230, 191, 63, 0.08);
+}
+
+/* =========================================================
+   BOOKING BUTTON
+========================================================= */
+
+.booking-submit {
+  width: 100%;
+
+  min-height: 46px;
+
+  margin-top: 4px;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--nb-gold-light),
+      var(--nb-gold)
+    );
+
+  color: #17130a;
+
+  font-family: inherit;
+
+  font-size: 11px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 8px 22px rgba(230, 191, 63, 0.16);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.booking-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    0 12px 28px rgba(230, 191, 63, 0.25);
+}
+
+.booking-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.booking-submit:disabled {
+  opacity: 0.42;
+
+  cursor: not-allowed;
+
+  box-shadow: none;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1100px) {
+  .appointment-booking-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hospital-list {
+    max-height: 350px;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .appointments-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MOBILE / SIDEBAR COLLAPSE
+========================================================= */
+
+@media (max-width: 900px) {
+  .appointments-page {
+    padding-left: 0;
+  }
+
+  .appointments-main {
+    padding:
+      24px
+      clamp(16px, 4vw, 30px)
+      45px;
+  }
+
+  .appointments-header {
+    min-height: 120px;
+  }
+
+  .hospital-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+  .appointments-main {
+    padding:
+      18px
+      14px
+      35px;
+  }
+
+  .appointments-header {
+    min-height: 115px;
+  }
+
+  .appointments-header h1 {
+    font-size: 27px;
+  }
+
+  .appointments-header p {
+    font-size: 11px;
+  }
+
+  .appointments-section {
+    margin-top: 32px;
+  }
+
+  .appointments-section-heading {
+    margin-bottom: 14px;
+  }
+
+  .appointments-section-heading h2 {
+    font-size: 18px;
+  }
+
+  .appointments-section-heading p {
+    font-size: 11px;
+  }
+
+  .hospital-panel,
+  .booking-panel {
+    padding: 15px;
+  }
+
+  .appointment-card {
+    padding: 15px;
+  }
+
+  .appointment-card-top {
+    align-items: flex-start;
+  }
+
+  .appointment-status {
+    display: none;
+  }
+
+  .appointment-details {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    row-gap: 14px;
+  }
+
+  .slots-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+========================================================= */
+
+@media (max-width: 380px) {
+  .appointments-main {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+
+  .appointments-header h1 {
+    font-size: 24px;
+  }
+
+  .appointment-details {
+    grid-template-columns: 1fr;
+  }
+
+  .hospital-option {
+    padding: 9px;
+  }
+
+  .hospital-option-icon {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .appointment-card,
+  .hospital-option,
+  .slot-button,
+  .booking-submit {
+    transition: none;
+  }
+
+  .appointments-spinner {
+    animation: none;
+  }
+}

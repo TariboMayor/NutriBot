@@ -1,20 +1,39 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+
 import "./Login.css";
 
 function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const [message, setMessage] = useState("");
-  const [messageType, setMessageType] = useState("");
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-  async function handleLogin(event) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData((previous) => ({
+      ...previous,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setMessage("");
-    setMessageType("");
+    setError("");
+
+    if (!formData.email.trim() || !formData.password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await fetch("http://localhost:5000/api/auth/login", {
@@ -23,69 +42,120 @@ function Login() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email,
-          password,
+          email: formData.email.trim(),
+          password: formData.password,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.message);
-        setMessageType("error");
-        return;
+        throw new Error(
+          data.message || "Login failed. Please check your details."
+        );
       }
 
-      setMessage(data.message);
-      setMessageType("success");
+      if (!data.token) {
+        throw new Error("Login succeeded but no authentication token was returned.");
+      }
 
-      // Go directly to the chatbot
-      setTimeout(() => {
-        navigate("/chat");
-      }, 800);
-    } catch (error) {
-      console.error("Login error:", error);
-      setMessage("Could not connect to the server.");
-      setMessageType("error");
+      localStorage.setItem("nutribot_token", data.token);
+
+      if (data.user) {
+        localStorage.setItem(
+          "nutribot_user",
+          JSON.stringify(data.user)
+        );
+      }
+
+      /*
+       * Patient users go to the main Dashboard after login.
+       * The dashboard then provides access to Chat, Appointments,
+       * Nutrition, Wellness, Hydration, Reminders and Profile.
+       */
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="login-page">
-      <div className="login-box">
-        <div className="login-logo">N</div>
+      <div className="login-card">
+        <div className="login-brand">
+          <div className="login-brand-icon">N</div>
 
-        <h1>Welcome back</h1>
-        <p>Login to continue using NutriBot.</p>
+          <div>
+            <h1>NutriBot</h1>
+            <p>Your Health Companion</p>
+          </div>
+        </div>
 
-        <form onSubmit={handleLogin}>
-          <label>Email</label>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+        <div className="login-heading">
+          <h2>Welcome back</h2>
+          <p>Sign in to continue to your NutriBot account.</p>
+        </div>
 
-          <label>Password</label>
-          <input
-            type="password"
-            placeholder="Enter your password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-          {message && (
-            <p className={`form-message ${messageType}`}>{message}</p>
-          )}
+        {error && (
+          <div className="login-error" role="alert">
+            {error}
+          </div>
+        )}
 
-          <button type="submit">Login</button>
+        <form onSubmit={handleSubmit} className="login-form">
+          <div className="login-field">
+            <label htmlFor="email">Email address</label>
+
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              autoComplete="email"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <div className="login-field">
+            <label htmlFor="password">Password</label>
+
+            <input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              autoComplete="current-password"
+              disabled={loading}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="login-button"
+            disabled={loading}
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
         </form>
 
-        <p className="signup-link">
-          Don't have an account? <Link to="/signup">Create account</Link>
-        </p>
+        <div className="login-footer">
+          <p>
+            Don't have an account?{" "}
+            <Link to="/signup">Create an account</Link>
+          </p>
+        </div>
       </div>
     </div>
   );

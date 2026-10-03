@@ -1,0 +1,390 @@
+.hydration-page {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: #101010;
+  color: #f5f5f5;
+  box-sizing: border-box;
+}
+
+.hydration-main {
+  width: calc(100% - 220px);
+  min-height: 100vh;
+  margin-left: 220px;
+  padding: 0 32px 50px;
+  box-sizing: border-box;
+  background: #101010;
+  overflow-x: hidden;
+}
+
+.hydration-header {
+  min-height: 112px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #292929;
+}
+
+.hydration-label {
+  display: block;
+  color: #777777;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.hydration-header h1 {
+  margin: 7px 0 0;
+  color: #f1f1f1;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hydration-header p {
+  margin: 7px 0 0;
+  color: #777777;
+  font-size: 12px;
+}
+
+.hydration-content {
+  width: 100%;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+
+/* TRACKER */
+
+.hydration-tracker {
+  margin-top: 30px;
+  padding: 25px;
+  border: 1px solid rgba(230, 191, 63, 0.2);
+  border-radius: 12px;
+  background: #191815;
+}
+
+.hydration-tracker-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hydration-big-icon {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 13px;
+  background: rgba(230, 191, 63, 0.12);
+  color: #e6bf3f;
+}
+
+.hydration-tracker-top > div:last-child > span {
+  display: block;
+  color: #777777;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.hydration-tracker h2 {
+  margin: 6px 0 0;
+  color: #eeeeee;
+  font-size: 25px;
+  font-weight: 650;
+}
+
+.hydration-tracker h2 small {
+  color: #666666;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.hydration-progress {
+  width: 100%;
+  height: 10px;
+  margin-top: 25px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #2a2a2a;
+}
+
+.hydration-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  background: #e6bf3f;
+  transition: width 0.3s ease;
+}
+
+.hydration-progress-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: 9px;
+  color: #666666;
+  font-size: 9px;
+}
+
+/* SECTIONS */
+
+.hydration-section {
+  margin-top: 32px;
+}
+
+.hydration-section-heading {
+  margin-bottom: 16px;
+}
+
+.hydration-section-heading > span {
+  display: block;
+  margin-bottom: 5px;
+  color: #777777;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.hydration-section-heading h2 {
+  margin: 0;
+  color: #eeeeee;
+  font-size: 19px;
+  font-weight: 650;
+}
+
+/* WATER OPTIONS */
+
+.water-options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.water-options button {
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  background: #181818;
+  color: #eeeeee;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.water-options button:hover {
+  background: #1d1d1d;
+  border-color: #4a4a4a;
+  transform: translateY(-2px);
+}
+
+.water-options button svg {
+  margin-bottom: 9px;
+  color: #e6bf3f;
+}
+
+.water-options button strong {
+  color: #dddddd;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.water-options button span {
+  margin-top: 4px;
+  color: #666666;
+  font-size: 9px;
+}
+
+/* STATUS */
+
+.hydration-status-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.hydration-status-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 17px;
+  border: 1px solid #292929;
+  border-radius: 10px;
+  background: #181818;
+}
+
+.hydration-status-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: rgba(230, 191, 63, 0.09);
+  color: #d5b33b;
+}
+
+.hydration-status-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: #666666;
+  font-size: 9px;
+}
+
+.hydration-status-card strong {
+  color: #dddddd;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* TIP */
+
+.hydration-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 32px;
+  padding: 20px;
+  border: 1px solid #292929;
+  border-radius: 11px;
+  background: #181818;
+}
+
+.hydration-tip-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: #232323;
+  font-size: 18px;
+}
+
+.hydration-tip span {
+  display: block;
+  color: #777777;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.hydration-tip h3 {
+  margin: 5px 0 0;
+  color: #dddddd;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.hydration-tip p {
+  max-width: 700px;
+  margin: 6px 0 0;
+  color: #707070;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+/* RESET */
+
+.hydration-reset {
+  display: block;
+  margin: 18px auto 0;
+  padding: 8px 12px;
+  border: 1px solid #303030;
+  border-radius: 6px;
+  background: transparent;
+  color: #666666;
+  font-family: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.hydration-reset:hover {
+  background: #1a1a1a;
+  color: #aaaaaa;
+}
+
+/* TABLET */
+
+@media (max-width: 900px) {
+  .hydration-main {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .water-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hydration-status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* MOBILE */
+
+@media (max-width: 800px) {
+  .hydration-main {
+    width: calc(100% - 68px);
+    margin-left: 68px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .hydration-header {
+    min-height: 95px;
+  }
+
+  .hydration-header h1 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hydration-main {
+    width: calc(100% - 68px);
+    margin-left: 68px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .hydration-header {
+    min-height: 85px;
+  }
+
+  .hydration-header h1 {
+    font-size: 20px;
+  }
+
+  .hydration-header p {
+    font-size: 10px;
+  }
+
+  .hydration-tracker {
+    margin-top: 20px;
+    padding: 17px;
+  }
+
+  .hydration-tracker h2 {
+    font-size: 21px;
+  }
+
+  .water-options {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .hydration-tip {
+    padding: 16px;
+  }
+}
