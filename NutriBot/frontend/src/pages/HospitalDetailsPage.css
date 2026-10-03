@@ -1,0 +1,247 @@
+.hospital-details-page {
+  min-height: 100vh;
+  background: var(--nb-bg);
+  color: var(--nb-text);
+  display: flex;
+}
+
+.hospital-details-main {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  min-height: 100vh;
+  padding: 32px 36px 50px;
+  box-sizing: border-box;
+}
+
+.hospital-details-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  color: var(--nb-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 28px;
+}
+
+.hospital-details-back:hover {
+  color: var(--nb-accent);
+}
+
+.hospital-details-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.hospital-details-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 16px;
+  background: rgba(230, 191, 63, 0.12);
+  color: var(--nb-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hospital-details-eyebrow {
+  color: var(--nb-accent);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.hospital-details-heading h1 {
+  margin: 0 0 6px;
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+.hospital-details-heading p {
+  margin: 0;
+  color: var(--nb-muted);
+  font-size: 14px;
+}
+
+.hospital-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.hospital-details-card {
+  background: var(--nb-card);
+  border: 1px solid var(--nb-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.hospital-details-card h2 {
+  margin: 0 0 20px;
+  font-size: 18px;
+}
+
+.hospital-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--nb-border);
+  color: var(--nb-accent);
+}
+
+.hospital-detail-row:last-child {
+  border-bottom: none;
+}
+
+.hospital-detail-row div {
+  min-width: 0;
+}
+
+.hospital-detail-row span {
+  display: block;
+  color: var(--nb-muted);
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.hospital-detail-row strong {
+  display: block;
+  color: var(--nb-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.hospital-details-description {
+  color: var(--nb-muted);
+  font-size: 14px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.hospital-booking-card {
+  margin-top: 20px;
+  padding: 24px;
+  background: var(--nb-card);
+  border: 1px solid var(--nb-border);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hospital-booking-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(230, 191, 63, 0.12);
+  color: var(--nb-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.hospital-booking-card h2 {
+  margin: 0 0 6px;
+  font-size: 19px;
+}
+
+.hospital-booking-card p {
+  margin: 0;
+  color: var(--nb-muted);
+  font-size: 14px;
+}
+
+.hospital-booking-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 190px;
+  border: none;
+  border-radius: 10px;
+  background: var(--nb-accent);
+  color: #111;
+  padding: 13px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.hospital-booking-button:hover {
+  opacity: 0.9;
+}
+
+.hospital-details-loading,
+.hospital-details-error {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hospital-details-loading {
+  color: var(--nb-muted);
+}
+
+.hospital-details-spinner {
+  animation: hospital-details-spin 1s linear infinite;
+  color: var(--nb-accent);
+  margin-bottom: 12px;
+}
+
+.hospital-details-error {
+  background: var(--nb-card);
+  border: 1px solid var(--nb-border);
+  border-radius: 16px;
+  padding: 32px;
+}
+
+.hospital-details-error svg {
+  color: var(--nb-accent);
+  margin-bottom: 12px;
+}
+
+.hospital-details-error h2 {
+  margin: 0 0 6px;
+}
+
+.hospital-details-error p {
+  margin: 0;
+  color: var(--nb-muted);
+}
+
+@keyframes hospital-details-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .hospital-details-main {
+    margin-left: 230px;
+    width: calc(100% - 230px);
+    padding: 28px 24px 45px;
+  }
+}
+
+@media (max-width: 700px) {
+  .hospital-details-main {
+    margin-left: 0;
+    width: 100%;
+    min-width: 0;
+    padding: 24px 16px 40px;
+  }
+}

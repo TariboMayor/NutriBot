@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+
 import {
   LayoutDashboard,
   MessageCircle,
@@ -12,21 +13,22 @@ import {
 } from "lucide-react";
 
 import useTheme from "../../context/useTheme";
+import NotificationBell from "../notifications/NotificationBell";
+
 import "./UserSidebar.css";
 
 function UserSidebar() {
   const navigate = useNavigate();
 
-  const {
-    theme,
-    toggleTheme,
-  } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const handleLogout = () => {
     localStorage.removeItem("nutribot_token");
     localStorage.removeItem("nutribot_user");
 
-    navigate("/login", { replace: true });
+    navigate("/login", {
+      replace: true,
+    });
   };
 
   const mainNavigation = [
@@ -72,6 +74,7 @@ function UserSidebar() {
 
   return (
     <aside className="user-sidebar">
+
       {/* BRAND */}
       <div className="sidebar-brand">
         <div className="sidebar-brand-icon">
@@ -84,10 +87,13 @@ function UserSidebar() {
         </div>
       </div>
 
+
       {/* NAVIGATION */}
       <nav className="sidebar-navigation">
+
         {/* MAIN */}
         <div className="sidebar-section">
+
           <div className="sidebar-section-title">
             MAIN
           </div>
@@ -100,9 +106,7 @@ function UserSidebar() {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `sidebar-link ${
-                    isActive ? "active" : ""
-                  }`
+                  `sidebar-link ${isActive ? "active" : ""}`
                 }
               >
                 <Icon
@@ -114,10 +118,13 @@ function UserSidebar() {
               </NavLink>
             );
           })}
+
         </div>
+
 
         {/* HEALTH */}
         <div className="sidebar-section">
+
           <div className="sidebar-section-title">
             HEALTH
           </div>
@@ -130,9 +137,7 @@ function UserSidebar() {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `sidebar-link ${
-                    isActive ? "active" : ""
-                  }`
+                  `sidebar-link ${isActive ? "active" : ""}`
                 }
               >
                 <Icon
@@ -144,18 +149,32 @@ function UserSidebar() {
               </NavLink>
             );
           })}
+
         </div>
+
       </nav>
+
 
       {/* BOTTOM */}
       <div className="sidebar-bottom">
+
+        {/* NOTIFICATIONS */}
+        <div className="sidebar-notification">
+
+          <NotificationBell />
+
+          <span>
+            Notifications
+          </span>
+
+        </div>
+
+
         {/* PROFILE */}
         <NavLink
           to="/profile"
           className={({ isActive }) =>
-            `sidebar-link ${
-              isActive ? "active" : ""
-            }`
+            `sidebar-link ${isActive ? "active" : ""}`
           }
         >
           <User
@@ -163,10 +182,13 @@ function UserSidebar() {
             strokeWidth={1.8}
           />
 
-          <span>Profile</span>
+          <span>
+            Profile
+          </span>
         </NavLink>
 
-        {/* THEME TOGGLE */}
+
+        {/* THEME */}
         <button
           type="button"
           className="sidebar-theme-toggle"
@@ -186,13 +208,12 @@ function UserSidebar() {
           <span className="theme-toggle-switch">
             <span
               className={`theme-toggle-knob ${
-                theme === "light"
-                  ? "light"
-                  : ""
+                theme === "light" ? "light" : ""
               }`}
             />
           </span>
         </button>
+
 
         {/* LOGOUT */}
         <button
@@ -205,9 +226,13 @@ function UserSidebar() {
             strokeWidth={1.8}
           />
 
-          <span>Logout</span>
+          <span>
+            Logout
+          </span>
         </button>
+
       </div>
+
     </aside>
   );
 }

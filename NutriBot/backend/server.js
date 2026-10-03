@@ -1,6 +1,9 @@
+
 require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
+
 const chatRoutes = require("./routes/chatRoutes");
 const authRoutes = require("./routes/authRoutes");
 const foodRoutes = require("./routes/foodRoutes");
@@ -17,63 +20,92 @@ const appointmentStatusRoutes = require("./routes/appointmentStatusRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
 const personalReminderRoutes = require("./routes/personalReminderRoutes");
-const reminderScheduler = require("./services/reminderScheduler");
 const messageRoutes = require("./routes/messageRoutes");
-const {
-  authenticateToken,
-} = require("./middleware/authMiddleware");
-const {
-  requireRole,
-} = require("./middleware/roleMiddleware");
 
+const reminderScheduler = require("./services/reminderScheduler");
 
 const app = express();
 
 const PORT = 5000;
 
-// Middleware
+/* ========================================
+   MIDDLEWARE
+======================================== */
+
 app.use(cors());
+
 app.use(express.json());
 
-// Routes
-app.use("/api", chatRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/api/foods", foodRoutes);
-app.use("/api/patients", patientRoutes);
-app.use("/api/hospitals", hospitalRoutes);
-app.use("/api/hospital-staff", hospitalStaffRoutes);
-app.use("/api/doctors", doctorRoutes);
-app.use("/api/medical-services", medicalServiceRoutes);
-app.use("/api/hospital-services", hospitalServiceRoutes);
-app.use("/api/doctor-services", doctorServiceRoutes);
-app.use("/api/doctor-availability", doctorAvailabilityRoutes);
-app.use("/api/appointments", appointmentRoutes);
-app.use(
-  "/api/appointment-status",
-  appointmentStatusRoutes
-);
-app.use(
-  "/api/notifications",
-  notificationRoutes
-);
-app.use("/api/reminders", reminderRoutes);
-app.use(
-  "/api/personal-reminders",
-  personalReminderRoutes
-);
+/* ========================================
+   AUTH ROUTES
+   MUST COME BEFORE GENERAL /api ROUTES
+======================================== */
 
-reminderScheduler.startReminderScheduler();
+app.use("/api/auth", authRoutes);
+
+/* ========================================
+   API ROUTES
+======================================== */
+
+app.use("/api/foods", foodRoutes);
+
+app.use("/api/patients", patientRoutes);
+
+app.use("/api/hospitals", hospitalRoutes);
+
+app.use("/api/hospital-staff", hospitalStaffRoutes);
+
+app.use("/api/doctors", doctorRoutes);
+
+app.use("/api/medical-services", medicalServiceRoutes);
+
+app.use("/api/hospital-services", hospitalServiceRoutes);
+
+app.use("/api/doctor-services", doctorServiceRoutes);
+
+app.use("/api/doctor-availability", doctorAvailabilityRoutes);
+
+app.use("/api/appointments", appointmentRoutes);
+
+app.use("/api/appointment-status", appointmentStatusRoutes);
+
+app.use("/api/notifications", notificationRoutes);
+
+app.use("/api/reminders", reminderRoutes);
+
+app.use("/api/personal-reminders", personalReminderRoutes);
+
 app.use("/api/messages", messageRoutes);
 
-// Test route
+/* ========================================
+   CHAT ROUTES
+   These routes use authenticateToken
+======================================== */
+
+app.use("/api", chatRoutes);
+
+/* ========================================
+   REMINDER SCHEDULER
+======================================== */
+
+reminderScheduler.startReminderScheduler();
+
+/* ========================================
+   ROOT ROUTE
+======================================== */
+
 app.get("/", (req, res) => {
   res.json({
     message: "Nia backend is running!",
   });
 });
 
+/* ========================================
+   START SERVER
+======================================== */
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`Nia backend running on http://localhost:${PORT}`);
+  console.log(
+    `Nia backend running on http://localhost:${PORT}`
+  );
 });

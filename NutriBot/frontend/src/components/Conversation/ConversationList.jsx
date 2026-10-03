@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   Plus,
   Search,
@@ -10,7 +11,7 @@ import {
 import "./ConversationList.css";
 
 function ConversationList({
-  conversations,
+  conversations = [],
   activeId,
   onSelect,
   onCreate,
@@ -18,55 +19,96 @@ function ConversationList({
 }) {
   const [query, setQuery] = useState("");
 
-  const searchText = query.trim().toLowerCase();
+  const searchText =
+    query.trim().toLowerCase();
 
-  const filteredConversations = conversations.filter(
-    (conversation) => {
+  const filteredConversations =
+    conversations.filter((conversation) => {
       const title =
         conversation.title?.toLowerCase() || "";
 
       const lastMessage =
-        conversation.last_message?.toLowerCase() || "";
+        conversation.last_message?.toLowerCase() ||
+        "";
 
       return (
         !searchText ||
         title.includes(searchText) ||
         lastMessage.includes(searchText)
       );
-    }
-  );
+    });
 
   function clearSearch() {
     setQuery("");
   }
 
+  function handleConversationKeyDown(
+    event,
+    conversationId
+  ) {
+    if (
+      event.key === "Enter" ||
+      event.key === " "
+    ) {
+      event.preventDefault();
+
+      if (onSelect) {
+        onSelect(conversationId);
+      }
+    }
+  }
+
   return (
     <aside className="conversation-sidebar">
-      {/* Brand */}
+
+      {/* =========================================
+          BRAND
+      ========================================= */}
+
       <div className="conversation-brand">
         <div className="conversation-brand-mark">
           N
         </div>
 
-        <div>
+        <div className="conversation-brand-text">
           <h2>Nia (NutriBot)</h2>
-          <p>Your AI Health Assistant</p>
+
+          <p>
+            Your AI Health Assistant
+          </p>
         </div>
       </div>
 
-      {/* New Chat */}
+
+      {/* =========================================
+          NEW CHAT
+      ========================================= */}
+
       <button
         type="button"
         className="new-chat-button"
         onClick={onCreate}
       >
-        <Plus size={18} strokeWidth={2.2} />
-        <span>New Chat</span>
+        <Plus
+          size={18}
+          strokeWidth={2.2}
+        />
+
+        <span>
+          New Chat
+        </span>
       </button>
 
-      {/* Search */}
+
+      {/* =========================================
+          SEARCH
+      ========================================= */}
+
       <div className="conversation-search">
-        <Search size={16} strokeWidth={2} />
+        <Search
+          size={16}
+          strokeWidth={2}
+        />
 
         <input
           type="text"
@@ -90,21 +132,38 @@ function ConversationList({
         )}
       </div>
 
-      {/* Conversation heading */}
+
+      {/* =========================================
+          CONVERSATION HEADING
+      ========================================= */}
+
       <div className="conversation-list-header">
-        <span>RECENT CHATS</span>
+        <span>
+          RECENT CHATS
+        </span>
 
         {conversations.length > 0 && (
-          <span>{conversations.length}</span>
+          <span>
+            {conversations.length}
+          </span>
         )}
       </div>
 
-      {/* Conversation List */}
+
+      {/* =========================================
+          CONVERSATION LIST
+      ========================================= */}
+
       <div className="conversation-list">
+
         {filteredConversations.length === 0 ? (
+
           <div className="no-conversations">
+
             <div className="no-conversations-icon">
-              <MessageSquare size={24} />
+              <MessageSquare
+                size={24}
+              />
             </div>
 
             <p>
@@ -118,74 +177,113 @@ function ConversationList({
                 ? "Try a different search."
                 : "Start a new conversation with Nia."}
             </span>
+
           </div>
+
         ) : (
+
           filteredConversations.map(
-            (conversation) => (
-              <div
-                key={conversation.id}
-                className={`conversation-item ${
-                  activeId === conversation.id
-                    ? "active"
-                    : ""
-                }`}
-                onClick={() =>
-                  onSelect(conversation.id)
-                }
-                role="button"
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (
-                    event.key === "Enter" ||
-                    event.key === " "
-                  ) {
-                    event.preventDefault();
-                    onSelect(conversation.id);
-                  }
-                }}
-              >
-                <div className="conversation-icon">
-                  <MessageSquare
-                    size={16}
-                    strokeWidth={1.8}
-                  />
-                </div>
+            (conversation) => {
 
-                <div className="conversation-info">
-                  <p>
-                    {conversation.title ||
-                      "New Conversation"}
-                  </p>
+              const isActive =
+                activeId ===
+                conversation.id;
 
-                  {conversation.last_message && (
-                    <span>
-                      {conversation.last_message}
-                    </span>
-                  )}
-                </div>
+              const title =
+                conversation.title ||
+                "New Conversation";
 
-                <button
-                  type="button"
-                  className="delete-conversation"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onDelete(conversation.id);
-                  }}
-                  aria-label={`Delete ${
-                    conversation.title ||
-                    "conversation"
+              return (
+                <div
+                  key={conversation.id}
+                  className={`conversation-item ${
+                    isActive
+                      ? "active"
+                      : ""
                   }`}
+                  onClick={() =>
+                    onSelect(
+                      conversation.id
+                    )
+                  }
+                  onKeyDown={(event) =>
+                    handleConversationKeyDown(
+                      event,
+                      conversation.id
+                    )
+                  }
+                  role="button"
+                  tabIndex={0}
+                  aria-current={
+                    isActive
+                      ? "true"
+                      : undefined
+                  }
                 >
-                  <Trash2
-                    size={15}
-                    strokeWidth={1.8}
-                  />
-                </button>
-              </div>
-            )
+
+                  {/* Conversation icon */}
+
+                  <div className="conversation-icon">
+                    <MessageSquare
+                      size={16}
+                      strokeWidth={1.8}
+                    />
+                  </div>
+
+
+                  {/* Conversation information */}
+
+                  <div className="conversation-info">
+
+                    <p title={title}>
+                      {title}
+                    </p>
+
+                    {conversation.last_message && (
+                      <span
+                        title={
+                          conversation.last_message
+                        }
+                      >
+                        {
+                          conversation.last_message
+                        }
+                      </span>
+                    )}
+
+                  </div>
+
+
+                  {/* Delete */}
+
+                  <button
+                    type="button"
+                    className="delete-conversation"
+                    onClick={(event) => {
+                      event.stopPropagation();
+
+                      if (onDelete) {
+                        onDelete(
+                          conversation.id
+                        );
+                      }
+                    }}
+                    aria-label={`Delete ${title}`}
+                  >
+                    <Trash2
+                      size={15}
+                      strokeWidth={1.8}
+                    />
+                  </button>
+
+                </div>
+              );
+            }
           )
         )}
+
       </div>
+
     </aside>
   );
 }

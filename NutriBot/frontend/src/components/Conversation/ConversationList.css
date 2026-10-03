@@ -1,6 +1,10 @@
+/* =========================================================
+   CONVERSATION SIDEBAR
+   ========================================================= */
+
 .conversation-sidebar {
   width: 300px;
-  height: 100vh;
+  height: 100%;
 
   display: flex;
   flex-direction: column;
@@ -23,16 +27,19 @@
   overflow: hidden;
 }
 
-/* =========================================
+
+/* =========================================================
    BRAND
-========================================= */
+   ========================================================= */
 
 .conversation-brand {
   display: flex;
   align-items: center;
+
   gap: 11px;
 
-  padding: 4px 8px 22px;
+  padding:
+    4px 8px 22px;
 }
 
 .conversation-brand-mark {
@@ -47,11 +54,12 @@
 
   border-radius: 12px;
 
-  background: linear-gradient(
-    135deg,
-    var(--nb-gold-light),
-    var(--nb-gold)
-  );
+  background:
+    linear-gradient(
+      135deg,
+      var(--nb-gold-light),
+      var(--nb-gold)
+    );
 
   color: #17130a;
 
@@ -59,7 +67,12 @@
   font-weight: 800;
 
   box-shadow:
-    0 7px 20px rgba(230, 191, 63, 0.18);
+    0 7px 20px
+      rgba(230, 191, 63, 0.18);
+}
+
+.conversation-brand-text {
+  min-width: 0;
 }
 
 .conversation-brand h2 {
@@ -82,9 +95,10 @@
   color: var(--nb-text-muted);
 }
 
-/* =========================================
+
+/* =========================================================
    NEW CHAT
-========================================= */
+   ========================================================= */
 
 .new-chat-button {
   width: 100%;
@@ -92,6 +106,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+
   gap: 8px;
 
   min-height: 44px;
@@ -101,11 +116,12 @@
   border: none;
   border-radius: 13px;
 
-  background: linear-gradient(
-    135deg,
-    var(--nb-gold-light),
-    var(--nb-gold)
-  );
+  background:
+    linear-gradient(
+      135deg,
+      var(--nb-gold-light),
+      var(--nb-gold)
+    );
 
   color: #17130a;
 
@@ -115,7 +131,8 @@
   cursor: pointer;
 
   box-shadow:
-    0 8px 22px rgba(230, 191, 63, 0.16);
+    0 8px 22px
+      rgba(230, 191, 63, 0.16);
 
   transition:
     transform 0.2s ease,
@@ -126,20 +143,23 @@
   transform: translateY(-1px);
 
   box-shadow:
-    0 12px 28px rgba(230, 191, 63, 0.25);
+    0 12px 28px
+      rgba(230, 191, 63, 0.25);
 }
 
 .new-chat-button:active {
   transform: translateY(0);
 }
 
-/* =========================================
+
+/* =========================================================
    SEARCH
-========================================= */
+   ========================================================= */
 
 .conversation-search {
   display: flex;
   align-items: center;
+
   gap: 8px;
 
   min-height: 42px;
@@ -148,6 +168,8 @@
   margin-bottom: 17px;
 
   padding: 0 11px;
+
+  box-sizing: border-box;
 
   background: var(--nb-surface-2);
 
@@ -166,11 +188,13 @@
   border-color: var(--nb-gold);
 
   box-shadow:
-    0 0 0 3px rgba(230, 191, 63, 0.08);
+    0 0 0 3px
+      rgba(230, 191, 63, 0.08);
 }
 
 .conversation-search input {
   flex: 1;
+
   min-width: 0;
 
   border: none;
@@ -215,19 +239,22 @@
 
 .clear-search-button:hover {
   background: var(--nb-surface-3);
+
   color: var(--nb-text);
 }
 
-/* =========================================
+
+/* =========================================================
    LIST HEADER
-========================================= */
+   ========================================================= */
 
 .conversation-list-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 0 7px 8px;
+  padding:
+    0 7px 8px;
 
   color: var(--nb-text-muted);
 
@@ -257,9 +284,10 @@
   letter-spacing: 0;
 }
 
-/* =========================================
+
+/* =========================================================
    CONVERSATION LIST
-========================================= */
+   ========================================================= */
 
 .conversation-list {
   flex: 1;
@@ -267,6 +295,7 @@
   min-height: 0;
 
   overflow-y: auto;
+  overflow-x: hidden;
 
   padding-right: 3px;
 }
@@ -275,14 +304,24 @@
   width: 5px;
 }
 
+.conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .conversation-list::-webkit-scrollbar-thumb {
   background: var(--nb-surface-3);
+
   border-radius: 999px;
 }
 
-/* =========================================
+.conversation-list::-webkit-scrollbar-thumb:hover {
+  background: var(--nb-gold);
+}
+
+
+/* =========================================================
    CONVERSATION ITEM
-========================================= */
+   ========================================================= */
 
 .conversation-item {
   position: relative;
@@ -295,9 +334,13 @@
   width: 100%;
 
   margin-bottom: 5px;
+
   padding: 11px 10px;
 
+  box-sizing: border-box;
+
   border: 1px solid transparent;
+
   border-radius: 13px;
 
   background: transparent;
@@ -323,6 +366,12 @@
   transform: translateX(1px);
 }
 
+.conversation-item:focus-visible {
+  outline: 2px solid var(--nb-gold);
+
+  outline-offset: 2px;
+}
+
 .conversation-item.active {
   background:
     linear-gradient(
@@ -331,7 +380,8 @@
       rgba(230, 191, 63, 0.035)
     );
 
-  border-color: rgba(230, 191, 63, 0.18);
+  border-color:
+    rgba(230, 191, 63, 0.18);
 
   color: var(--nb-text);
 }
@@ -342,19 +392,22 @@
   position: absolute;
 
   left: -1px;
+
   top: 9px;
   bottom: 9px;
 
   width: 3px;
 
-  border-radius: 0 4px 4px 0;
+  border-radius:
+    0 4px 4px 0;
 
   background: var(--nb-gold);
 }
 
-/* =========================================
+
+/* =========================================================
    CONVERSATION ICON
-========================================= */
+   ========================================================= */
 
 .conversation-icon {
   width: 32px;
@@ -377,18 +430,23 @@
     color 0.2s ease;
 }
 
-.conversation-item:hover .conversation-icon {
+.conversation-item:hover
+.conversation-icon {
   color: var(--nb-text-secondary);
 }
 
-.conversation-item.active .conversation-icon {
-  background: rgba(230, 191, 63, 0.13);
+.conversation-item.active
+.conversation-icon {
+  background:
+    rgba(230, 191, 63, 0.13);
+
   color: var(--nb-gold);
 }
 
-/* =========================================
+
+/* =========================================================
    CONVERSATION TEXT
-========================================= */
+   ========================================================= */
 
 .conversation-info {
   flex: 1;
@@ -411,6 +469,7 @@
   line-height: 1.35;
 
   white-space: nowrap;
+
   text-overflow: ellipsis;
 }
 
@@ -428,12 +487,14 @@
   line-height: 1.35;
 
   white-space: nowrap;
+
   text-overflow: ellipsis;
 }
 
-/* =========================================
+
+/* =========================================================
    DELETE BUTTON
-========================================= */
+   ========================================================= */
 
 .delete-conversation {
   width: 28px;
@@ -448,6 +509,7 @@
   padding: 0;
 
   border: none;
+
   border-radius: 8px;
 
   background: transparent;
@@ -464,13 +526,17 @@
     color 0.2s ease;
 }
 
-.conversation-item:hover .delete-conversation,
-.conversation-item:focus-within .delete-conversation {
+.conversation-item:hover
+.delete-conversation,
+.conversation-item:focus-within
+.delete-conversation {
   opacity: 1;
 }
 
 .delete-conversation:hover {
-  background: rgba(239, 107, 115, 0.10);
+  background:
+    rgba(239, 107, 115, 0.10);
+
   color: var(--nb-danger);
 }
 
@@ -478,9 +544,10 @@
   transform: scale(0.94);
 }
 
-/* =========================================
+
+/* =========================================================
    EMPTY STATE
-========================================= */
+   ========================================================= */
 
 .no-conversations {
   display: flex;
@@ -528,12 +595,14 @@
   color: var(--nb-text-muted);
 
   font-size: 10.5px;
+
   line-height: 1.5;
 }
 
-/* =========================================
-   TABLET
-========================================= */
+
+/* =========================================================
+   NARROW DESKTOP / TABLET
+   ========================================================= */
 
 @media (max-width: 1100px) {
   .conversation-sidebar {
@@ -541,25 +610,40 @@
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
 
-@media (max-width: 900px) {
+/* =========================================================
+   SMALL SCREENS
+   ========================================================= */
+
+@media (max-width: 700px) {
   .conversation-sidebar {
     width: 100%;
+
     height: auto;
 
-    max-height: 420px;
+    max-height: 380px;
 
     border-right: none;
-    border-bottom: 1px solid var(--nb-border);
+
+    border-bottom:
+      1px solid var(--nb-border);
+  }
+
+  .conversation-list {
+    max-height: 220px;
   }
 }
 
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
 @media (max-width: 600px) {
   .conversation-sidebar {
-    padding: 16px 12px;
+    padding:
+      16px 12px;
+
     max-height: 360px;
   }
 
@@ -577,7 +661,8 @@
   }
 
   .conversation-item {
-    padding: 10px 9px;
+    padding:
+      10px 9px;
   }
 
   .delete-conversation {
@@ -585,9 +670,10 @@
   }
 }
 
-/* =========================================
+
+/* =========================================================
    ACCESSIBILITY
-========================================= */
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .new-chat-button,

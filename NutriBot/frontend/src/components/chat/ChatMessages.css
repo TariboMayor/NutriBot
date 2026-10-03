@@ -1,3 +1,4 @@
+
 .chat-messages-container {
   flex: 1;
 
@@ -48,6 +49,123 @@
 }
 
 /* =========================================
+   TYPING MESSAGE
+========================================= */
+
+.typing-message {
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 12px;
+
+  animation: typingMessageIn 0.2s ease;
+}
+
+.typing-message .message-avatar {
+  flex-shrink: 0;
+}
+
+.typing-message .message-wrapper {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 6px;
+}
+
+/* =========================================
+   TYPING INDICATOR
+========================================= */
+
+.typing-indicator {
+  min-width: 58px;
+  min-height: 38px;
+
+  padding: 10px 13px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 4px;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--nb-border);
+
+  border-radius: 14px 14px 14px 5px;
+
+  background: var(--nb-surface);
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: var(--nb-text-muted);
+
+  animation: typingDot 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+
+    opacity: 0.45;
+  }
+
+  30% {
+    transform: translateY(-4px);
+
+    opacity: 1;
+  }
+}
+
+@keyframes typingMessageIn {
+  from {
+    opacity: 0;
+
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
    TABLET
 ========================================= */
 
@@ -66,6 +184,16 @@
     padding: 20px 14px 24px;
 
     gap: 14px;
+  }
+
+  .typing-message {
+    gap: 9px;
+  }
+
+  .typing-indicator {
+    min-height: 36px;
+
+    padding: 9px 12px;
   }
 }
 
@@ -87,5 +215,10 @@
 @media (prefers-reduced-motion: reduce) {
   .chat-messages-container {
     scroll-behavior: auto;
+  }
+
+  .typing-message,
+  .typing-indicator span {
+    animation: none;
   }
 }

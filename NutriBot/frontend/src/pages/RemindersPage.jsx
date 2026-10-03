@@ -1,795 +1,454 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
 import {
   Bell,
   CheckCircle2,
   Clock3,
-  Droplets,
-  HeartPulse,
+  RefreshCw,
+  CalendarDays,
   Pill,
-  Plus,
-  X,
+  Droplets,
+  Apple,
+  HeartPulse,
 } from "lucide-react";
 
 import UserSidebar from "../components/navigation/UserSidebar";
-import "./RemindersPage.css";
 
-function getToken() {
-  return localStorage.getItem("nutribot_token");
-}
+import "./RemindersPage.css";
 
 function RemindersPage() {
   const [reminders, setReminders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    reminder_type: "CUSTOM",
-    scheduled_for: "",
-    frequency: "ONCE",
-  });
-
-  const getReminderIcon = (type) => {
-    switch (type) {
-      case "HYDRATION":
-        return <Droplets size={20} />;
-
-      case "MEDICATION":
-        return <Pill size={20} />;
-
-      case "WELLNESS":
-        return <HeartPulse size={20} />;
-
-      default:
-        return <Bell size={20} />;
-    }
-  };
-
-  const formatReminderType = (type) => {
-    switch (type) {
-      case "HYDRATION":
-        return "Hydration";
-
-      case "MEDICATION":
-        return "Medication";
-
-      case "WELLNESS":
-        return "Wellness";
-
-      default:
-        return "Custom";
-    }
-  };
-
-  const formatFrequency = (frequency) => {
-    switch (frequency) {
-      case "DAILY":
-        return "Daily";
-
-      case "WEEKLY":
-        return "Weekly";
-
-      default:
-        return "Once";
-    }
-  };
-
-  const formatDateTime = (dateTime) => {
-    if (!dateTime) {
-      return "No date";
-    }
-
-    const date = new Date(dateTime);
-
-    if (Number.isNaN(date.getTime())) {
-      return dateTime;
-    }
-
-    return date.toLocaleString("en-NG", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
-  };
 
   /*
-   * Used when creating, completing, or cancelling
-   * a reminder after the page has already loaded.
-   */
-  const loadReminders = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      const token = getToken();
-
-      if (!token) {
-        setError("Please log in again to view your reminders.");
-        return;
-      }
-
-      const response = await fetch(
-        "http://localhost:5000/api/personal-reminders/my",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Failed to load reminders."
-        );
-      }
-
-      setReminders(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Load reminders error:", err);
-
-      setError(
-        err.message || "Unable to load your reminders."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  /*
-   * Initial page load.
-   *
-   * Important:
-   * We do NOT call loadReminders() here because that
-   * function calls setLoading(true) synchronously.
-   *
-   * The fetch happens first, then React state is updated
-   * after the asynchronous operation completes.
+   * INITIAL LOAD
    */
   useEffect(() => {
     let cancelled = false;
 
-    const loadInitialReminders = async () => {
+    const loadReminders = async () => {
       try {
-        const token = getToken();
-
-        if (!token) {
-          if (!cancelled) {
-            setError(
-              "Please log in again to view your reminders."
-            );
-            setLoading(false);
-          }
-
-          return;
-        }
+        const token =
+          localStorage.getItem("nutribot_token");
 
         const response = await fetch(
-          "http://localhost:5000/api/personal-reminders/my",
+          "/api/reminders/my",
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
 
-        const data = await response.json();
-
         if (!response.ok) {
           throw new Error(
-            data.message || "Failed to load reminders."
+            "Unable to load reminders"
           );
         }
+
+        const data = await response.json();
 
         if (!cancelled) {
           setReminders(
-            Array.isArray(data) ? data : []
+            Array.isArray(data)
+              ? data
+              : data.reminders || []
           );
-          setLoading(false);
         }
-      } catch (err) {
+      } catch (error) {
         console.error(
-          "Initial reminders load error:",
-          err
+          "Reminders error:",
+          error
         );
 
         if (!cancelled) {
-          setError(
-            err.message ||
-              "Unable to load your reminders."
-          );
+          setReminders([]);
+        }
+      } finally {
+        if (!cancelled) {
           setLoading(false);
         }
       }
     };
 
-    loadInitialReminders();
+    loadReminders();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
 
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
-  };
-
-  const resetForm = () => {
-    setFormData({
-      title: "",
-      description: "",
-      reminder_type: "CUSTOM",
-      scheduled_for: "",
-      frequency: "ONCE",
-    });
-  };
-
-  const handleCreateReminder = async (event) => {
-    event.preventDefault();
-
-    if (!formData.title.trim()) {
-      setError("Please enter a reminder title.");
-      return;
-    }
-
-    if (!formData.scheduled_for) {
-      setError("Please select a reminder date and time.");
-      return;
-    }
-
+  /*
+   * REFRESH
+   */
+  const handleRefresh = async () => {
     try {
-      setSaving(true);
-      setError("");
+      setRefreshing(true);
 
-      const token = getToken();
-
-      if (!token) {
-        setError("Please log in again.");
-        return;
-      }
+      const token =
+        localStorage.getItem("nutribot_token");
 
       const response = await fetch(
-        "http://localhost:5000/api/personal-reminders",
+        "/api/reminders/my",
         {
-          method: "POST",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            title: formData.title.trim(),
-            description:
-              formData.description.trim(),
-            reminder_type:
-              formData.reminder_type,
-            scheduled_for:
-              formData.scheduled_for,
-            frequency: formData.frequency,
-          }),
         }
       );
 
-      const data = await response.json();
-
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            "Failed to create reminder."
+          "Unable to refresh reminders"
         );
       }
 
-      resetForm();
-      setShowForm(false);
+      const data = await response.json();
 
-      await loadReminders();
-    } catch (err) {
-      console.error(
-        "Create reminder error:",
-        err
+      setReminders(
+        Array.isArray(data)
+          ? data
+          : data.reminders || []
       );
-
-      setError(
-        err.message ||
-          "Unable to create reminder."
+    } catch (error) {
+      console.error(
+        "Reminder refresh error:",
+        error
       );
     } finally {
-      setSaving(false);
+      setRefreshing(false);
     }
   };
 
-  const handleCompleteReminder = async (
-    reminderId
+
+  const getReminderTitle = (reminder) => {
+    return (
+      reminder.title ||
+      reminder.name ||
+      reminder.reminder_title ||
+      "Health Reminder"
+    );
+  };
+
+
+  const getReminderDescription = (
+    reminder
   ) => {
-    try {
-      setError("");
-
-      const token = getToken();
-
-      if (!token) {
-        setError("Please log in again.");
-        return;
-      }
-
-      const response = await fetch(
-        `http://localhost:5000/api/personal-reminders/${reminderId}/complete`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Failed to complete reminder."
-        );
-      }
-
-      await loadReminders();
-    } catch (err) {
-      console.error(
-        "Complete reminder error:",
-        err
-      );
-
-      setError(
-        err.message ||
-          "Unable to complete reminder."
-      );
-    }
+    return (
+      reminder.description ||
+      reminder.message ||
+      reminder.notes ||
+      "Remember to take care of your health today."
+    );
   };
 
-  const handleCancelReminder = async (
-    reminderId
-  ) => {
-    try {
-      setError("");
 
-      const token = getToken();
-
-      if (!token) {
-        setError("Please log in again.");
-        return;
-      }
-
-      const response = await fetch(
-        `http://localhost:5000/api/personal-reminders/${reminderId}/cancel`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Failed to cancel reminder."
-        );
-      }
-
-      await loadReminders();
-    } catch (err) {
-      console.error(
-        "Cancel reminder error:",
-        err
-      );
-
-      setError(
-        err.message ||
-          "Unable to cancel reminder."
-      );
-    }
+  const getReminderTime = (reminder) => {
+    return (
+      reminder.time ||
+      reminder.reminder_time ||
+      reminder.reminderTime ||
+      "Time not set"
+    );
   };
+
+
+  const getReminderDate = (reminder) => {
+    return (
+      reminder.date ||
+      reminder.reminder_date ||
+      reminder.reminderDate
+    );
+  };
+
+
+  const getReminderType = (reminder) => {
+    return (
+      reminder.type ||
+      reminder.category ||
+      "health"
+    ).toLowerCase();
+  };
+
+
+  const getIcon = (reminder) => {
+    const type = getReminderType(
+      reminder
+    );
+
+    if (
+      type.includes("water") ||
+      type.includes("hydration")
+    ) {
+      return Droplets;
+    }
+
+    if (
+      type.includes("food") ||
+      type.includes("nutrition") ||
+      type.includes("meal")
+    ) {
+      return Apple;
+    }
+
+    if (
+      type.includes("medicine") ||
+      type.includes("medication") ||
+      type.includes("pill")
+    ) {
+      return Pill;
+    }
+
+    if (
+      type.includes("wellness") ||
+      type.includes("exercise")
+    ) {
+      return HeartPulse;
+    }
+
+    if (
+      type.includes("appointment") ||
+      type.includes("doctor")
+    ) {
+      return CalendarDays;
+    }
+
+    return Bell;
+  };
+
+
+  const formatDate = (value) => {
+    if (!value) return null;
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleDateString(
+      "en-NG",
+      {
+        weekday: "short",
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }
+    );
+  };
+
 
   return (
-    <div className="user-page">
+    <div className="reminders-page">
+
       <UserSidebar />
 
-      <main className="user-page-content reminders-page">
-        <div className="reminders-header">
+      <main className="reminders-main">
+
+        <section className="reminders-header">
+
           <div>
+
             <div className="reminders-eyebrow">
-              PERSONAL HEALTH
+              <Bell size={16} />
+              Health Management
             </div>
 
-            <h1>Reminders</h1>
+            <h1>
+              My Reminders
+            </h1>
 
             <p>
-              Stay on top of your health routines,
-              medications, hydration and wellness
-              goals.
+              Keep track of important health tasks,
+              appointments, nutrition and wellness
+              activities.
             </p>
+
           </div>
+
 
           <button
             type="button"
-            className="reminders-add-button"
-            onClick={() => {
-              setError("");
-              setShowForm(
-                (current) => !current
-              );
-            }}
+            className="reminders-refresh"
+            onClick={handleRefresh}
+            disabled={loading || refreshing}
           >
-            {showForm ? (
-              <X size={18} />
-            ) : (
-              <Plus size={18} />
-            )}
+            <RefreshCw
+              size={17}
+              className={
+                refreshing
+                  ? "refresh-spinning"
+                  : ""
+              }
+            />
 
-            {showForm
-              ? "Close"
-              : "Add Reminder"}
+            {refreshing
+              ? "Refreshing..."
+              : "Refresh"}
           </button>
-        </div>
 
-        {error && (
-          <div className="reminders-error">
-            <Bell size={18} />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {showForm && (
-          <section className="reminder-form-card">
-            <div className="reminder-form-header">
-              <div>
-                <span className="reminder-form-icon">
-                  <Plus size={18} />
-                </span>
-
-                <div>
-                  <h2>Create Reminder</h2>
-
-                  <p>
-                    Add something you want
-                    NutriBot to remind you about.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={handleCreateReminder}>
-              <div className="reminder-form-grid">
-                <div className="form-field">
-                  <label htmlFor="title">
-                    Reminder title
-                  </label>
-
-                  <input
-                    id="title"
-                    name="title"
-                    type="text"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    placeholder="Drink water"
-                    required
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="reminder_type">
-                    Reminder type
-                  </label>
-
-                  <select
-                    id="reminder_type"
-                    name="reminder_type"
-                    value={
-                      formData.reminder_type
-                    }
-                    onChange={handleInputChange}
-                  >
-                    <option value="HYDRATION">
-                      Hydration
-                    </option>
-
-                    <option value="MEDICATION">
-                      Medication
-                    </option>
-
-                    <option value="WELLNESS">
-                      Wellness
-                    </option>
-
-                    <option value="CUSTOM">
-                      Custom
-                    </option>
-                  </select>
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="scheduled_for">
-                    Date &amp; time
-                  </label>
-
-                  <input
-                    id="scheduled_for"
-                    name="scheduled_for"
-                    type="datetime-local"
-                    value={
-                      formData.scheduled_for
-                    }
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div className="form-field">
-                  <label htmlFor="frequency">
-                    Frequency
-                  </label>
-
-                  <select
-                    id="frequency"
-                    name="frequency"
-                    value={formData.frequency}
-                    onChange={handleInputChange}
-                  >
-                    <option value="ONCE">
-                      Once
-                    </option>
-
-                    <option value="DAILY">
-                      Daily
-                    </option>
-
-                    <option value="WEEKLY">
-                      Weekly
-                    </option>
-                  </select>
-                </div>
-
-                <div className="form-field form-field-full">
-                  <label htmlFor="description">
-                    Description
-                  </label>
-
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={
-                      formData.description
-                    }
-                    onChange={handleInputChange}
-                    placeholder="Add some additional details..."
-                    rows="4"
-                  />
-                </div>
-              </div>
-
-              <div className="reminder-form-actions">
-                <button
-                  type="button"
-                  className="reminder-secondary-button"
-                  onClick={() => {
-                    resetForm();
-                    setShowForm(false);
-                  }}
-                  disabled={saving}
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="reminder-primary-button"
-                  disabled={saving}
-                >
-                  {saving
-                    ? "Saving..."
-                    : "Create Reminder"}
-                </button>
-              </div>
-            </form>
-          </section>
-        )}
-
-        <section className="reminders-section">
-          <div className="reminders-section-header">
-            <div>
-              <h2>Your reminders</h2>
-
-              <p>
-                Keep track of your personal health
-                reminders.
-              </p>
-            </div>
-
-            <div className="reminders-count">
-              {reminders.length}
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="reminders-empty-state">
-              <Clock3 size={30} />
-
-              <h3>
-                Loading reminders...
-              </h3>
-
-              <p>
-                Please wait while we load your
-                reminders.
-              </p>
-            </div>
-          ) : reminders.length === 0 ? (
-            <div className="reminders-empty-state">
-              <Bell size={34} />
-
-              <h3>No reminders yet</h3>
-
-              <p>
-                Create your first personal reminder
-                to stay consistent with your health
-                routine.
-              </p>
-
-              <button
-                type="button"
-                className="reminders-empty-button"
-                onClick={() => {
-                  setError("");
-                  setShowForm(true);
-                }}
-              >
-                <Plus size={17} />
-                Add Your First Reminder
-              </button>
-            </div>
-          ) : (
-            <div className="reminders-list">
-              {reminders.map((reminder) => {
-                const isCompleted =
-                  reminder.status ===
-                  "COMPLETED";
-
-                return (
-                  <article
-                    key={reminder.id}
-                    className={`reminder-card ${
-                      isCompleted
-                        ? "completed"
-                        : ""
-                    }`}
-                  >
-                    <div className="reminder-card-icon">
-                      {getReminderIcon(
-                        reminder.reminder_type
-                      )}
-                    </div>
-
-                    <div className="reminder-card-content">
-                      <div className="reminder-card-top">
-                        <div>
-                          <h3>
-                            {reminder.title}
-                          </h3>
-
-                          <div className="reminder-type">
-                            {formatReminderType(
-                              reminder.reminder_type
-                            )}
-                          </div>
-                        </div>
-
-                        <span
-                          className={`reminder-status ${
-                            isCompleted
-                              ? "completed"
-                              : "pending"
-                          }`}
-                        >
-                          {isCompleted
-                            ? "Completed"
-                            : "Pending"}
-                        </span>
-                      </div>
-
-                      {reminder.description && (
-                        <p className="reminder-description">
-                          {
-                            reminder.description
-                          }
-                        </p>
-                      )}
-
-                      <div className="reminder-meta">
-                        <span>
-                          <Clock3 size={15} />
-
-                          {formatDateTime(
-                            reminder.scheduled_for
-                          )}
-                        </span>
-
-                        <span>
-                          <Bell size={15} />
-
-                          {formatFrequency(
-                            reminder.frequency
-                          )}
-                        </span>
-                      </div>
-
-                      {!isCompleted && (
-                        <div className="reminder-actions">
-                          <button
-                            type="button"
-                            className="reminder-complete-button"
-                            onClick={() =>
-                              handleCompleteReminder(
-                                reminder.id
-                              )
-                            }
-                          >
-                            <CheckCircle2
-                              size={16}
-                            />
-
-                            Complete
-                          </button>
-
-                          <button
-                            type="button"
-                            className="reminder-cancel-button"
-                            onClick={() =>
-                              handleCancelReminder(
-                                reminder.id
-                              )
-                            }
-                          >
-                            <X size={16} />
-
-                            Cancel
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
         </section>
 
-        <section className="reminders-info-card">
-          <div className="reminders-info-icon">
-            <HeartPulse size={22} />
+
+        <section className="reminders-summary">
+
+          <div className="reminders-summary-icon">
+            <Bell size={22} />
           </div>
 
           <div>
-            <h3>
-              Build healthier routines
-            </h3>
+            <strong>
+              {reminders.length}
+            </strong>
 
-            <p>
-              Use reminders for hydration,
-              medication, wellness activities and
-              other important health routines.
-            </p>
+            <span>
+              Active reminders
+            </span>
           </div>
+
         </section>
+
+
+        <section className="reminders-section">
+
+          <div className="reminders-section-header">
+
+            <div>
+              <h2>
+                Your Reminders
+              </h2>
+
+              <p>
+                Stay consistent with your
+                health goals.
+              </p>
+            </div>
+
+          </div>
+
+
+          {loading ? (
+            <div className="reminders-state">
+
+              <div className="reminders-loader" />
+
+              <p>
+                Loading your reminders...
+              </p>
+
+            </div>
+          ) : reminders.length === 0 ? (
+            <div className="reminders-empty">
+
+              <div className="reminders-empty-icon">
+                <CheckCircle2 size={30} />
+              </div>
+
+              <h3>
+                No reminders yet
+              </h3>
+
+              <p>
+                Your health reminders will appear
+                here when they are available.
+              </p>
+
+            </div>
+          ) : (
+            <div className="reminders-list">
+
+              {reminders.map(
+                (reminder, index) => {
+
+                  const Icon =
+                    getIcon(reminder);
+
+                  const formattedDate =
+                    formatDate(
+                      getReminderDate(
+                        reminder
+                      )
+                    );
+
+                  return (
+                    <article
+                      className="reminder-card"
+                      key={
+                        reminder.id ||
+                        reminder.reminder_id ||
+                        index
+                      }
+                    >
+
+                      <div className="reminder-icon">
+                        <Icon size={21} />
+                      </div>
+
+
+                      <div className="reminder-content">
+
+                        <div className="reminder-title-row">
+
+                          <h3>
+                            {getReminderTitle(
+                              reminder
+                            )}
+                          </h3>
+
+                          <span className="reminder-badge">
+                            {getReminderType(
+                              reminder
+                            )}
+                          </span>
+
+                        </div>
+
+                        <p>
+                          {getReminderDescription(
+                            reminder
+                          )}
+                        </p>
+
+
+                        <div className="reminder-meta">
+
+                          {formattedDate && (
+                            <span>
+                              <CalendarDays
+                                size={15}
+                              />
+
+                              {formattedDate}
+                            </span>
+                          )}
+
+                          <span>
+                            <Clock3 size={15} />
+
+                            {getReminderTime(
+                              reminder
+                            )}
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    </article>
+                  );
+                }
+              )}
+
+            </div>
+          )}
+
+        </section>
+
       </main>
+
     </div>
   );
 }

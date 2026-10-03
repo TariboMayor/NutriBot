@@ -1,3 +1,7 @@
+/* =========================================================
+   NUTRIBOT CHAT MESSAGE
+   ========================================================= */
+
 .chat-message {
   width: 100%;
 
@@ -8,22 +12,24 @@
 
   margin: 0;
 
-  animation: slideUp 0.2s ease;
-
   box-sizing: border-box;
+
+  animation: messageAppear 0.2s ease;
 }
 
-/* =========================================
+
+/* =========================================================
    USER MESSAGE
-========================================= */
+   ========================================================= */
 
 .chat-message.user {
   flex-direction: row-reverse;
 }
 
-/* =========================================
+
+/* =========================================================
    AVATAR
-========================================= */
+   ========================================================= */
 
 .message-avatar {
   width: 34px;
@@ -37,69 +43,152 @@
 
   border-radius: 11px;
 
-  font-size: 10px;
+  box-sizing: border-box;
+
+  font-size: 9px;
   font-weight: 750;
 
   letter-spacing: 0.01em;
 
-  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
+
+/* =========================================================
+   NIA AVATAR
+   ========================================================= */
+
 .message-avatar.bot {
-  background: linear-gradient(
-    135deg,
-    var(--nb-gold-light),
-    var(--nb-gold)
-  );
+  background:
+    linear-gradient(
+      135deg,
+      var(--nb-gold-light),
+      var(--nb-gold)
+    );
 
   color: #17130a;
 
   box-shadow:
-    0 5px 15px rgba(230, 191, 63, 0.16);
+    0 5px 15px
+      rgba(230, 191, 63, 0.16);
 }
+
+
+/* =========================================================
+   USER AVATAR
+   ========================================================= */
 
 .message-avatar.user {
   background: var(--nb-surface-3);
 
-  border: 1px solid var(--nb-border-strong);
+  border:
+    1px solid
+    var(--nb-border-strong);
 
   color: var(--nb-text-secondary);
 }
 
-/* =========================================
+
+/* =========================================================
+   MESSAGE WRAPPER
+   ========================================================= */
+
+.message-wrapper {
+  max-width:
+    min(74%, 760px);
+
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   USER MESSAGE ALIGNMENT
+   ========================================================= */
+
+.message-wrapper.user {
+  align-items: flex-end;
+}
+
+
+/* =========================================================
+   BOT MESSAGE ALIGNMENT
+   ========================================================= */
+
+.message-wrapper.bot {
+  align-items: flex-start;
+}
+
+
+/* =========================================================
+   MESSAGE LABEL
+   ========================================================= */
+
+.message-label {
+  margin:
+    0 0 5px;
+
+  color: var(--nb-text-muted);
+
+  font-size: 9px;
+  font-weight: 650;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================================
+   USER LABEL
+   ========================================================= */
+
+.message-wrapper.user
+.message-label {
+  padding-right: 2px;
+}
+
+
+/* =========================================================
    MESSAGE CONTENT
-========================================= */
+   ========================================================= */
 
 .message-content {
-  max-width: min(72%, 760px);
+  max-width: 100%;
 
-  padding: 12px 15px;
+  padding:
+    12px 15px;
+
+  box-sizing: border-box;
 
   border-radius: 17px;
 
-  font-size: 14px;
+  font-size: 13.5px;
 
   line-height: 1.65;
 
   overflow-wrap: anywhere;
-
   word-break: break-word;
 
-  box-sizing: border-box;
-
   transition:
+    border-color 0.2s ease,
     background-color 0.2s ease,
-    border-color 0.2s ease;
+    box-shadow 0.2s ease;
 }
 
-/* =========================================
+
+/* =========================================================
    NIA MESSAGE
-========================================= */
+   ========================================================= */
 
 .message-content.bot {
   background: var(--nb-surface);
 
-  border: 1px solid var(--nb-border);
+  border:
+    1px solid
+    var(--nb-border);
 
   border-bottom-left-radius: 5px;
 
@@ -108,19 +197,41 @@
   font-weight: 400;
 
   box-shadow:
-    0 6px 22px rgba(0, 0, 0, 0.08);
+    0 5px 20px
+      rgba(0, 0, 0, 0.07);
 }
 
-/* =========================================
+
+/* =========================================================
+   NIA MESSAGE HOVER
+   ========================================================= */
+
+.chat-message.bot:not(.typing-message):hover
+.message-content.bot {
+  border-color:
+    var(--nb-border-strong);
+
+  box-shadow:
+    0 7px 24px
+      rgba(0, 0, 0, 0.10);
+}
+
+
+/* =========================================================
    USER MESSAGE
-========================================= */
+   ========================================================= */
 
 .message-content.user {
-  background: linear-gradient(
-    135deg,
-    var(--nb-gold-light),
-    var(--nb-gold)
-  );
+  background:
+    linear-gradient(
+      135deg,
+      var(--nb-gold-light),
+      var(--nb-gold)
+    );
+
+  border:
+    1px solid
+    rgba(230, 191, 63, 0.18);
 
   border-bottom-right-radius: 5px;
 
@@ -129,48 +240,154 @@
   font-weight: 500;
 
   box-shadow:
-    0 7px 20px rgba(230, 191, 63, 0.12);
+    0 7px 20px
+      rgba(230, 191, 63, 0.12);
 }
 
-/* =========================================
-   HOVER
-========================================= */
 
-.chat-message:hover .message-content.bot {
-  border-color: var(--nb-border-strong);
+/* =========================================================
+   USER MESSAGE HOVER
+   ========================================================= */
+
+.chat-message.user:hover
+.message-content.user {
+  box-shadow:
+    0 9px 24px
+      rgba(230, 191, 63, 0.16);
 }
 
-/* =========================================
-   ANIMATION
-========================================= */
 
-@keyframes slideUp {
+/* =========================================================
+   TYPING INDICATOR
+========================================================= */
+
+.typing-message {
+  align-items: flex-end;
+}
+
+.typing-message .message-wrapper {
+  gap: 6px;
+}
+
+.typing-indicator {
+  min-width: 58px;
+  min-height: 38px;
+
+  padding:
+    10px 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 4px;
+
+  box-sizing: border-box;
+
+  background: var(--nb-surface);
+
+  border:
+    1px solid
+    var(--nb-border);
+
+  border-radius:
+    14px 14px 14px 5px;
+
+  box-shadow:
+    0 5px 20px
+      rgba(0, 0, 0, 0.07);
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 50%;
+
+  background: var(--nb-text-muted);
+
+  animation:
+    typingDot 1.2s
+    infinite
+    ease-in-out;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+
+/* =========================================================
+   MESSAGE APPEAR ANIMATION
+   ========================================================= */
+
+@keyframes messageAppear {
   from {
     opacity: 0;
-    transform: translateY(6px);
+
+    transform:
+      translateY(6px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+
+    transform:
+      translateY(0);
   }
 }
 
-/* =========================================
+
+/* =========================================================
+   TYPING ANIMATION
+   ========================================================= */
+
+@keyframes typingDot {
+  0%,
+  60%,
+  100% {
+    transform:
+      translateY(0);
+
+    opacity: 0.45;
+  }
+
+  30% {
+    transform:
+      translateY(-4px);
+
+    opacity: 1;
+  }
+}
+
+
+/* =========================================================
    TABLET
-========================================= */
+   ========================================================= */
 
-@media (max-width: 900px) {
-  .message-content {
-    max-width: 78%;
+@media (max-width: 1000px) {
+  .message-wrapper {
+    max-width:
+      min(76%, 720px);
   }
 }
 
-/* =========================================
-   MOBILE
-========================================= */
 
-@media (max-width: 600px) {
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 700px) {
   .chat-message {
     gap: 8px;
   }
@@ -183,19 +400,28 @@
 
     border-radius: 9px;
 
-    font-size: 9px;
+    font-size: 8px;
+  }
+
+  .message-wrapper {
+    max-width: 82%;
+  }
+
+  .message-label {
+    margin-bottom: 4px;
+
+    font-size: 8px;
   }
 
   .message-content {
-    max-width: 84%;
-
-    padding: 10px 13px;
+    padding:
+      10px 13px;
 
     border-radius: 15px;
 
-    font-size: 13.5px;
+    font-size: 13px;
 
-    line-height: 1.55;
+    line-height: 1.58;
   }
 
   .message-content.bot {
@@ -205,35 +431,86 @@
   .message-content.user {
     border-bottom-right-radius: 5px;
   }
+
+  .typing-indicator {
+    min-height: 36px;
+
+    padding:
+      9px 12px;
+  }
 }
 
-/* =========================================
-   VERY SMALL PHONES
-========================================= */
 
-@media (max-width: 400px) {
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .chat-message {
+    gap: 7px;
+  }
+
   .message-avatar {
     width: 29px;
     height: 29px;
 
     min-width: 29px;
+
+    border-radius: 8px;
+
+    font-size: 7.5px;
+  }
+
+  .message-wrapper {
+    max-width: 85%;
   }
 
   .message-content {
-    max-width: 86%;
+    padding:
+      9px 11px;
 
-    padding: 9px 11px;
+    font-size: 12.5px;
 
-    font-size: 13px;
+    line-height: 1.55;
   }
 }
 
-/* =========================================
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 360px) {
+  .message-avatar {
+    width: 27px;
+    height: 27px;
+
+    min-width: 27px;
+  }
+
+  .message-wrapper {
+    max-width: 87%;
+  }
+
+  .message-content {
+    padding:
+      8px 10px;
+
+    font-size: 12px;
+  }
+}
+
+
+/* =========================================================
    REDUCED MOTION
-========================================= */
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
   .chat-message {
+    animation: none;
+  }
+
+  .typing-indicator span {
     animation: none;
   }
 }

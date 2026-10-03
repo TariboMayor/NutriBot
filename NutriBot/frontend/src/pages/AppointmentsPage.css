@@ -1,329 +1,181 @@
-/* =========================================================
+/* ========================================
    APPOINTMENTS PAGE
-========================================================= */
+======================================== */
 
 .appointments-page {
-  width: 100%;
   min-height: 100vh;
+  width: 100%;
 
-  padding-left: var(--nb-sidebar-width);
+  background: var(--nb-bg, #0d0d0d);
+  color: var(--nb-text, #ffffff);
 
   box-sizing: border-box;
-
-  background:
-    radial-gradient(
-      circle at 80% 0%,
-      rgba(230, 191, 63, 0.06),
-      transparent 30%
-    ),
-    var(--nb-bg);
-
-  color: var(--nb-text);
 }
 
-/* =========================================================
-   MAIN CONTENT
-========================================================= */
-
 .appointments-main {
-  width: 100%;
-  max-width: 1500px;
-
+  width: calc(100% - 260px);
   min-height: 100vh;
 
-  margin: 0 auto;
+  margin-left: 260px;
 
-  padding: 0 clamp(22px, 4vw, 58px) 60px;
+  padding: 42px 42px 60px;
 
   box-sizing: border-box;
 
   overflow-x: hidden;
 }
 
-/* =========================================================
+
+/* ========================================
    HEADER
-========================================================= */
+======================================== */
 
 .appointments-header {
-  min-height: 150px;
-
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
 
-  border-bottom: 1px solid var(--nb-border);
+  gap: 24px;
+
+  margin-bottom: 30px;
 }
 
 .appointments-eyebrow {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
-  margin-bottom: 7px;
+  margin-bottom: 10px;
 
-  color: var(--nb-gold);
+  color: var(--nb-accent, #e6bf3f);
 
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
 
-  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .appointments-header h1 {
   margin: 0;
 
-  color: var(--nb-text);
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.1;
 
-  font-size: clamp(28px, 3vw, 38px);
-
-  font-weight: 760;
-
-  letter-spacing: -0.035em;
+  font-weight: 800;
 }
 
 .appointments-header p {
-  max-width: 600px;
+  margin: 10px 0 0;
 
-  margin: 9px 0 0;
+  max-width: 620px;
 
-  color: var(--nb-text-secondary);
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.62)
+  );
 
-  font-size: 13px;
-
+  font-size: 15px;
   line-height: 1.6;
 }
 
-/* =========================================================
-   ALERTS
-========================================================= */
 
-.appointments-alert {
-  display: flex;
-  align-items: center;
+/* ========================================
+   REFRESH
+======================================== */
 
-  margin-top: 20px;
-
-  padding: 13px 16px;
-
-  border-radius: 13px;
-
-  font-size: 12px;
-  line-height: 1.5;
-
-  box-sizing: border-box;
-}
-
-.appointments-alert-error {
-  border: 1px solid rgba(239, 107, 115, 0.2);
-
-  background: rgba(239, 107, 115, 0.07);
-
-  color: var(--nb-danger);
-}
-
-.appointments-alert-success {
-  border: 1px solid rgba(230, 191, 63, 0.2);
-
-  background: rgba(230, 191, 63, 0.07);
-
-  color: var(--nb-gold);
-}
-
-/* =========================================================
-   SECTIONS
-========================================================= */
-
-.appointments-section {
-  margin-top: 42px;
-}
-
-.appointments-section-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-
-  gap: 20px;
-
-  margin-bottom: 18px;
-}
-
-.appointments-section-label {
-  display: block;
-
-  margin-bottom: 6px;
-
-  color: var(--nb-gold);
-
-  font-size: 9px;
-  font-weight: 800;
-
-  letter-spacing: 0.12em;
-}
-
-.appointments-section-heading h2 {
-  margin: 0;
-
-  color: var(--nb-text);
-
-  font-size: 21px;
-
-  font-weight: 720;
-
-  letter-spacing: -0.02em;
-}
-
-.appointments-section-heading p {
-  margin: 6px 0 0;
-
-  color: var(--nb-text-muted);
-
-  font-size: 12px;
-
-  line-height: 1.5;
-}
-
-/* =========================================================
-   LOADING / EMPTY STATES
-========================================================= */
-
-.appointments-empty {
-  min-height: 190px;
-
-  display: flex;
-  flex-direction: column;
+.appointments-refresh {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 9px;
 
-  padding: 30px;
+  min-height: 42px;
 
-  border: 1px solid var(--nb-border);
+  padding: 0 16px;
 
-  border-radius: var(--nb-radius-lg);
+  border: 1px solid var(
+    --nb-border,
+    rgba(255, 255, 255, 0.1)
+  );
 
-  background:
-    linear-gradient(
-      145deg,
-      var(--nb-surface),
-      var(--nb-surface-2)
-    );
+  border-radius: 10px;
 
-  text-align: center;
+  background: var(
+    --nb-surface,
+    #151515
+  );
 
-  box-shadow: var(--nb-shadow);
-}
-
-.appointments-empty-icon {
-  width: 52px;
-  height: 52px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 12px;
-
-  border-radius: 16px;
-
-  background: rgba(230, 191, 63, 0.09);
-
-  font-size: 23px;
-}
-
-.appointments-empty h3 {
-  margin: 0;
-
-  color: var(--nb-text);
+  color: var(--nb-text, #ffffff);
 
   font-size: 14px;
+  font-weight: 600;
 
-  font-weight: 700;
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.appointments-empty p {
-  max-width: 360px;
+.appointments-refresh:hover:not(:disabled) {
+  border-color: var(
+    --nb-accent,
+    #e6bf3f
+  );
 
-  margin: 7px 0 0;
-
-  color: var(--nb-text-muted);
-
-  font-size: 11px;
-
-  line-height: 1.5;
+  transform: translateY(-1px);
 }
 
-.appointments-spinner {
-  width: 22px;
-  height: 22px;
-
-  margin-bottom: 10px;
-
-  border: 2px solid var(--nb-border);
-
-  border-top-color: var(--nb-gold);
-
-  border-radius: 50%;
-
-  animation: appointmentsSpin 0.75s linear infinite;
+.appointments-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-@keyframes appointmentsSpin {
+.refresh-spinning {
+  animation: appointments-spin 1s linear infinite;
+}
+
+@keyframes appointments-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* =========================================================
-   APPOINTMENT LIST
-========================================================= */
 
-.appointments-list {
-  display: grid;
+/* ========================================
+   ACTION CARD
+======================================== */
 
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 14px;
-}
-
-.appointment-card {
-  min-width: 0;
-
-  padding: 18px;
-
-  border: 1px solid var(--nb-border);
-
-  border-radius: var(--nb-radius-lg);
-
-  background:
-    linear-gradient(
-      145deg,
-      var(--nb-surface),
-      var(--nb-surface-2)
-    );
-
-  box-shadow: var(--nb-shadow);
-
-  transition:
-    transform 0.25s ease,
-    border-color 0.25s ease,
-    box-shadow 0.25s ease;
-}
-
-.appointment-card:hover {
-  transform: translateY(-2px);
-
-  border-color: var(--nb-border-strong);
-
-  box-shadow: var(--nb-shadow-hover);
-}
-
-.appointment-card-top {
+.appointments-action-card {
   display: flex;
   align-items: center;
 
-  gap: 12px;
+  gap: 18px;
+
+  padding: 22px;
+
+  margin-bottom: 34px;
+
+  border: 1px solid
+    rgba(230, 191, 63, 0.18);
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(230, 191, 63, 0.09),
+      rgba(255, 255, 255, 0.025)
+    );
+
+  box-sizing: border-box;
 }
 
-.appointment-hospital-icon {
-  width: 43px;
-  height: 43px;
+.appointments-action-icon {
+  width: 52px;
+  height: 52px;
 
   flex-shrink: 0;
 
@@ -331,49 +183,210 @@
   align-items: center;
   justify-content: center;
 
-  border-radius: 13px;
+  border-radius: 14px;
+
+  background: rgba(230, 191, 63, 0.13);
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+.appointments-action-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.appointments-action-content h2 {
+  margin: 0 0 5px;
+
+  font-size: 17px;
+}
+
+.appointments-action-content p {
+  margin: 0;
+
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.6)
+  );
+
+  font-size: 14px;
+}
+
+.appointments-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  min-height: 42px;
+
+  padding: 0 17px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: var(--nb-accent, #e6bf3f);
+  color: #111111;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.appointments-action-button:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+
+/* ========================================
+   SECTION
+======================================== */
+
+.appointments-section {
+  width: 100%;
+}
+
+.appointments-section-header {
+  margin-bottom: 18px;
+}
+
+.appointments-section-header h2 {
+  margin: 0;
+
+  font-size: 21px;
+  font-weight: 750;
+}
+
+.appointments-section-header p {
+  margin: 6px 0 0;
+
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.55)
+  );
+
+  font-size: 13px;
+}
+
+
+/* ========================================
+   APPOINTMENT LIST
+======================================== */
+
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+
+  gap: 14px;
+}
+
+.appointment-card {
+  display: flex;
+  align-items: stretch;
+
+  gap: 18px;
+
+  padding: 18px;
+
+  border: 1px solid var(
+    --nb-border,
+    rgba(255, 255, 255, 0.08)
+  );
+
+  border-radius: 15px;
+
+  background: var(
+    --nb-surface,
+    #151515
+  );
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.appointment-card:hover {
+  border-color: rgba(230, 191, 63, 0.3);
+
+  transform: translateY(-1px);
+}
+
+
+/* ========================================
+   DATE BOX
+======================================== */
+
+.appointment-date-box {
+  width: 76px;
+  min-width: 76px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 3px;
+
+  padding: 10px;
+
+  border-radius: 12px;
 
   background: rgba(230, 191, 63, 0.09);
 
-  font-size: 20px;
+  color: var(--nb-accent, #e6bf3f);
+
+  box-sizing: border-box;
 }
 
-.appointment-card-title {
-  min-width: 0;
+.appointment-date-box strong {
+  font-size: 25px;
+  line-height: 1;
 
+  color: var(--nb-text, #ffffff);
+}
+
+.appointment-date-box span {
+  font-size: 11px;
+
+  text-transform: uppercase;
+}
+
+
+/* ========================================
+   DETAILS
+======================================== */
+
+.appointment-details {
   flex: 1;
+  min-width: 0;
 }
 
-.appointment-card-title h3 {
+.appointment-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 14px;
+
+  margin-bottom: 12px;
+}
+
+.appointment-title-row h3 {
   margin: 0;
 
-  overflow: hidden;
-
-  color: var(--nb-text);
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-.appointment-card-title span {
-  display: block;
-
-  margin-top: 4px;
+  font-size: 17px;
 
   overflow: hidden;
-
-  color: var(--nb-text-muted);
-
-  font-size: 10px;
-
   text-overflow: ellipsis;
-
-  white-space: nowrap;
 }
 
 .appointment-status {
@@ -383,733 +396,259 @@
 
   border-radius: 999px;
 
-  background: var(--nb-surface-3);
-
-  color: var(--nb-text-secondary);
-
-  font-size: 9px;
-
-  font-weight: 750;
-
-  letter-spacing: 0.04em;
-
-  text-transform: uppercase;
-}
-
-.appointment-status-confirmed,
-.appointment-status-approved {
-  background: rgba(81, 200, 120, 0.10);
-
-  color: var(--nb-success);
-}
-
-.appointment-status-pending {
-  background: rgba(230, 191, 63, 0.10);
-
-  color: var(--nb-gold);
-}
-
-.appointment-status-cancelled,
-.appointment-status-rejected {
-  background: rgba(239, 107, 115, 0.10);
-
-  color: var(--nb-danger);
-}
-
-.appointment-details {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 10px;
-
-  margin-top: 17px;
-
-  padding-top: 15px;
-
-  border-top: 1px solid var(--nb-border);
-}
-
-.appointment-details > div {
-  min-width: 0;
-}
-
-.appointment-detail-label {
-  display: block;
-
-  margin-bottom: 5px;
-
-  color: var(--nb-text-muted);
-
-  font-size: 9px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.06em;
-}
-
-.appointment-details strong {
-  display: block;
-
-  overflow: hidden;
-
-  color: var(--nb-text-secondary);
-
-  font-size: 10.5px;
-
-  font-weight: 650;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-/* =========================================================
-   BOOKING LAYOUT
-========================================================= */
-
-.appointment-booking-layout {
-  display: grid;
-
-  grid-template-columns:
-    minmax(250px, 0.8fr)
-    minmax(0, 1.7fr);
-
-  gap: 18px;
-
-  align-items: start;
-}
-
-/* =========================================================
-   PANELS
-========================================================= */
-
-.hospital-panel,
-.booking-panel {
-  min-width: 0;
-
-  padding: 20px;
-
-  border: 1px solid var(--nb-border);
-
-  border-radius: var(--nb-radius-lg);
-
-  background:
-    linear-gradient(
-      145deg,
-      var(--nb-surface),
-      var(--nb-surface-2)
-    );
-
-  box-shadow: var(--nb-shadow);
-}
-
-.panel-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  gap: 12px;
-
-  margin-bottom: 15px;
-}
-
-.panel-heading h3 {
-  margin: 0;
-
-  color: var(--nb-text);
-
-  font-size: 14px;
-
-  font-weight: 700;
-}
-
-.panel-heading span {
-  color: var(--nb-text-muted);
-
-  font-size: 10px;
-}
-
-/* =========================================================
-   HOSPITAL LIST
-========================================================= */
-
-.hospital-list {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 7px;
-
-  max-height: 570px;
-
-  overflow-y: auto;
-
-  padding-right: 3px;
-}
-
-.hospital-list::-webkit-scrollbar {
-  width: 5px;
-}
-
-.hospital-list::-webkit-scrollbar-thumb {
-  background: var(--nb-surface-3);
-
-  border-radius: 999px;
-}
-
-.hospital-option {
-  width: 100%;
-
-  display: flex;
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 11px;
-
-  border: 1px solid transparent;
-
-  border-radius: 13px;
-
-  background: transparent;
-
-  color: var(--nb-text);
-
-  font-family: inherit;
-
-  text-align: left;
-
-  cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.hospital-option:hover {
-  background: var(--nb-surface-2);
-
-  border-color: var(--nb-border);
-
-  transform: translateX(2px);
-}
-
-.hospital-option.selected {
-  background:
-    linear-gradient(
-      135deg,
-      rgba(230, 191, 63, 0.10),
-      rgba(230, 191, 63, 0.035)
-    );
-
-  border-color: rgba(230, 191, 63, 0.20);
-}
-
-.hospital-option-icon {
-  width: 37px;
-  height: 37px;
-
-  flex-shrink: 0;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 11px;
-
-  background: var(--nb-surface-3);
-
-  font-size: 17px;
-}
-
-.hospital-option.selected .hospital-option-icon {
   background: rgba(230, 191, 63, 0.12);
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 11px;
+  font-weight: 700;
+
+  text-transform: capitalize;
 }
 
-.hospital-option-content {
-  min-width: 0;
-
-  flex: 1;
+.appointment-status.confirmed,
+.appointment-status.completed {
+  background: rgba(80, 200, 120, 0.12);
+  color: #65d58a;
 }
 
-.hospital-option-content strong {
-  display: block;
-
-  overflow: hidden;
-
-  color: var(--nb-text);
-
-  font-size: 11.5px;
-
-  font-weight: 680;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
+.appointment-status.cancelled {
+  background: rgba(230, 80, 80, 0.12);
+  color: #ef7777;
 }
 
-.hospital-option-content small {
-  display: block;
-
-  margin-top: 4px;
-
-  overflow: hidden;
-
-  color: var(--nb-text-muted);
-
-  font-size: 9.5px;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-.hospital-option-arrow {
-  flex-shrink: 0;
-
-  color: var(--nb-text-muted);
-
-  font-size: 16px;
-
-  transition:
-    color 0.2s ease,
-    transform 0.2s ease;
-}
-
-.hospital-option:hover .hospital-option-arrow,
-.hospital-option.selected .hospital-option-arrow {
-  color: var(--nb-gold);
-
-  transform: translateX(2px);
-}
-
-/* =========================================================
-   PANEL STATES
-========================================================= */
-
-.panel-loading,
-.panel-empty {
-  min-height: 180px;
-
+.appointment-info {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  padding: 20px;
-
-  text-align: center;
-}
-
-.panel-loading p,
-.panel-empty p {
-  margin: 3px 0 0;
-
-  color: var(--nb-text-muted);
-
-  font-size: 10px;
-}
-
-.panel-empty > div {
-  margin-bottom: 8px;
-
-  font-size: 26px;
-}
-
-/* =========================================================
-   FORM
-========================================================= */
-
-.appointment-form {
-  display: flex;
-
-  flex-direction: column;
+  flex-wrap: wrap;
 
   gap: 15px;
 }
 
-.form-field {
-  min-width: 0;
+.appointment-info div {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.6)
+  );
+
+  font-size: 13px;
 }
 
-.form-field label {
-  display: block;
-
-  margin-bottom: 7px;
-
-  color: var(--nb-text-secondary);
-
-  font-size: 10px;
-
-  font-weight: 650;
+.appointment-info svg {
+  color: var(--nb-accent, #e6bf3f);
 }
 
-.form-field select,
-.form-field input {
-  width: 100%;
+.appointment-date-text {
+  margin-top: 12px;
 
-  min-height: 43px;
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.45)
+  );
 
-  padding: 0 12px;
+  font-size: 12px;
+}
 
-  border: 1px solid var(--nb-border-strong);
 
-  border-radius: 12px;
+/* ========================================
+   LOADING / EMPTY
+======================================== */
 
-  outline: none;
+.appointments-state,
+.appointments-empty {
+  min-height: 280px;
 
-  background: var(--nb-surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-  color: var(--nb-text);
+  padding: 30px;
 
-  font-family: inherit;
+  border: 1px dashed var(
+    --nb-border,
+    rgba(255, 255, 255, 0.12)
+  );
 
-  font-size: 11px;
+  border-radius: 16px;
+
+  text-align: center;
 
   box-sizing: border-box;
-
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
 }
 
-.form-field select:focus,
-.form-field input:focus {
-  border-color: var(--nb-gold);
+.appointments-state p {
+  margin: 14px 0 0;
 
-  box-shadow:
-    0 0 0 3px rgba(230, 191, 63, 0.08);
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.6)
+  );
 }
 
-.form-field select:disabled,
-.form-field input:disabled {
-  opacity: 0.48;
+.appointments-loader {
+  width: 30px;
+  height: 30px;
 
-  cursor: not-allowed;
+  border: 3px solid
+    rgba(230, 191, 63, 0.2);
+
+  border-top-color:
+    var(--nb-accent, #e6bf3f);
+
+  border-radius: 50%;
+
+  animation: appointments-spin 0.8s linear infinite;
 }
 
-/* =========================================================
-   SLOT MESSAGE
-========================================================= */
-
-.slot-message {
-  min-height: 74px;
+.appointments-empty-icon {
+  width: 62px;
+  height: 62px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 15px;
+  margin-bottom: 16px;
 
-  border: 1px dashed var(--nb-border-strong);
+  border-radius: 18px;
 
-  border-radius: 13px;
+  background: rgba(230, 191, 63, 0.1);
 
-  background: var(--nb-surface-2);
-
-  color: var(--nb-text-muted);
-
-  font-size: 10px;
-
-  text-align: center;
-
-  line-height: 1.5;
-
-  box-sizing: border-box;
+  color: var(--nb-accent, #e6bf3f);
 }
 
-.slot-message .appointments-spinner {
-  margin: 0 8px 0 0;
+.appointments-empty h3 {
+  margin: 0;
+
+  font-size: 18px;
 }
 
-/* =========================================================
-   AVAILABLE SLOTS
-========================================================= */
+.appointments-empty p {
+  margin: 7px 0 18px;
 
-.slots-grid {
-  display: grid;
+  max-width: 400px;
 
-  grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+  color: var(
+    --nb-muted,
+    rgba(255, 255, 255, 0.55)
+  );
 
+  font-size: 14px;
+}
+
+.appointments-empty button {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
-}
 
-.slot-button {
-  min-height: 42px;
+  min-height: 40px;
 
-  padding: 8px 7px;
+  padding: 0 16px;
 
-  border: 1px solid var(--nb-border-strong);
+  border: 0;
+  border-radius: 9px;
 
-  border-radius: 10px;
+  background: var(--nb-accent, #e6bf3f);
+  color: #111111;
 
-  background: var(--nb-surface-2);
-
-  color: var(--nb-text-secondary);
-
-  font-family: inherit;
-
-  font-size: 10px;
-
-  font-weight: 600;
+  font-weight: 700;
 
   cursor: pointer;
-
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    color 0.2s ease,
-    transform 0.2s ease;
 }
 
-.slot-button:hover {
-  transform: translateY(-1px);
 
-  border-color: var(--nb-gold);
-
-  color: var(--nb-text);
-}
-
-.slot-button.selected {
-  border-color: var(--nb-gold);
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(230, 191, 63, 0.16),
-      rgba(230, 191, 63, 0.07)
-    );
-
-  color: var(--nb-gold);
-
-  box-shadow:
-    0 6px 18px rgba(230, 191, 63, 0.08);
-}
-
-/* =========================================================
-   BOOKING BUTTON
-========================================================= */
-
-.booking-submit {
-  width: 100%;
-
-  min-height: 46px;
-
-  margin-top: 4px;
-
-  border: none;
-
-  border-radius: 13px;
-
-  background:
-    linear-gradient(
-      135deg,
-      var(--nb-gold-light),
-      var(--nb-gold)
-    );
-
-  color: #17130a;
-
-  font-family: inherit;
-
-  font-size: 11px;
-
-  font-weight: 750;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 8px 22px rgba(230, 191, 63, 0.16);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
-}
-
-.booking-submit:hover:not(:disabled) {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 12px 28px rgba(230, 191, 63, 0.25);
-}
-
-.booking-submit:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.booking-submit:disabled {
-  opacity: 0.42;
-
-  cursor: not-allowed;
-
-  box-shadow: none;
-}
-
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 1100px) {
-  .appointment-booking-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .hospital-list {
-    max-height: 350px;
-
-    display: grid;
-
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-
-  .appointments-list {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* =========================================================
-   MOBILE / SIDEBAR COLLAPSE
-========================================================= */
+/* ========================================
+   RESPONSIVE
+======================================== */
 
 @media (max-width: 900px) {
-  .appointments-page {
-    padding-left: 0;
-  }
-
   .appointments-main {
-    padding:
-      24px
-      clamp(16px, 4vw, 30px)
-      45px;
+    width: calc(100% - 230px);
+    margin-left: 230px;
+
+    padding: 32px 26px 50px;
   }
 
-  .appointments-header {
-    min-height: 120px;
+  .appointments-action-card {
+    align-items: flex-start;
+    flex-wrap: wrap;
   }
 
-  .hospital-list {
-    grid-template-columns: 1fr;
+  .appointments-action-content {
+    min-width: calc(100% - 75px);
+  }
+
+  .appointments-action-button {
+    margin-left: 70px;
   }
 }
 
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .appointments-main {
-    padding:
-      18px
-      14px
-      35px;
+    width: 100%;
+    margin-left: 0;
+
+    padding: 26px 18px 40px;
   }
 
   .appointments-header {
-    min-height: 115px;
+    flex-direction: column;
   }
 
-  .appointments-header h1 {
-    font-size: 27px;
+  .appointments-refresh {
+    width: 100%;
   }
 
-  .appointments-header p {
-    font-size: 11px;
+  .appointments-action-card {
+    flex-direction: column;
   }
 
-  .appointments-section {
-    margin-top: 32px;
+  .appointments-action-content {
+    min-width: 0;
   }
 
-  .appointments-section-heading {
-    margin-bottom: 14px;
+  .appointments-action-button {
+    width: 100%;
+    margin-left: 0;
   }
+}
 
-  .appointments-section-heading h2 {
-    font-size: 18px;
-  }
-
-  .appointments-section-heading p {
-    font-size: 11px;
-  }
-
-  .hospital-panel,
-  .booking-panel {
-    padding: 15px;
-  }
-
+@media (max-width: 520px) {
   .appointment-card {
-    padding: 15px;
+    flex-direction: column;
   }
 
-  .appointment-card-top {
+  .appointment-date-box {
+    width: 100%;
+    min-width: 0;
+
+    flex-direction: row;
+
+    justify-content: flex-start;
+
+    gap: 10px;
+  }
+
+  .appointment-date-box strong {
+    font-size: 20px;
+  }
+
+  .appointment-title-row {
     align-items: flex-start;
+    flex-direction: column;
   }
 
   .appointment-status {
-    display: none;
+    align-self: flex-start;
   }
 
-  .appointment-details {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-
-    row-gap: 14px;
-  }
-
-  .slots-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* =========================================================
-   VERY SMALL PHONES
-========================================================= */
-
-@media (max-width: 380px) {
-  .appointments-main {
-    padding-left: 11px;
-    padding-right: 11px;
-  }
-
-  .appointments-header h1 {
-    font-size: 24px;
-  }
-
-  .appointment-details {
-    grid-template-columns: 1fr;
-  }
-
-  .hospital-option {
-    padding: 9px;
-  }
-
-  .hospital-option-icon {
-    width: 34px;
-    height: 34px;
-  }
-}
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-  .appointment-card,
-  .hospital-option,
-  .slot-button,
-  .booking-submit {
-    transition: none;
-  }
-
-  .appointments-spinner {
-    animation: none;
+  .appointment-info {
+    flex-direction: column;
+    gap: 8px;
   }
 }

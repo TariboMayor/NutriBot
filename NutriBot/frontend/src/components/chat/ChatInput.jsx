@@ -1,49 +1,31 @@
 import { useState } from "react";
+import { Send } from "lucide-react";
+
+import {
+  sendChatMessage,
+  createConversation,
+} from "../../services/chatService";
+
 import "./ChatInput.css";
-
-function createConversationTitle(message) {
-  const cleanedMessage = message
-    .replace(/\s+/g, " ")
-    .trim();
-
-  if (!cleanedMessage) {
-    return "New Conversation";
-  }
-
-  const withoutQuestionMark =
-    cleanedMessage.replace(/[?!.]+$/, "");
-
-  const words = withoutQuestionMark.split(" ");
-
-  if (words.length <= 6) {
-    return withoutQuestionMark;
-  }
-
-  return `${words.slice(0, 6).join(" ")}...`;
-}
 
 function ChatInput({
   activeConversation,
   setConversations,
+  setActiveConversation,
+  onConversationUpdated,
   suggestedMessage = "",
   onSuggestedMessageUsed,
+  onSendingChange,
 }) {
   const [inputText, setInputText] = useState("");
+  const [sending, setSending] = useState(false);
 
-  /*
-   * When a Nia suggestion is selected, display it
-   * without using useEffect.
-   */
   const displayedText =
     suggestedMessage || inputText;
 
-  function saveInputText(event) {
+  function handleChange(event) {
     const value = event.target.value;
 
-    /*
-     * Once the user starts typing, clear the
-     * selected suggestion.
-     */
     if (suggestedMessage) {
       if (onSuggestedMessageUsed) {
         onSuggestedMessageUsed();
@@ -54,107 +36,149 @@ function ChatInput({
   }
 
   async function sendMessage() {
-    const messageText = displayedText.trim();
+    const messageText =
+      displayedText.trim();
 
-    if (!messageText || !activeConversation) {
+    if (!messageText || sending) {
       return;
     }
 
-    /*
-     * Check whether this is the first message
-     * in this conversation.
-     */
-    const isFirstMessage =
-      activeConversation.messages.length === 0;
-
-    /*
-     * Create a title only for a brand-new
-     * conversation.
-     */
-    const conversationTitle = isFirstMessage
-      ? createConversationTitle(messageText)
-      : activeConversation.title;
-
-    const newMessage = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: messageText,
-    };
-
-    /*
-     * Add the user's message immediately.
-     */
-    setConversations((previous) =>
-      previous.map((conversation) =>
-        conversation.id === activeConversation.id
-          ? {
-              ...conversation,
-              title: conversationTitle,
-              messages: [
-                ...conversation.messages,
-                newMessage,
-              ],
-              last_message: messageText,
-            }
-          : conversation
-      )
-    );
-
-    /*
-     * Clear the input immediately.
-     */
-    setInputText("");
-
-    if (onSuggestedMessageUsed) {
-      onSuggestedMessageUsed();
-    }
-
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/chat",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            message: messageText,
-          }),
-        }
-      );
+      setSending(true);
 
-      if (!response.ok) {
-        throw new Error(
-          `Chat request failed: ${response.status}`
+      if (onSendingChange) {
+        onSendingChange(true);
+      }
+
+      let conversation =
+        activeConversation;
+
+      /*
+       * If there is no active conversation,
+       * create one automatically.
+       */
+      if (!conversation) {
+        const conversationData =
+          await createConversation(
+            "New Conversation"
+          );
+
+        conversation =
+          conversationData.conversation;
+
+        if (!conversation) {
+          throw new Error(
+            "Could not create a conversation."
+          );
+        }
+
+        const newConversation = {
+          ...conversation,
+          messages: [],
+        };
+
+        setConversations(
+          (previous) => [
+            newConversation,
+            ...previous,
+          ]
+        );
+
+        setActiveConversation(
+          newConversation
         );
       }
 
-      const data = await response.json();
-
-      const botMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content:
-          data.reply ||
-          "I'm sorry, I couldn't generate a response right now.",
+      /*
+       * Show the user's message immediately
+       * while Nia is responding.
+       */
+      const temporaryUserMessage = {
+        id: `temp-user-${Date.now()}`,
+        role: "USER",
+        content: messageText,
       };
 
-      /*
-       * Add Nia's response.
-       */
-      setConversations((previous) =>
-        previous.map((conversation) =>
-          conversation.id === activeConversation.id
-            ? {
-                ...conversation,
-                messages: [
-                  ...conversation.messages,
-                  botMessage,
-                ],
-              }
-            : conversation
-        )
+      setActiveConversation(
+        (previous) => ({
+          ...(previous || conversation),
+
+          messages: [
+            ...(previous?.messages || []),
+            temporaryUserMessage,
+          ],
+        })
       );
+
+      setInputText("");
+
+      if (onSuggestedMessageUsed) {
+        onSuggestedMessageUsed();
+      }
+
+      /*
+       * Send the message to the backend.
+       */
+      const data =
+        await sendChatMessage(
+          conversation.id,
+          messageText
+        );
+
+      /*
+       * Replace the temporary user message
+       * with the real database messages.
+       */
+      setActiveConversation(
+        (previous) => ({
+          ...(previous || conversation),
+          ...(data.conversation || {}),
+
+          messages: [
+            ...(previous?.messages || []).filter(
+              (message) =>
+                !String(message.id).startsWith(
+                  "temp-user-"
+                )
+            ),
+
+            ...(data.userMessage
+              ? [data.userMessage]
+              : []),
+
+            ...(data.assistantMessage
+              ? [data.assistantMessage]
+              : []),
+          ],
+        })
+      );
+
+      /*
+       * Update the conversation list.
+       */
+      if (data.conversation) {
+        setConversations(
+          (previous) =>
+            previous.map(
+              (item) =>
+                item.id ===
+                data.conversation.id
+                  ? {
+                      ...item,
+                      ...data.conversation,
+                      last_message:
+                        messageText,
+                    }
+                  : item
+            )
+        );
+
+        if (onConversationUpdated) {
+          onConversationUpdated(
+            data.conversation
+          );
+        }
+      }
     } catch (error) {
       console.error(
         "Error sending message:",
@@ -162,57 +186,93 @@ function ChatInput({
       );
 
       const errorMessage = {
-        id: crypto.randomUUID(),
-        role: "assistant",
+        id: `error-${Date.now()}`,
+        role: "ASSISTANT",
         content:
           "I'm sorry, I couldn't connect to NutriBot right now. Please try again.",
       };
 
-      setConversations((previous) =>
-        previous.map((conversation) =>
-          conversation.id === activeConversation.id
-            ? {
-                ...conversation,
-                messages: [
-                  ...conversation.messages,
-                  errorMessage,
-                ],
-              }
-            : conversation
-        )
+      setActiveConversation(
+        (previous) => ({
+          ...(previous || {}),
+
+          messages: [
+            ...(previous?.messages || []).filter(
+              (message) =>
+                !String(message.id).startsWith(
+                  "temp-user-"
+                )
+            ),
+            errorMessage,
+          ],
+        })
       );
+    } finally {
+      setSending(false);
+
+      if (onSendingChange) {
+        onSendingChange(false);
+      }
     }
   }
 
   function handleKeyDown(event) {
-    if (event.key === "Enter") {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey
+    ) {
       event.preventDefault();
       sendMessage();
     }
   }
 
-  return (
-    <div className="chat-input-container">
-      <input
-        type="text"
-        placeholder="Ask Nia anything..."
-        onChange={saveInputText}
-        onKeyDown={handleKeyDown}
-        value={displayedText}
-        className="chat-input"
-      />
+  const canSend =
+    Boolean(displayedText.trim()) &&
+    !sending;
 
-      <button
-        type="button"
-        onClick={sendMessage}
-        className="send-button"
-        disabled={
-          !displayedText.trim() ||
-          !activeConversation
-        }
-      >
-        Send
-      </button>
+  return (
+    <div className="chat-input-area">
+      <div className="chat-composer">
+
+        <textarea
+          className="chat-input"
+          value={displayedText}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask Nia anything..."
+          rows={1}
+          disabled={sending}
+          aria-label="Message Nia"
+        />
+
+        <button
+          type="button"
+          className="send-button"
+          onClick={sendMessage}
+          disabled={!canSend}
+          aria-label={
+            sending
+              ? "Sending message"
+              : "Send message"
+          }
+        >
+          {sending ? (
+            <span className="send-spinner"></span>
+          ) : (
+            <Send
+              size={18}
+              strokeWidth={2.2}
+            />
+          )}
+        </button>
+
+      </div>
+
+      <p className="chat-input-hint">
+        Nia can provide general nutrition
+        and wellness information. · Enter to
+        send · Shift + Enter for a new line
+      </p>
     </div>
   );
 }

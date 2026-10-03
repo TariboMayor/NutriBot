@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   ArrowRight,
   Apple,
+  Bell,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
@@ -21,61 +23,46 @@ import UserSidebar from "../components/navigation/UserSidebar";
 
 import "./Dashboard.css";
 
+
 function Dashboard() {
   const navigate = useNavigate();
 
-  const [user] = useState(() => {
+
+  /* =========================================================
+     USER
+  ========================================================= */
+
+  let user = null;
+
+  try {
     const storedUser =
       localStorage.getItem("nutribot_user");
 
-    if (!storedUser) {
-      return null;
+    if (storedUser) {
+      user = JSON.parse(storedUser);
     }
+  } catch (error) {
+    console.error(
+      "Unable to load user:",
+      error
+    );
+  }
 
-    try {
-      return JSON.parse(storedUser);
-    } catch {
-      return null;
-    }
-  });
 
-  const [appointments, setAppointments] =
-    useState([]);
+  /* =========================================================
+     APPOINTMENTS
+  ========================================================= */
 
-  const [reminders, setReminders] =
-    useState([]);
+  const [appointments, setAppointments] = useState([]);
 
   const [loadingAppointments, setLoadingAppointments] =
     useState(true);
 
-  const [loadingReminders, setLoadingReminders] =
-    useState(true);
-
-  const hydrationCurrent = 1400;
-  const hydrationGoal = 2000;
-
-  const hydrationPercentage = Math.min(
-    Math.round(
-      (hydrationCurrent / hydrationGoal) * 100
-    ),
-    100
-  );
-
-  const firstName =
-    user?.name?.split(" ")[0] || "there";
-
-  const today = new Date();
-
-  const formattedDate =
-    today.toLocaleDateString("en-NG", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
 
   useEffect(() => {
-    const fetchAppointments = async () => {
+    let cancelled = false;
+
+    const loadAppointments = async () => {
       try {
         const token =
           localStorage.getItem("nutribot_token");
@@ -83,44 +70,65 @@ function Dashboard() {
         const response = await fetch(
           "/api/appointments/my",
           {
-            headers: token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {},
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
         if (!response.ok) {
           throw new Error(
-            "Failed to fetch appointments"
+            "Unable to load appointments"
           );
         }
 
         const data = await response.json();
 
-        setAppointments(
-          Array.isArray(data)
-            ? data
-            : data.appointments || []
-        );
+        if (!cancelled) {
+          setAppointments(
+            Array.isArray(data)
+              ? data
+              : data.appointments || []
+          );
+        }
       } catch (error) {
         console.error(
-          "Appointment fetch error:",
+          "Appointments error:",
           error
         );
 
-        setAppointments([]);
+        if (!cancelled) {
+          setAppointments([]);
+        }
       } finally {
-        setLoadingAppointments(false);
+        if (!cancelled) {
+          setLoadingAppointments(false);
+        }
       }
     };
 
-    fetchAppointments();
+    loadAppointments();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+
+  /* =========================================================
+     REMINDERS
+  ========================================================= */
+
+  const [reminders, setReminders] = useState([]);
+
+  const [loadingReminders, setLoadingReminders] =
+    useState(true);
+
+
   useEffect(() => {
-    const fetchReminders = async () => {
+    let cancelled = false;
+
+    const loadReminders = async () => {
       try {
         const token =
           localStorage.getItem("nutribot_token");
@@ -128,538 +136,743 @@ function Dashboard() {
         const response = await fetch(
           "/api/reminders/my",
           {
-            headers: token
-              ? {
-                  Authorization: `Bearer ${token}`,
-                }
-              : {},
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
 
         if (!response.ok) {
           throw new Error(
-            "Failed to fetch reminders"
+            "Unable to load reminders"
           );
         }
 
         const data = await response.json();
 
-        setReminders(
-          Array.isArray(data)
-            ? data
-            : data.reminders || []
-        );
+        if (!cancelled) {
+          setReminders(
+            Array.isArray(data)
+              ? data
+              : data.reminders || []
+          );
+        }
       } catch (error) {
         console.error(
-          "Reminder fetch error:",
+          "Reminders error:",
           error
         );
 
-        setReminders([]);
+        if (!cancelled) {
+          setReminders([]);
+        }
       } finally {
-        setLoadingReminders(false);
+        if (!cancelled) {
+          setLoadingReminders(false);
+        }
       }
     };
 
-    fetchReminders();
+    loadReminders();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
+
+
+  /* =========================================================
+     DASHBOARD INFORMATION
+  ========================================================= */
+
+  const hydrationCurrent = 1400;
+  const hydrationGoal = 2000;
+
+  const hydrationPercentage =
+    Math.min(
+      Math.round(
+        (hydrationCurrent / hydrationGoal) * 100
+      ),
+      100
+    );
+
+
+  const displayName =
+    user?.name ||
+    user?.full_name ||
+    "there";
+
+
+  const today = new Date();
+
+  const formattedDate =
+    today.toLocaleDateString(
+      "en-US",
+      {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }
+    );
+
+
+  /* =========================================================
+     UPCOMING APPOINTMENT
+  ========================================================= */
 
   const upcomingAppointment =
     appointments.length > 0
       ? appointments[0]
       : null;
 
-  const todayTasks =
-    reminders.length > 0
-      ? reminders.slice(0, 3)
-      : [
-          {
-            id: "water",
-            title: "Drink enough water",
-          },
-          {
-            id: "nutrition",
-            title: "Eat a balanced meal",
-          },
-          {
-            id: "walk",
-            title: "Take an evening walk",
-          },
-        ];
 
-  const healthShortcuts = [
-    {
-      title: "Food",
-      description:
-        "Explore foods and nutrition information.",
-      icon: Utensils,
-      path: "/foods",
-    },
-    {
-      title: "Nutrition",
-      description:
-        "Build healthier eating habits.",
-      icon: Apple,
-      path: "/nutrition",
-    },
-    {
-      title: "Hydration",
-      description:
-        "Track your daily water intake.",
-      icon: Droplets,
-      path: "/hydration",
-    },
-    {
-      title: "Wellness",
-      description:
-        "Keep track of your overall wellbeing.",
-      icon: HeartPulse,
-      path: "/wellness",
-    },
-  ];
+  /* =========================================================
+     QUICK ACTIONS
+  ========================================================= */
 
   const quickActions = [
     {
       title: "Ask Nia",
+      description:
+        "Get nutrition and wellness guidance",
       icon: MessageCircle,
       path: "/chat",
     },
     {
-      title: "Book Appointment",
-      icon: CalendarDays,
+      title: "Find a Doctor",
+      description:
+        "Explore doctors and available services",
+      icon: Stethoscope,
       path: "/appointments",
     },
     {
-      title: "Nutrition",
+      title: "Track Nutrition",
+      description:
+        "Monitor your daily food choices",
       icon: Apple,
       path: "/nutrition",
     },
   ];
 
+
+  /* =========================================================
+     HEALTH SHORTCUTS
+  ========================================================= */
+
+  const healthShortcuts = [
+    {
+      title: "Nutrition",
+      description:
+        "Food and nutrition tracking",
+      icon: Apple,
+      path: "/nutrition",
+    },
+    {
+      title: "Wellness",
+      description:
+        "Your daily wellness activities",
+      icon: HeartPulse,
+      path: "/wellness",
+    },
+    {
+      title: "Hydration",
+      description:
+        "Keep track of your water intake",
+      icon: Droplets,
+      path: "/hydration",
+    },
+    {
+      title: "Reminders",
+      description:
+        "Stay on top of your health tasks",
+      icon: Bell,
+      path: "/reminders",
+    },
+  ];
+
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
+
   return (
     <div className="dashboard-page">
+
+      {/* SIDEBAR */}
       <UserSidebar />
 
+
+      {/* MAIN CONTENT */}
       <main className="dashboard-main">
+
         <div className="dashboard-container">
-          {/* =====================================
-              HEADER
-          ====================================== */}
 
+          {/* HEADER */}
           <header className="dashboard-header">
-            <div className="dashboard-header-content">
-              <div className="dashboard-welcome-badge">
-                <Sparkles size={13} />
-                <span>Your health, your journey</span>
-              </div>
 
-              <h1 className="dashboard-greeting">
-                Good morning,{" "}
-                <span>{firstName}</span>
+            <div>
+
+              <p className="dashboard-date">
+                {formattedDate}
+              </p>
+
+              <h1>
+                Good day, {displayName}
               </h1>
 
               <p className="dashboard-subtitle">
-                Here's your health overview for
-                today. Let's keep you feeling your
-                best.
+                Here's an overview of your health today.
               </p>
+
             </div>
 
-            <div className="dashboard-date">
-              <CalendarDays size={15} />
-              <span>{formattedDate}</span>
-            </div>
           </header>
 
-          {/* =====================================
-              HEALTH SUMMARY
-          ====================================== */}
 
-          <section className="health-summary-grid">
-            {/* HYDRATION */}
+          {/* HEALTH SUMMARY */}
+          <section className="health-summary">
 
-            <article className="health-card">
-              <div className="health-card-header">
-                <div className="health-card-title">
-                  <div className="health-card-icon">
-                    <Droplets size={17} />
-                  </div>
+            <div className="summary-card">
 
-                  <span>Hydration</span>
-                </div>
-
-                <Target size={17} />
+              <div className="summary-icon nutrition-icon">
+                <Apple size={21} />
               </div>
 
-              <p className="health-card-value">
-                {hydrationCurrent / 1000}
-                <span
-                  style={{
-                    fontSize: "0.5em",
-                    color:
-                      "var(--nb-text-secondary)",
-                    marginLeft: "4px",
-                  }}
-                >
-                  / {hydrationGoal / 1000} L
+              <div className="summary-content">
+
+                <span className="summary-label">
+                  Nutrition
                 </span>
-              </p>
 
-              <p className="health-card-meta">
-                {hydrationPercentage}% of your
-                daily goal
-              </p>
+                <strong>
+                  Balanced
+                </strong>
 
-              <div className="health-progress">
-                <div
-                  className="health-progress-bar"
-                  style={{
-                    width: `${hydrationPercentage}%`,
-                  }}
-                />
-              </div>
-            </article>
+                <small>
+                  Keep making healthy choices
+                </small>
 
-            {/* SLEEP */}
-
-            <article className="health-card">
-              <div className="health-card-header">
-                <div className="health-card-title">
-                  <div className="health-card-icon">
-                    <Moon size={17} />
-                  </div>
-
-                  <span>Sleep</span>
-                </div>
-
-                <CheckCircle2 size={17} />
               </div>
 
-              <p className="health-card-value">
-                7h 20m
-              </p>
+            </div>
 
-              <p className="health-card-meta">
-                Good rest last night
-              </p>
 
-              <div className="health-progress">
-                <div
-                  className="health-progress-bar"
-                  style={{
-                    width: "82%",
-                  }}
-                />
-              </div>
-            </article>
+            <div className="summary-card">
 
-            {/* WELLNESS */}
-
-            <article className="health-card">
-              <div className="health-card-header">
-                <div className="health-card-title">
-                  <div className="health-card-icon">
-                    <HeartPulse size={17} />
-                  </div>
-
-                  <span>Wellness</span>
-                </div>
-
-                <Waves size={17} />
+              <div className="summary-icon hydration-icon">
+                <Droplets size={21} />
               </div>
 
-              <p className="health-card-value">
-                Good
-              </p>
+              <div className="summary-content">
 
-              <p className="health-card-meta">
-                Keep maintaining your routine
-              </p>
+                <span className="summary-label">
+                  Hydration
+                </span>
 
-              <div className="health-progress">
-                <div
-                  className="health-progress-bar"
-                  style={{
-                    width: "78%",
-                  }}
-                />
+                <strong>
+                  {hydrationCurrent} ml
+                </strong>
+
+                <small>
+                  {hydrationPercentage}% of daily goal
+                </small>
+
               </div>
-            </article>
+
+            </div>
+
+
+            <div className="summary-card">
+
+              <div className="summary-icon wellness-icon">
+                <HeartPulse size={21} />
+              </div>
+
+              <div className="summary-content">
+
+                <span className="summary-label">
+                  Wellness
+                </span>
+
+                <strong>
+                  On track
+                </strong>
+
+                <small>
+                  Keep up your healthy routine
+                </small>
+
+              </div>
+
+            </div>
+
+
+            <div className="summary-card">
+
+              <div className="summary-icon sleep-icon">
+                <Moon size={21} />
+              </div>
+
+              <div className="summary-content">
+
+                <span className="summary-label">
+                  Sleep
+                </span>
+
+                <strong>
+                  Good
+                </strong>
+
+                <small>
+                  Maintain a regular sleep schedule
+                </small>
+
+              </div>
+
+            </div>
+
           </section>
 
-          {/* =====================================
-              NIA + QUICK ACTIONS
-          ====================================== */}
 
-          <section className="dashboard-middle-grid">
-            {/* ASK NIA */}
+          {/* MAIN GRID */}
+          <section className="dashboard-grid">
 
-            <article className="ask-nia-card">
-              <div className="ask-nia-content">
-                <div className="ask-nia-label">
-                  <Sparkles size={14} />
-                  <span>Nia • NutriBot</span>
+            {/* LEFT COLUMN */}
+            <div className="dashboard-column">
+
+
+              {/* ASK NIA */}
+              <div className="nia-card">
+
+                <div className="nia-card-icon">
+                  <Sparkles size={23} />
                 </div>
 
-                <h2 className="ask-nia-title">
-                  How can I help you
-                  <br />
-                  feel better today?
-                </h2>
-
-                <p className="ask-nia-description">
-                  Ask Nia about nutrition, food,
-                  hydration, wellness, healthy
-                  habits, or anything related to
-                  your wellbeing.
-                </p>
-
-                <button
-                  type="button"
-                  className="ask-nia-button"
-                  onClick={() =>
-                    navigate("/chat")
-                  }
-                >
-                  <MessageCircle size={16} />
+                <div className="nia-card-content">
 
                   <span>
-                    Ask Nia a question
+                    YOUR HEALTH ASSISTANT
                   </span>
 
-                  <ArrowRight size={15} />
-                </button>
+                  <h2>
+                    Need help with your health?
+                  </h2>
+
+                  <p>
+                    Ask Nia about nutrition,
+                    wellness, hydration,
+                    or your health goals.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => navigate("/chat")}
+                  >
+                    Ask Nia
+                    <ArrowRight size={17} />
+                  </button>
+
+                </div>
+
               </div>
-            </article>
 
-            {/* QUICK ACTIONS */}
 
-            <article className="quick-actions-card">
-              <h2 className="section-heading">
-                Quick actions
-              </h2>
+              {/* QUICK ACTIONS */}
+              <div className="dashboard-section">
 
-              <div className="quick-actions">
-                {quickActions.map((action) => {
-                  const Icon = action.icon;
+                <div className="section-heading">
 
-                  return (
-                    <button
-                      key={action.title}
-                      type="button"
-                      className="quick-action"
-                      onClick={() =>
-                        navigate(action.path)
-                      }
-                    >
-                      <span className="quick-action-icon">
-                        <Icon size={16} />
-                      </span>
+                  <div>
 
-                      <span className="quick-action-text">
-                        {action.title}
-                      </span>
+                    <h2>
+                      Quick Actions
+                    </h2>
 
-                      <ChevronRight
-                        size={15}
-                        style={{
-                          marginLeft: "auto",
-                        }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </article>
-          </section>
-
-          {/* =====================================
-              APPOINTMENT + TASKS
-          ====================================== */}
-
-          <section className="dashboard-lower-grid">
-            {/* APPOINTMENT */}
-
-            <article className="appointment-card">
-              <h2 className="section-heading">
-                Upcoming appointment
-              </h2>
-
-              {loadingAppointments ? (
-                <div className="dashboard-empty">
-                  Loading your appointments...
-                </div>
-              ) : upcomingAppointment ? (
-                <div className="appointment-content">
-                  <div className="appointment-icon">
-                    <Stethoscope size={21} />
-                  </div>
-
-                  <div className="appointment-details">
-                    <h3 className="appointment-hospital">
-                      {upcomingAppointment.hospital_name ||
-                        upcomingAppointment.hospital ||
-                        "Hospital appointment"}
-                    </h3>
-
-                    <p className="appointment-service">
-                      {upcomingAppointment.service_name ||
-                        upcomingAppointment.service ||
-                        upcomingAppointment.doctor_name ||
-                        "Scheduled consultation"}
+                    <p>
+                      Common things you can do
                     </p>
 
-                    <p className="appointment-time">
-                      {upcomingAppointment.date ||
-                        upcomingAppointment.appointment_date ||
-                        "Upcoming"}{" "}
-                      •{" "}
-                      {upcomingAppointment.time ||
-                        upcomingAppointment.appointment_time ||
-                        "Time to be confirmed"}
-                    </p>
                   </div>
 
-                  <ChevronRight
-                    size={18}
-                    style={{
-                      marginLeft: "auto",
-                      color:
-                        "var(--nb-text-muted)",
-                    }}
-                  />
                 </div>
-              ) : (
-                <div className="appointment-content">
-                  <div className="appointment-icon">
-                    <CalendarDays size={21} />
-                  </div>
 
-                  <div className="appointment-details">
-                    <h3 className="appointment-hospital">
-                      No upcoming appointment
-                    </h3>
 
-                    <p className="appointment-service">
-                      Book a consultation when
-                      you need one.
-                    </p>
+                <div className="quick-actions">
 
-                    <button
-                      type="button"
-                      className="nb-gold-button"
-                      style={{
-                        marginTop: "12px",
-                      }}
-                      onClick={() =>
-                        navigate(
-                          "/appointments"
-                        )
-                      }
-                    >
-                      Find an appointment
-                    </button>
-                  </div>
-                </div>
-              )}
-            </article>
+                  {quickActions.map((action) => {
 
-            {/* TASKS */}
+                    const Icon = action.icon;
 
-            <article className="tasks-card">
-              <h2 className="section-heading">
-                Today's tasks
-              </h2>
-
-              {loadingReminders ? (
-                <div className="dashboard-empty">
-                  Loading your tasks...
-                </div>
-              ) : (
-                <div className="task-list">
-                  {todayTasks.map(
-                    (task, index) => (
-                      <div
-                        className="task-item"
-                        key={
-                          task.id ||
-                          task._id ||
-                          index
+                    return (
+                      <button
+                        key={action.title}
+                        type="button"
+                        className="quick-action-card"
+                        onClick={() =>
+                          navigate(action.path)
                         }
                       >
-                        <span className="task-checkbox" />
 
-                        <span>
-                          {task.title ||
-                            task.name ||
-                            task.reminder ||
-                            "Health reminder"}
-                        </span>
-                      </div>
-                    )
-                  )}
+                        <div className="quick-action-icon">
+                          <Icon size={21} />
+                        </div>
+
+                        <div>
+
+                          <h3>
+                            {action.title}
+                          </h3>
+
+                          <p>
+                            {action.description}
+                          </p>
+
+                        </div>
+
+                        <ChevronRight
+                          size={18}
+                          className="quick-action-arrow"
+                        />
+
+                      </button>
+                    );
+
+                  })}
+
                 </div>
-              )}
-            </article>
-          </section>
 
-          {/* =====================================
-              HEALTH & WELLNESS
-          ====================================== */}
+              </div>
 
-          <section className="dashboard-health-section">
-            <h2 className="section-heading">
-              Health & wellness
-            </h2>
 
-            <div className="health-shortcuts-grid">
-              {healthShortcuts.map(
-                (shortcut) => {
-                  const Icon = shortcut.icon;
+              {/* HEALTH SHORTCUTS */}
+              <div className="dashboard-section">
 
-                  return (
+                <div className="section-heading">
+
+                  <div>
+
+                    <h2>
+                      Health
+                    </h2>
+
+                    <p>
+                      Manage your daily health
+                    </p>
+
+                  </div>
+
+                </div>
+
+
+                <div className="health-shortcuts">
+
+                  {healthShortcuts.map(
+                    (shortcut) => {
+
+                      const Icon = shortcut.icon;
+
+                      return (
+                        <button
+                          key={shortcut.title}
+                          type="button"
+                          className="health-shortcut"
+                          onClick={() =>
+                            navigate(
+                              shortcut.path
+                            )
+                          }
+                        >
+
+                          <div className="shortcut-icon">
+                            <Icon size={20} />
+                          </div>
+
+                          <div>
+
+                            <h3>
+                              {shortcut.title}
+                            </h3>
+
+                            <p>
+                              {shortcut.description}
+                            </p>
+
+                          </div>
+
+                          <ChevronRight size={17} />
+
+                        </button>
+                      );
+
+                    }
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            {/* RIGHT COLUMN */}
+            <div className="dashboard-column">
+
+
+              {/* HYDRATION */}
+              <div className="dashboard-card">
+
+                <div className="card-header">
+
+                  <div>
+
+                    <span className="card-eyebrow">
+                      HYDRATION
+                    </span>
+
+                    <h2>
+                      Water intake
+                    </h2>
+
+                  </div>
+
+                  <div className="card-icon">
+                    <Waves size={20} />
+                  </div>
+
+                </div>
+
+
+                <div className="hydration-value">
+
+                  <strong>
+                    {hydrationCurrent}
+                  </strong>
+
+                  <span>
+                    / {hydrationGoal} ml
+                  </span>
+
+                </div>
+
+
+                <div className="hydration-progress">
+
+                  <div
+                    className="hydration-progress-bar"
+                    style={{
+                      width: `${hydrationPercentage}%`,
+                    }}
+                  />
+
+                </div>
+
+
+                <div className="hydration-footer">
+
+                  <span>
+                    {hydrationPercentage}% complete
+                  </span>
+
+                  <span>
+                    {hydrationGoal -
+                      hydrationCurrent} ml left
+                  </span>
+
+                </div>
+
+              </div>
+
+
+              {/* APPOINTMENT */}
+              <div className="dashboard-card">
+
+                <div className="card-header">
+
+                  <div>
+
+                    <span className="card-eyebrow">
+                      APPOINTMENT
+                    </span>
+
+                    <h2>
+                      Upcoming
+                    </h2>
+
+                  </div>
+
+                  <div className="card-icon">
+                    <CalendarDays size={20} />
+                  </div>
+
+                </div>
+
+
+                {loadingAppointments ? (
+
+                  <div className="empty-dashboard-state">
+                    Loading appointment...
+                  </div>
+
+                ) : upcomingAppointment ? (
+
+                  <div className="appointment-content">
+
+                    <div className="appointment-status">
+                      <CheckCircle2 size={17} />
+                      Upcoming appointment
+                    </div>
+
+                    <h3>
+                      {upcomingAppointment.doctor_name ||
+                        upcomingAppointment.doctor ||
+                        "Doctor appointment"}
+                    </h3>
+
+                    <p>
+                      {upcomingAppointment.date ||
+                        upcomingAppointment.appointment_date ||
+                        "Date not available"}
+                    </p>
+
                     <button
                       type="button"
-                      key={shortcut.title}
-                      className="health-shortcut"
+                      className="card-link"
                       onClick={() =>
-                        navigate(
-                          shortcut.path
-                        )
+                        navigate("/appointments")
                       }
                     >
-                      <div className="health-shortcut-icon">
-                        <Icon size={19} />
-                      </div>
-
-                      <h3 className="health-shortcut-title">
-                        {shortcut.title}
-                      </h3>
-
-                      <p className="health-shortcut-description">
-                        {shortcut.description}
-                      </p>
-
-                      <ChevronRight
-                        size={15}
-                        style={{
-                          position: "absolute",
-                          right: "16px",
-                          top: "20px",
-                          color:
-                            "var(--nb-text-muted)",
-                        }}
-                      />
+                      View appointments
+                      <ArrowRight size={16} />
                     </button>
-                  );
-                }
-              )}
+
+                  </div>
+
+                ) : (
+
+                  <div className="empty-dashboard-state">
+
+                    <CalendarDays size={30} />
+
+                    <p>
+                      You have no upcoming appointments.
+                    </p>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        navigate("/appointments")
+                      }
+                    >
+                      Find a doctor
+                    </button>
+
+                  </div>
+
+                )}
+
+              </div>
+
+
+              {/* TODAY'S TASKS */}
+              <div className="dashboard-card">
+
+                <div className="card-header">
+
+                  <div>
+
+                    <span className="card-eyebrow">
+                      TODAY
+                    </span>
+
+                    <h2>
+                      Your tasks
+                    </h2>
+
+                  </div>
+
+                  <div className="card-icon">
+                    <Target size={20} />
+                  </div>
+
+                </div>
+
+
+                {loadingReminders ? (
+
+                  <div className="empty-dashboard-state">
+                    Loading tasks...
+                  </div>
+
+                ) : reminders.length > 0 ? (
+
+                  <div className="task-list">
+
+                    {reminders
+                      .slice(0, 4)
+                      .map(
+                        (reminder, index) => (
+
+                          <div
+                            className="task-item"
+                            key={
+                              reminder.id ||
+                              index
+                            }
+                          >
+
+                            <div className="task-icon">
+                              <CheckCircle2 size={17} />
+                            </div>
+
+                            <div>
+
+                              <strong>
+                                {reminder.title ||
+                                  reminder.name ||
+                                  "Health reminder"}
+                              </strong>
+
+                              <span>
+                                {reminder.time ||
+                                  "Today"}
+                              </span>
+
+                            </div>
+
+                          </div>
+
+                        )
+                      )}
+
+                  </div>
+
+                ) : (
+
+                  <div className="empty-dashboard-state">
+
+                    <Utensils size={28} />
+
+                    <p>
+                      No reminders for today.
+                    </p>
+
+                  </div>
+
+                )}
+
+              </div>
+
             </div>
+
           </section>
+
         </div>
+
       </main>
+
     </div>
   );
 }
+
 
 export default Dashboard;

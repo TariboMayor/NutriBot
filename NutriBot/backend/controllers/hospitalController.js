@@ -1,6 +1,13 @@
 const db = require("../config/db");
 
-// Create hospital
+const {
+  geocodeAddress,
+} = require("../services/geocodingService");
+
+/* ========================================
+   CREATE HOSPITAL
+======================================== */
+
 const createHospital = (req, res) => {
   const {
     name,
@@ -12,6 +19,8 @@ const createHospital = (req, res) => {
     country,
     description,
     website,
+    latitude,
+    longitude,
   } = req.body;
 
   if (!name) {
@@ -26,6 +35,8 @@ const createHospital = (req, res) => {
       phone,
       email,
       address,
+      latitude,
+      longitude,
       city,
       state,
       country,
@@ -33,7 +44,7 @@ const createHospital = (req, res) => {
       website,
       status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'REGISTERED')
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'REGISTERED')
   `;
 
   const values = [
@@ -41,6 +52,8 @@ const createHospital = (req, res) => {
     phone || null,
     email || null,
     address || null,
+    latitude || null,
+    longitude || null,
     city || null,
     state || null,
     country || "Nigeria",
@@ -50,7 +63,10 @@ const createHospital = (req, res) => {
 
   db.query(sql, values, (error, result) => {
     if (error) {
-      console.error("Create hospital error:", error.message);
+      console.error(
+        "Create hospital error:",
+        error.message
+      );
 
       return res.status(500).json({
         message: "Failed to create hospital",
@@ -63,7 +79,11 @@ const createHospital = (req, res) => {
     });
   });
 };
-// Get all hospitals available to patients
+
+/* ========================================
+   GET ALL HOSPITALS
+======================================== */
+
 const getHospitals = (req, res) => {
   const sql = `
     SELECT
@@ -72,6 +92,8 @@ const getHospitals = (req, res) => {
       phone,
       email,
       address,
+      latitude,
+      longitude,
       city,
       state,
       country,
@@ -85,7 +107,10 @@ const getHospitals = (req, res) => {
 
   db.query(sql, (error, results) => {
     if (error) {
-      console.error("Get hospitals error:", error.message);
+      console.error(
+        "Get hospitals error:",
+        error.message
+      );
 
       return res.status(500).json({
         message: "Failed to get hospitals",
@@ -95,7 +120,170 @@ const getHospitals = (req, res) => {
     res.json(results);
   });
 };
-// Get hospital by ID
+
+/* ========================================
+   SEARCH HOSPITALS BY LOCATION
+======================================== */
+
+const searchHospitals = async (req, res) => {
+  try {
+    const {
+      state,
+      city,
+      area,
+      address,
+      country = "Nigeria",
+    } = req.query;
+
+    if (!state && !city && !area && !address) {
+      return res.status(400).json({
+        message:
+          "Please provide a location or address.",
+      });
+    }
+
+    /* ----------------------------------------
+       Convert patient's address into coordinates
+    ---------------------------------------- */
+
+    const patientLocation =
+      await geocodeAddress({
+        state,
+        city,
+        area,
+        address,
+        country,
+      });
+
+    const patientLatitude =
+      Number(patientLocation.latitude);
+
+    const patientLongitude =
+      Number(patientLocation.longitude);
+
+    /* ----------------------------------------
+       Get hospitals that have coordinates
+    ---------------------------------------- */
+
+    const sql = `
+      SELECT
+        id,
+        name,
+        phone,
+        email,
+        address,
+        latitude,
+        longitude,
+        city,
+        state,
+        country,
+        description,
+        website,
+        status,
+
+        (
+          6371 * ACOS(
+            LEAST(
+              1,
+              GREATEST(
+                -1,
+                COS(RADIANS(?))
+                *
+                COS(RADIANS(latitude))
+                *
+                COS(
+                  RADIANS(longitude)
+                  - RADIANS(?)
+                )
+                +
+                SIN(RADIANS(?))
+                *
+                SIN(RADIANS(latitude))
+              )
+            )
+          )
+        ) AS distance_km
+
+      FROM hospitals
+
+      WHERE
+        status IN ('REGISTERED', 'VERIFIED', 'CONNECTED')
+        AND latitude IS NOT NULL
+        AND longitude IS NOT NULL
+
+      ORDER BY distance_km ASC
+    `;
+
+    db.query(
+      sql,
+      [
+        patientLatitude,
+        patientLongitude,
+        patientLatitude,
+      ],
+      (error, hospitals) => {
+        if (error) {
+          console.error(
+            "Hospital location search error:",
+            error.message
+          );
+
+          return res.status(500).json({
+            message:
+              "Failed to search hospitals.",
+          });
+        }
+
+        const formattedHospitals =
+          hospitals.map((hospital) => ({
+            ...hospital,
+
+            distance_km: Number(
+              hospital.distance_km
+            ),
+
+            distance_text:
+              hospital.distance_km < 1
+                ? `${Math.round(
+                    hospital.distance_km * 1000
+                  )} m away`
+                : `${Number(
+                    hospital.distance_km
+                  ).toFixed(1)} km away`,
+          }));
+
+        return res.json({
+          location: {
+            latitude: patientLatitude,
+            longitude: patientLongitude,
+            formattedAddress:
+              patientLocation.formattedAddress,
+          },
+
+          count: formattedHospitals.length,
+
+          hospitals: formattedHospitals,
+        });
+      }
+    );
+  } catch (error) {
+    console.error(
+      "Hospital search error:",
+      error.message
+    );
+
+    return res.status(500).json({
+      message:
+        error.message ||
+        "Failed to search hospitals.",
+    });
+  }
+};
+
+/* ========================================
+   GET HOSPITAL BY ID
+======================================== */
+
 const getHospital = (req, res) => {
   const hospitalId = req.params.id;
 
@@ -106,6 +294,8 @@ const getHospital = (req, res) => {
       phone,
       email,
       address,
+      latitude,
+      longitude,
       city,
       state,
       country,
@@ -118,26 +308,37 @@ const getHospital = (req, res) => {
     WHERE id = ?
   `;
 
-  db.query(sql, [hospitalId], (error, results) => {
-    if (error) {
-      console.error("Get hospital error:", error.message);
+  db.query(
+    sql,
+    [hospitalId],
+    (error, results) => {
+      if (error) {
+        console.error(
+          "Get hospital error:",
+          error.message
+        );
 
-      return res.status(500).json({
-        message: "Failed to get hospital",
-      });
+        return res.status(500).json({
+          message:
+            "Failed to get hospital",
+        });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({
+          message: "Hospital not found",
+        });
+      }
+
+      res.json(results[0]);
     }
-
-    if (results.length === 0) {
-      return res.status(404).json({
-        message: "Hospital not found",
-      });
-    }
-
-    res.json(results[0]);
-  });
+  );
 };
 
-// Update hospital
+/* ========================================
+   UPDATE HOSPITAL
+======================================== */
+
 const updateHospital = (req, res) => {
   const hospitalId = req.params.id;
 
@@ -146,6 +347,8 @@ const updateHospital = (req, res) => {
     phone,
     email,
     address,
+    latitude,
+    longitude,
     city,
     state,
     country,
@@ -166,6 +369,8 @@ const updateHospital = (req, res) => {
       phone = ?,
       email = ?,
       address = ?,
+      latitude = ?,
+      longitude = ?,
       city = ?,
       state = ?,
       country = ?,
@@ -179,6 +384,8 @@ const updateHospital = (req, res) => {
     phone || null,
     email || null,
     address || null,
+    latitude || null,
+    longitude || null,
     city || null,
     state || null,
     country || "Nigeria",
@@ -187,30 +394,44 @@ const updateHospital = (req, res) => {
     hospitalId,
   ];
 
-  db.query(sql, values, (error, result) => {
-    if (error) {
-      console.error("Update hospital error:", error.message);
+  db.query(
+    sql,
+    values,
+    (error, result) => {
+      if (error) {
+        console.error(
+          "Update hospital error:",
+          error.message
+        );
 
-      return res.status(500).json({
-        message: "Failed to update hospital",
+        return res.status(500).json({
+          message:
+            "Failed to update hospital",
+        });
+      }
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          message: "Hospital not found",
+        });
+      }
+
+      res.json({
+        message:
+          "Hospital updated successfully",
       });
     }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: "Hospital not found",
-      });
-    }
-
-    res.json({
-      message: "Hospital updated successfully",
-    });
-  });
+  );
 };
+
+/* ========================================
+   EXPORTS
+======================================== */
 
 module.exports = {
   createHospital,
-  getHospital,
   getHospitals,
+  searchHospitals,
+  getHospital,
   updateHospital,
 };

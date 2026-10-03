@@ -1,35 +1,51 @@
-.chat-input-container {
+/* =========================================================
+   CHAT INPUT AREA
+   ========================================================= */
+
+.chat-input-area {
   width: 100%;
-  padding: 14px 24px 22px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  background: linear-gradient(
-    to top,
-    var(--nb-bg) 75%,
-    transparent
-  );
+
+  padding: 12px 28px 18px;
+
   box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      to top,
+      var(--nb-bg) 70%,
+      transparent
+    );
 }
 
-.chat-input {
-  width: min(100%, 760px);
-  min-height: 50px;
-  padding: 14px 17px;
 
-  border: 1px solid var(--nb-border-strong);
-  border-radius: 15px;
+/* =========================================================
+   MAIN COMPOSER
+   ========================================================= */
 
-  outline: none;
+.chat-composer {
+  width: min(100%, 820px);
+
+  min-height: 58px;
+
+  margin: 0 auto;
+
+  display: flex;
+  align-items: flex-end;
+
+  gap: 10px;
+
+  padding: 8px 8px 8px 17px;
+
+  box-sizing: border-box;
 
   background: var(--nb-surface);
-  color: var(--nb-text);
 
-  font-size: 14px;
-  line-height: 1.4;
+  border: 1px solid var(--nb-border-strong);
 
-  box-shadow: var(--nb-shadow);
+  border-radius: 18px;
+
+  box-shadow:
+    0 10px 35px rgba(0, 0, 0, 0.18);
 
   transition:
     border-color 0.2s ease,
@@ -37,139 +53,354 @@
     background-color 0.2s ease;
 }
 
-.chat-input::placeholder {
-  color: var(--nb-text-muted);
-}
 
-.chat-input:hover {
-  border-color: var(--nb-border-strong);
-}
+/* =========================================================
+   COMPOSER FOCUS
+   ========================================================= */
 
-.chat-input:focus {
+.chat-composer:focus-within {
   border-color: var(--nb-gold);
+
   box-shadow:
-    0 0 0 3px rgba(230, 191, 63, 0.10),
-    var(--nb-shadow);
+    0 0 0 3px rgba(230, 191, 63, 0.08),
+    0 12px 35px rgba(0, 0, 0, 0.22);
 }
 
-.send-button {
-  flex-shrink: 0;
 
-  min-height: 50px;
-  padding: 0 22px;
+/* =========================================================
+   TEXTAREA
+   ========================================================= */
+
+.chat-input {
+  flex: 1;
+
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 40px;
+
+  max-height: 150px;
+
+  padding: 10px 4px;
+
+  margin: 0;
+
+  box-sizing: border-box;
+
+  resize: none;
+
+  overflow-y: auto;
 
   border: none;
-  border-radius: 14px;
 
-  background: linear-gradient(
-    135deg,
-    var(--nb-gold-light),
-    var(--nb-gold)
-  );
+  outline: none;
 
-  color: #17130a;
+  background: transparent;
+
+  color: var(--nb-text);
+
+  font-family: inherit;
 
   font-size: 14px;
-  font-weight: 700;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   PLACEHOLDER
+   ========================================================= */
+
+.chat-input::placeholder {
+  color: var(--nb-text-muted);
+
+  opacity: 0.85;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+.chat-input::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-input::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-input::-webkit-scrollbar-thumb {
+  background: var(--nb-border-strong);
+
+  border-radius: 10px;
+}
+
+
+/* =========================================================
+   SEND BUTTON
+   ========================================================= */
+
+.send-button {
+  width: 42px;
+
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 0;
+
+  margin: 0;
+
+  border: none;
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--nb-gold-light),
+      var(--nb-gold)
+    );
+
+  color: #17130a;
 
   cursor: pointer;
 
   box-shadow:
-    0 8px 22px rgba(230, 191, 63, 0.18);
+    0 6px 16px rgba(
+      230,
+      191,
+      63,
+      0.16
+    );
 
   transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    opacity 0.2s ease;
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    opacity 0.18s ease;
 }
+
+
+/* =========================================================
+   SEND BUTTON HOVER
+   ========================================================= */
 
 .send-button:hover:not(:disabled) {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 
   box-shadow:
-    0 12px 28px rgba(230, 191, 63, 0.28);
+    0 9px 22px rgba(
+      230,
+      191,
+      63,
+      0.25
+    );
 }
+
+
+/* =========================================================
+   SEND BUTTON ACTIVE
+   ========================================================= */
 
 .send-button:active:not(:disabled) {
   transform: translateY(0);
+
+  box-shadow:
+    0 5px 14px rgba(
+      230,
+      191,
+      63,
+      0.18
+    );
 }
+
+
+/* =========================================================
+   SEND BUTTON DISABLED
+   ========================================================= */
 
 .send-button:disabled {
-  opacity: 0.45;
+  opacity: 0.38;
+
   cursor: not-allowed;
+
   box-shadow: none;
+
+  transform: none;
 }
 
-/* =========================================
+
+/* =========================================================
+   LOADING SPINNER
+   ========================================================= */
+
+.send-spinner {
+  width: 17px;
+
+  height: 17px;
+
+  display: block;
+
+  border: 2px solid
+    rgba(23, 19, 10, 0.25);
+
+  border-top-color:
+    #17130a;
+
+  border-radius: 50%;
+
+  animation:
+    chat-spin 0.7s linear infinite;
+}
+
+@keyframes chat-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =========================================================
+   INPUT HINT
+   ========================================================= */
+
+.chat-input-hint {
+  width: min(100%, 820px);
+
+  margin: 7px auto 0;
+
+  padding: 0 6px;
+
+  box-sizing: border-box;
+
+  color: var(--nb-text-muted);
+
+  font-size: 10px;
+
+  line-height: 1.4;
+
+  text-align: center;
+
+  opacity: 0.7;
+}
+
+
+/* =========================================================
    TABLET
-========================================= */
+   ========================================================= */
 
 @media (max-width: 900px) {
-  .chat-input-container {
-    padding: 12px 18px 18px;
+  .chat-input-area {
+    padding:
+      10px
+      20px
+      16px;
   }
 
-  .chat-input {
-    min-height: 48px;
-  }
+  .chat-composer {
+    min-height: 56px;
 
-  .send-button {
-    min-height: 48px;
-    padding: 0 18px;
+    border-radius: 17px;
   }
 }
 
-/* =========================================
+
+/* =========================================================
    MOBILE
-========================================= */
+   ========================================================= */
 
 @media (max-width: 600px) {
-  .chat-input-container {
-    padding: 10px 12px 14px;
-    gap: 8px;
+  .chat-input-area {
+    padding:
+      8px
+      12px
+      13px;
+  }
+
+  .chat-composer {
+    min-height: 54px;
+
+    padding:
+      7px
+      7px
+      7px
+      14px;
+
+    gap: 7px;
+
+    border-radius: 16px;
   }
 
   .chat-input {
-    min-height: 46px;
-    padding: 12px 14px;
-    border-radius: 13px;
+    min-height: 40px;
+
+    padding:
+      10px
+      2px;
+
     font-size: 14px;
   }
 
   .send-button {
-    min-height: 46px;
-    padding: 0 16px;
-    border-radius: 13px;
+    width: 40px;
+
+    height: 40px;
+
+    flex-basis: 40px;
+
+    border-radius: 12px;
+  }
+
+  .chat-input-hint {
+    display: none;
   }
 }
 
-/* =========================================
+
+/* =========================================================
    VERY SMALL PHONES
-========================================= */
+   ========================================================= */
 
 @media (max-width: 400px) {
-  .chat-input-container {
-    padding-left: 9px;
-    padding-right: 9px;
+  .chat-input-area {
+    padding:
+      7px
+      9px
+      10px;
   }
 
-  .chat-input {
-    min-width: 0;
-    padding: 11px 12px;
+  .chat-composer {
+    padding-left: 12px;
   }
 
   .send-button {
-    padding: 0 13px;
+    width: 38px;
+
+    height: 38px;
+
+    flex-basis: 38px;
   }
 }
 
-/* =========================================
+
+/* =========================================================
    REDUCED MOTION
-========================================= */
+   ========================================================= */
 
 @media (prefers-reduced-motion: reduce) {
-  .chat-input,
-  .send-button {
+  .send-button,
+  .send-spinner,
+  .chat-composer {
+    animation: none;
+
     transition: none;
   }
 }
