@@ -95,19 +95,15 @@ function FindDoctorPage() {
       fetchDoctors();
     }
   }, [hospitalId]);
-
-  const handleSelectDoctor = (doctor) => {
-    navigate(
-      `/appointments/book?hospitalId=${hospitalId}&doctorId=${doctor.id}`,
-      {
-        state: {
-          hospital,
-          doctor,
-          patientLocation,
-        },
-      }
-    );
-  };
+const handleSelectDoctor = (doctor) => {
+  navigate(`/appointments/service/${doctor.id}`, {
+    state: {
+      hospital,
+      doctor,
+      patientLocation,
+    },
+  });
+};
 
   const handleBack = () => {
     if (hospital) {

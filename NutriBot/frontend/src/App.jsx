@@ -25,8 +25,9 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 import HospitalDetailsPage from "./pages/HospitalDetailsPage";
-
 import FindDoctorPage from "./pages/FindDoctorPage";
+import SelectServicePage from "./pages/SelectServicePage";
+
 
 function App() {
   return (
@@ -89,9 +90,20 @@ function App() {
             path="/hospitals"
             element={<FindHospitalPage />}
           />
+
           <Route
             path="/hospitals/:id"
             element={<HospitalDetailsPage />}
+          />
+
+          <Route
+            path="/hospitals/:hospitalId/doctors"
+            element={<FindDoctorPage />}
+          />
+
+          <Route
+            path="/appointments/service/:doctorId"
+            element={<SelectServicePage />}
           />
 
           <Route
@@ -118,11 +130,6 @@ function App() {
             path="/profile"
             element={<ProfilePage />}
           />
-<Route
-  path="/hospitals/:hospitalId/doctors"
-  element={<FindDoctorPage />}
-/>
-
 
         </Route>
 

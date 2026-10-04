@@ -1,15 +1,11 @@
 import "./ChatMessage.css";
 
 function ChatMessage({ message }) {
-  if (!message) {
-    return null;
-  }
-
-  const role =
-    message.role?.toUpperCase();
+  const role = message.role?.toUpperCase();
 
   const isUser =
-    role === "USER";
+    role === "USER" ||
+    role === "user";
 
   return (
     <div
@@ -17,43 +13,21 @@ function ChatMessage({ message }) {
         isUser ? "user" : "bot"
       }`}
     >
-
-      {/* =================================================
-          AVATAR
-          ================================================= */}
-
       <div
         className={`message-avatar ${
           isUser ? "user" : "bot"
         }`}
       >
-        {isUser ? "You" : "N"}
+        {isUser ? "You" : "Nia"}
       </div>
 
-      {/* =================================================
-          MESSAGE
-          ================================================= */}
-
       <div
-        className={`message-wrapper ${
+        className={`message-content ${
           isUser ? "user" : "bot"
         }`}
       >
-
-        <div className="message-label">
-          {isUser ? "You" : "Nia"}
-        </div>
-
-        <div
-          className={`message-content ${
-            isUser ? "user" : "bot"
-          }`}
-        >
-          {message.content}
-        </div>
-
+        {message.content}s
       </div>
-
     </div>
   );
 }
