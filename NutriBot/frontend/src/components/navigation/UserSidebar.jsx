@@ -159,15 +159,7 @@ function UserSidebar() {
       <div className="sidebar-bottom">
 
         {/* NOTIFICATIONS */}
-        <div className="sidebar-notification">
-
-          <NotificationBell />
-
-          <span>
-            Notifications
-          </span>
-
-        </div>
+        <div className="sidebar-notification"> <NotificationBell /> <span> Notifications </span> </div>
 
 
         {/* PROFILE */}

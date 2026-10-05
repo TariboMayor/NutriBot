@@ -32,9 +32,7 @@ function AvailabilityPage() {
     searchParams.get("doctorId");
 
   const doctorServiceId =
-    searchParams.get(
-      "doctorServiceId"
-    );
+    searchParams.get("doctorServiceId");
 
 
   const hospital =
@@ -48,6 +46,24 @@ function AvailabilityPage() {
 
   const patientLocation =
     location.state?.patientLocation ||
+    null;
+
+
+  /*
+   * IMPORTANT:
+   *
+   * doctorServiceId = ID of the doctor-service
+   * relationship/assignment.
+   *
+   * hospitalServiceId = actual hospital service
+   * required by the appointment availability API.
+   *
+   * The selected service from SelectServicePage
+   * contains hospital_service_id.
+   */
+  const hospitalServiceId =
+    service?.hospital_service_id ||
+    service?.hospitalServiceId ||
     null;
 
 
@@ -100,10 +116,7 @@ function AvailabilityPage() {
 
 
   /*
-   * Initialize today's date directly.
-   *
-   * This avoids calling setState()
-   * synchronously inside useEffect().
+   * Initialize today's date.
    */
   const [selectedDate, setSelectedDate] =
     useState(() =>
@@ -132,13 +145,22 @@ function AvailabilityPage() {
   useEffect(() => {
     const fetchAvailableSlots =
       async () => {
+
+        /*
+         * We now require:
+         *
+         * doctorId
+         * hospitalServiceId
+         * selectedDate
+         */
         if (
           !doctorId ||
-          !doctorServiceId ||
+          !hospitalServiceId ||
           !selectedDate
         ) {
           return;
         }
+
 
         try {
           setLoading(true);
@@ -146,10 +168,12 @@ function AvailabilityPage() {
           setSlots([]);
           setSelectedSlot(null);
 
+
           const token =
             localStorage.getItem(
               "nutribot_token"
             );
+
 
           if (!token) {
             setError(
@@ -159,20 +183,36 @@ function AvailabilityPage() {
             return;
           }
 
+
+          /*
+           * IMPORTANT FIX:
+           *
+           * Previously this incorrectly used:
+           *
+           * hospitalServiceId: doctorServiceId
+           *
+           * We now send the actual hospital
+           * service ID from the selected service.
+           */
           const query =
             new URLSearchParams({
-              doctorId,
+              doctorId:
+                String(doctorId),
+
               hospitalServiceId:
-                doctorServiceId,
+                String(hospitalServiceId),
+
               appointmentDate:
                 selectedDate,
             });
+
 
           const response =
             await fetch(
               `/api/appointments/available-slots?${query.toString()}`,
               {
                 method: "GET",
+
                 headers: {
                   Authorization:
                     `Bearer ${token}`,
@@ -180,8 +220,10 @@ function AvailabilityPage() {
               }
             );
 
+
           const data =
             await response.json();
+
 
           if (!response.ok) {
             throw new Error(
@@ -190,6 +232,7 @@ function AvailabilityPage() {
             );
           }
 
+
           setSlots(
             Array.isArray(
               data.slots
@@ -197,27 +240,34 @@ function AvailabilityPage() {
               ? data.slots
               : []
           );
+
         } catch (fetchError) {
+
           console.error(
             "Available slots error:",
             fetchError
           );
+
 
           setError(
             fetchError.message ||
               "Unable to load available appointment slots."
           );
 
+
           setSlots([]);
+
         } finally {
           setLoading(false);
         }
       };
 
+
     fetchAvailableSlots();
+
   }, [
     doctorId,
-    doctorServiceId,
+    hospitalServiceId,
     selectedDate,
   ]);
 
@@ -243,12 +293,23 @@ function AvailabilityPage() {
    * Continue to appointment confirmation.
    */
   const handleContinue = () => {
+
     if (!selectedSlot) {
       return;
     }
 
+
+    /*
+     * Keep BOTH IDs available.
+     *
+     * doctorServiceId:
+     * doctor-service relationship ID.
+     *
+     * hospitalServiceId:
+     * actual hospital service ID.
+     */
     navigate(
-      `/appointments/confirm?doctorId=${doctorId}&doctorServiceId=${doctorServiceId}&appointmentDate=${selectedDate}`,
+      `/appointments/confirm?doctorId=${doctorId}&doctorServiceId=${doctorServiceId}&hospitalServiceId=${hospitalServiceId}&appointmentDate=${selectedDate}`,
       {
         state: {
           hospital,
@@ -287,11 +348,13 @@ function AvailabilityPage() {
    */
   const formatSlotTime =
     (slot) => {
+
       if (
         typeof slot === "string"
       ) {
         return slot;
       }
+
 
       return (
         slot?.start_time ||
@@ -306,6 +369,7 @@ function AvailabilityPage() {
     <div className="availability-page">
 
       <UserSidebar />
+
 
       <main className="availability-main">
 
@@ -330,9 +394,11 @@ function AvailabilityPage() {
             Appointment Booking
           </div>
 
+
           <h1>
             Select Date & Time
           </h1>
+
 
           <p>
             Choose a date and an available
@@ -350,15 +416,18 @@ function AvailabilityPage() {
             <Stethoscope size={24} />
           </div>
 
+
           <div className="availability-summary-content">
 
             <h2>
               Dr. {doctorName}
             </h2>
 
+
             <p>
               {doctorSpecialty}
             </p>
+
 
             <div className="availability-summary-details">
 
@@ -368,6 +437,7 @@ function AvailabilityPage() {
                   {hospital.name}
                 </span>
               )}
+
 
               <span>
                 <Stethoscope size={15} />
@@ -403,14 +473,17 @@ function AvailabilityPage() {
           <div className="availability-section-header">
 
             <div>
+
               <h2>
                 Choose a Date
               </h2>
+
 
               <p>
                 Select the day you would like
                 to visit the doctor.
               </p>
+
             </div>
 
           </div>
@@ -420,14 +493,17 @@ function AvailabilityPage() {
 
             {availableDates.map(
               (date) => {
+
                 const value =
                   formatDateForApi(
                     date
                   );
 
+
                 const isSelected =
                   selectedDate ===
                   value;
+
 
                 return (
                   <button
@@ -454,9 +530,11 @@ function AvailabilityPage() {
                       )}
                     </span>
 
+
                     <strong>
                       {date.getDate()}
                     </strong>
+
 
                     <span className="availability-date-month">
                       {date.toLocaleDateString(
@@ -466,6 +544,7 @@ function AvailabilityPage() {
                         }
                       )}
                     </span>
+
 
                     {isSelected && (
                       <CheckCircle2
@@ -491,22 +570,29 @@ function AvailabilityPage() {
           <div className="availability-section-header">
 
             <div>
+
               <h2>
                 Available Times
               </h2>
+
 
               <p>
                 Select an available appointment
                 time for your chosen date.
               </p>
+
             </div>
+
 
             {!loading && (
               <span className="availability-count">
+
                 {slots.length}{" "}
+
                 {slots.length === 1
                   ? "slot"
                   : "slots"}
+
               </span>
             )}
 
@@ -520,9 +606,11 @@ function AvailabilityPage() {
                 <Clock size={24} />
               </div>
 
+
               <h3>
                 Checking availability...
               </h3>
+
 
               <p>
                 Looking for available
@@ -542,9 +630,11 @@ function AvailabilityPage() {
                   <Clock size={27} />
                 </div>
 
+
                 <h3>
                   No available times
                 </h3>
+
 
                 <p>
                   There are no available
@@ -563,10 +653,12 @@ function AvailabilityPage() {
 
                 {slots.map(
                   (slot, index) => {
+
                     const time =
                       formatSlotTime(
                         slot
                       );
+
 
                     const slotKey =
                       typeof slot ===
@@ -575,9 +667,11 @@ function AvailabilityPage() {
                         : slot.id ||
                           `${time}-${index}`;
 
+
                     const isSelected =
                       selectedSlot ===
                       slot;
+
 
                     return (
                       <button
@@ -599,9 +693,11 @@ function AvailabilityPage() {
                           size={17}
                         />
 
+
                         <span>
                           {time}
                         </span>
+
 
                         {isSelected && (
                           <CheckCircle2
@@ -611,6 +707,7 @@ function AvailabilityPage() {
 
                       </button>
                     );
+
                   }
                 )}
 
@@ -631,6 +728,7 @@ function AvailabilityPage() {
           >
             Back
           </button>
+
 
           <button
             type="button"

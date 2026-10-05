@@ -4,6 +4,7 @@ const {
   getAvailableSlots,
   createAppointment,
   getMyAppointments,
+  getHospitalAppointments,
 } = require("../controllers/appointmentController");
 
 const {
@@ -16,12 +17,22 @@ const {
 
 const router = express.Router();
 
+
+// ======================================================
+// PATIENT APPOINTMENTS
+// ======================================================
+
 router.get(
   "/my",
   authenticateToken,
   requireRole("PATIENT"),
   getMyAppointments
 );
+
+
+// ======================================================
+// AVAILABLE APPOINTMENT SLOTS
+// ======================================================
 
 router.get(
   "/available-slots",
@@ -30,11 +41,37 @@ router.get(
   getAvailableSlots
 );
 
+
+// ======================================================
+// CREATE APPOINTMENT
+// ======================================================
+
 router.post(
   "/",
   authenticateToken,
   requireRole("PATIENT"),
   createAppointment
 );
+
+
+// ======================================================
+// HOSPITAL APPOINTMENTS
+// ======================================================
+//
+// Hospital staff can see appointments belonging
+// to their own hospital only.
+//
+// The hospital ID is NOT taken from the frontend.
+// The controller determines the hospital from
+// the authenticated staff user's account.
+//
+
+router.get(
+  "/hospital",
+  authenticateToken,
+  requireRole("HOSPITAL_STAFF"),
+  getHospitalAppointments
+);
+
 
 module.exports = router;

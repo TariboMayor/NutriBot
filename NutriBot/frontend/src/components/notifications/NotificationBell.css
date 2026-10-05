@@ -1,37 +1,62 @@
+/* =========================================================
+   NOTIFICATION WRAPPER
+========================================================= */
+
 .notification-wrapper {
   position: relative;
-  display: flex;
+
+  display: inline-flex;
+  align-items: center;
+
+  flex-shrink: 0;
 }
+
+
+/* =========================================================
+   NOTIFICATION BELL
+========================================================= */
 
 .notification-bell {
   position: relative;
 
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border: 1px solid var(--nb-border);
-  border-radius: 11px;
+  padding: 0;
 
-  background: var(--nb-surface);
-  color: var(--nb-text);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 10px;
+
+  background: #191919;
+  color: #ffffff;
 
   cursor: pointer;
 
   transition:
     background 0.18s ease,
     border-color 0.18s ease,
+    color 0.18s ease,
     transform 0.18s ease;
 }
 
 .notification-bell:hover {
-  background: var(--nb-surface-hover);
-  border-color: var(--nb-gold);
+  background: #222222;
+
+  border-color: rgba(230, 191, 63, 0.55);
+
+  color: #e6bf3f;
+
   transform: translateY(-1px);
 }
+
+
+/* =========================================================
+   UNREAD BADGE
+========================================================= */
 
 .notification-badge {
   position: absolute;
@@ -39,8 +64,8 @@
   top: -5px;
   right: -5px;
 
-  min-width: 19px;
-  height: 19px;
+  min-width: 20px;
+  height: 20px;
 
   padding: 0 5px;
 
@@ -50,158 +75,239 @@
 
   box-sizing: border-box;
 
-  border: 2px solid var(--nb-background);
+  border: 2px solid #111111;
   border-radius: 999px;
 
-  background: var(--nb-gold);
-  color: #111;
+  background: #e6bf3f;
+  color: #111111;
 
   font-size: 9px;
   font-weight: 800;
+
+  line-height: 1;
 }
 
 
 /* =========================================================
-   PANEL
-   ========================================================= */
+   FLOATING NOTIFICATION PANEL
+========================================================= */
+
+/*
+ * IMPORTANT:
+ *
+ * NotificationBell.jsx renders this panel
+ * using createPortal(document.body).
+ *
+ * Therefore this must be a fixed floating panel.
+ *
+ * IMPORTANT:
+ * Do NOT use transparent backgrounds here.
+ */
 
 .notification-panel {
-  position: absolute;
+  position: fixed;
 
-  top: calc(100% + 10px);
-  left: 0;
+  width: 390px;
+  max-width: calc(100vw - 24px);
 
-  width: 370px;
-  max-height: 520px;
+  max-height: 560px;
 
   display: flex;
   flex-direction: column;
 
+  box-sizing: border-box;
+
   overflow: hidden;
 
-  border: 1px solid var(--nb-border);
+  border: 1px solid #353535;
   border-radius: 16px;
 
-  background: var(--nb-background);
+  /*
+   * SOLID BACKGROUND
+   *
+   * This is intentionally not transparent.
+   */
+  background: #181818;
+
+  color: #ffffff;
+
+  /*
+   * Make sure content cannot visually
+   * disappear behind anything.
+   */
+  opacity: 1;
 
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.28);
+    0 25px 70px rgba(0, 0, 0, 0.70),
+    0 8px 25px rgba(0, 0, 0, 0.50);
 
-  z-index: 500;
+  z-index: 999999;
 }
 
 
 /* =========================================================
-   HEADER
-   ========================================================= */
+   PANEL HEADER
+========================================================= */
 
 .notification-panel-header {
+  flex-shrink: 0;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 17px 18px;
+  gap: 15px;
 
-  border-bottom: 1px solid var(--nb-border);
+  padding: 18px;
+
+  background: #181818;
+
+  border-bottom: 1px solid #303030;
 }
 
 .notification-panel-header h3 {
   margin: 0;
 
-  color: var(--nb-text);
+  color: #ffffff;
 
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 750;
+
+  line-height: 1.3;
 }
 
 .notification-panel-header span {
   display: block;
 
-  margin-top: 3px;
+  margin-top: 5px;
 
-  color: var(--nb-muted);
+  color: #a8a8a8;
 
-  font-size: 10px;
+  font-size: 11px;
+
+  line-height: 1.4;
 }
 
+
+/* =========================================================
+   CLOSE BUTTON
+========================================================= */
+
 .notification-close {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+
+  flex-shrink: 0;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  border: 0;
-  border-radius: 8px;
+  padding: 0;
 
-  background: transparent;
-  color: var(--nb-muted);
+  border: 1px solid #353535;
+  border-radius: 9px;
+
+  background: #222222;
+  color: #b5b5b5;
 
   cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .notification-close:hover {
-  background: var(--nb-surface);
-  color: var(--nb-text);
+  background: #2c2c2c;
+
+  border-color: #4a4a4a;
+
+  color: #ffffff;
 }
 
 
 /* =========================================================
-   MARK ALL
-   ========================================================= */
+   MARK ALL AS READ
+========================================================= */
 
 .mark-all-read {
-  display: flex;
+  align-self: flex-end;
+
+  display: inline-flex;
   align-items: center;
 
   gap: 7px;
 
-  margin: 10px 14px 2px;
-  padding: 7px 8px;
+  margin: 10px 14px 4px;
 
-  border: 0;
-  border-radius: 7px;
+  padding: 7px 10px;
+
+  border: 1px solid transparent;
+  border-radius: 8px;
 
   background: transparent;
 
-  color: var(--nb-gold);
+  color: #e6bf3f;
 
   font-family: inherit;
+
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 700;
 
   cursor: pointer;
+
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .mark-all-read:hover {
-  background: var(--nb-gold-soft);
+  background: rgba(230, 191, 63, 0.10);
+
+  border-color: rgba(230, 191, 63, 0.20);
 }
 
 
 /* =========================================================
-   LIST
-   ========================================================= */
+   NOTIFICATION LIST
+========================================================= */
 
 .notification-list {
+  flex: 1;
+
+  min-height: 0;
+
   overflow-y: auto;
 
-  padding: 8px;
+  padding: 8px 10px 12px;
+
+  background: #181818;
 }
 
 .notification-list::-webkit-scrollbar {
   width: 5px;
 }
 
+.notification-list::-webkit-scrollbar-track {
+  background: #181818;
+}
+
 .notification-list::-webkit-scrollbar-thumb {
-  background: var(--nb-border);
+  background: #3a3a3a;
+
   border-radius: 10px;
+}
+
+.notification-list::-webkit-scrollbar-thumb:hover {
+  background: #505050;
 }
 
 
 /* =========================================================
-   ITEM
-   ========================================================= */
+   NOTIFICATION ITEM
+========================================================= */
 
 .notification-item {
   width: 100%;
@@ -209,41 +315,76 @@
   display: flex;
   align-items: flex-start;
 
-  gap: 10px;
+  gap: 12px;
 
-  padding: 12px 10px;
+  margin: 0 0 5px;
+
+  padding: 13px 12px;
+
+  box-sizing: border-box;
 
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 12px;
 
-  background: transparent;
+  /*
+   * IMPORTANT:
+   * Solid background so text is readable.
+   */
+  background: #202020;
 
-  color: inherit;
+  color: #ffffff;
 
   text-align: left;
 
   cursor: pointer;
 
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.notification-item:last-child {
+  margin-bottom: 0;
 }
 
 .notification-item:hover {
-  background: var(--nb-surface);
+  background: #282828;
+
+  border-color: #3a3a3a;
+
+  transform: translateY(-1px);
 }
+
+
+/* =========================================================
+   UNREAD ITEM
+========================================================= */
 
 .notification-item.unread {
-  background: var(--nb-gold-soft);
+  background: #282412;
+
+  border-color: rgba(230, 191, 63, 0.22);
 }
 
+.notification-item.unread:hover {
+  background: #302b16;
+
+  border-color: rgba(230, 191, 63, 0.35);
+}
+
+
+/* =========================================================
+   UNREAD DOT
+========================================================= */
+
 .notification-item-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
 
   flex-shrink: 0;
 
-  margin-top: 6px;
+  margin-top: 5px;
 
   border-radius: 50%;
 
@@ -251,124 +392,169 @@
 }
 
 .notification-item.unread
-  .notification-item-dot {
-  background: var(--nb-gold);
+.notification-item-dot {
+  background: #e6bf3f;
+
+  box-shadow:
+    0 0 0 3px
+    rgba(230, 191, 63, 0.12);
 }
 
 
 /* =========================================================
    CONTENT
-   ========================================================= */
+========================================================= */
 
 .notification-item-content {
   min-width: 0;
+
   flex: 1;
 }
+
+
+/* =========================================================
+   TITLE + TIME
+========================================================= */
 
 .notification-item-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
 
-  gap: 10px;
+  gap: 12px;
 }
 
 .notification-item-top strong {
-  color: var(--nb-text);
+  min-width: 0;
+
+  color: #ffffff;
 
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .notification-item-top span {
   flex-shrink: 0;
 
-  color: var(--nb-muted);
+  color: #999999;
 
   font-size: 9px;
+  font-weight: 500;
+
+  white-space: nowrap;
 }
+
+
+/* =========================================================
+   MESSAGE
+========================================================= */
 
 .notification-item p {
-  margin: 5px 0 0;
+  margin: 6px 0 0;
 
-  color: var(--nb-muted);
+  color: #c2c2c2;
 
   font-size: 11px;
-  line-height: 1.5;
+
+  line-height: 1.55;
 }
 
+
+/* =========================================================
+   NOTIFICATION TYPE
+========================================================= */
+
 .notification-item small {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
 
-  margin-top: 7px;
+  margin-top: 9px;
 
-  color: var(--nb-gold);
+  padding: 4px 7px;
+
+  border: 1px solid rgba(230, 191, 63, 0.20);
+
+  border-radius: 5px;
+
+  background: #292512;
+
+  color: #e6bf3f;
 
   font-size: 8px;
-  font-weight: 700;
+  font-weight: 750;
 
   text-transform: uppercase;
+
   letter-spacing: 0.06em;
 }
 
 
 /* =========================================================
-   EMPTY
-   ========================================================= */
+   EMPTY / LOADING
+========================================================= */
 
 .notification-empty {
-  min-height: 180px;
+  min-height: 220px;
 
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
 
-  gap: 8px;
+  gap: 9px;
 
-  padding: 25px;
+  padding: 30px;
 
-  color: var(--nb-muted);
+  background: #181818;
+
+  color: #a8a8a8;
 
   text-align: center;
 }
 
-.notification-empty strong {
-  color: var(--nb-text);
+.notification-empty svg {
+  margin-bottom: 4px;
 
-  font-size: 12px;
+  color: #e6bf3f;
+
+  opacity: 0.85;
+}
+
+.notification-empty strong {
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .notification-empty span {
+  max-width: 220px;
+
+  color: #a8a8a8;
+
   font-size: 10px;
-}
 
-
-/* =========================================================
-   SIDEBAR VERSION
-   ========================================================= */
-
-.sidebar-notification .notification-bell {
-  width: 38px;
-  height: 38px;
+  line-height: 1.5;
 }
 
 
 /* =========================================================
    MOBILE
-   ========================================================= */
+========================================================= */
 
-@media (max-width: 500px) {
+@media (max-width: 600px) {
+
   .notification-panel {
-    position: fixed;
+    width: calc(100vw - 24px);
 
-    top: 70px;
-    left: 12px;
-    right: 12px;
+    max-width: calc(100vw - 24px);
 
-    width: auto;
-    max-width: none;
+    max-height: calc(100vh - 24px);
+
+    border-radius: 16px;
   }
+
 }

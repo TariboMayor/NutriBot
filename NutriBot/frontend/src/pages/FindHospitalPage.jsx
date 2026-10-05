@@ -2,11 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
-  MapPin,
   Search,
   Hospital,
+  MapPin,
   Navigation,
-  X,
+  Phone,
+  Mail,
+  Globe,
+  ArrowRight,
+  AlertCircle,
 } from "lucide-react";
 
 import UserSidebar from "../components/navigation/UserSidebar";
@@ -16,10 +20,7 @@ import "./FindHospitalPage.css";
 function FindHospitalPage() {
   const navigate = useNavigate();
 
-  const [showLocationForm, setShowLocationForm] =
-    useState(false);
-
-  const [location, setLocation] = useState({
+  const [formData, setFormData] = useState({
     state: "",
     city: "",
     area: "",
@@ -27,19 +28,16 @@ function FindHospitalPage() {
   });
 
   const [hospitals, setHospitals] = useState([]);
+  const [patientLocation, setPatientLocation] = useState(null);
 
-  const [loading, setLoading] =
-    useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [error, setError] = useState("");
-
-  const [searched, setSearched] =
-    useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setLocation((previous) => ({
+    setFormData((previous) => ({
       ...previous,
       [name]: value,
     }));
@@ -49,49 +47,49 @@ function FindHospitalPage() {
     event.preventDefault();
 
     setError("");
-    setLoading(true);
     setSearched(false);
+    setHospitals([]);
+
+    const hasLocation =
+      formData.state.trim() ||
+      formData.city.trim() ||
+      formData.area.trim() ||
+      formData.address.trim();
+
+    if (!hasLocation) {
+      setError(
+        "Please enter at least a state, city, area, or present address."
+      );
+      return;
+    }
 
     try {
-      const token =
-        localStorage.getItem("nutribot_token");
+      setLoading(true);
+
+      const token = localStorage.getItem("nutribot_token");
 
       if (!token) {
-        setError(
+        throw new Error(
           "Your session has expired. Please log in again."
         );
-
-        return;
       }
 
       const params = new URLSearchParams();
 
-      if (location.state.trim()) {
-        params.append(
-          "state",
-          location.state.trim()
-        );
+      if (formData.state.trim()) {
+        params.append("state", formData.state.trim());
       }
 
-      if (location.city.trim()) {
-        params.append(
-          "city",
-          location.city.trim()
-        );
+      if (formData.city.trim()) {
+        params.append("city", formData.city.trim());
       }
 
-      if (location.area.trim()) {
-        params.append(
-          "area",
-          location.area.trim()
-        );
+      if (formData.area.trim()) {
+        params.append("area", formData.area.trim());
       }
 
-      if (location.address.trim()) {
-        params.append(
-          "address",
-          location.address.trim()
-        );
+      if (formData.address.trim()) {
+        params.append("address", formData.address.trim());
       }
 
       params.append("country", "Nigeria");
@@ -111,16 +109,12 @@ function FindHospitalPage() {
       if (!response.ok) {
         throw new Error(
           data.message ||
-            "Unable to search for hospitals."
+            "Unable to find hospitals near this location."
         );
       }
 
-      setHospitals(
-        Array.isArray(data.hospitals)
-          ? data.hospitals
-          : []
-      );
-
+      setPatientLocation(data.location || null);
+      setHospitals(data.hospitals || []);
       setSearched(true);
     } catch (searchError) {
       console.error(
@@ -132,33 +126,61 @@ function FindHospitalPage() {
         searchError.message ||
           "Unable to search for hospitals."
       );
-
-      setHospitals([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectHospital = (hospital) => {
+  const handleViewHospital = (hospital) => {
     navigate(`/hospitals/${hospital.id}`, {
       state: {
         hospital,
-        patientLocation: location,
+        patientLocation,
       },
     });
   };
 
+  const handleClear = () => {
+    setFormData({
+      state: "",
+      city: "",
+      area: "",
+      address: "",
+    });
+
+    setHospitals([]);
+    setPatientLocation(null);
+    setSearched(false);
+    setError("");
+  };
+
+  const getHospitalAddress = (hospital) => {
+    return [
+      hospital.address,
+      hospital.city,
+      hospital.state,
+      hospital.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
+
   return (
     <div className="find-hospital-page">
+
       <UserSidebar />
 
       <main className="find-hospital-main">
 
-        <section className="find-hospital-header">
+        {/* ============================================
+            PAGE HEADER
+        ============================================ */}
+
+        <header className="find-hospital-header">
 
           <div className="find-hospital-eyebrow">
-            <Hospital size={16} />
-            Healthcare
+            <Hospital size={15} />
+            Healthcare Directory
           </div>
 
           <h1>
@@ -166,325 +188,388 @@ function FindHospitalPage() {
           </h1>
 
           <p>
-            Find hospitals and clinics around your
-            present location and continue with your
-            appointment booking.
+            Search for hospitals and healthcare providers
+            near your current location. Results are arranged
+            from the closest hospital to the farthest.
           </p>
 
-        </section>
+        </header>
 
-        <section className="find-hospital-card">
 
-          <div className="find-hospital-card-icon">
-            <MapPin size={28} />
-          </div>
+        {/* ============================================
+            SEARCH CARD
+        ============================================ */}
 
-          <div className="find-hospital-card-content">
+        <section className="find-hospital-search-card">
 
-            <h2>
-              Find Hospitals Near You
-            </h2>
+          <div className="find-hospital-search-heading">
 
-            <p>
-              Enter your present location so we can
-              find hospitals and clinics available
-              around your area.
-            </p>
+            <div className="find-hospital-search-icon">
+              <Search size={22} />
+            </div>
 
-            <button
-              type="button"
-              className="find-hospital-button"
-              onClick={() =>
-                setShowLocationForm(true)
-              }
-            >
-              <Search size={17} />
-              Find Hospital
-            </button>
+            <div>
+              <h2>
+                Search Nearby Hospitals
+              </h2>
+
+              <p>
+                Enter your location so NutriBot can find
+                available hospitals near you.
+              </p>
+            </div>
 
           </div>
 
-        </section>
 
-        {showLocationForm && (
+          <form
+            className="find-hospital-form"
+            onSubmit={handleSearch}
+          >
 
-          <section className="hospital-location-card">
+            <div className="find-hospital-field">
 
-            <div className="hospital-location-header">
+              <label htmlFor="state">
+                State
+              </label>
 
-              <div>
-                <div className="hospital-location-title">
-                  <Navigation size={18} />
+              <input
+                id="state"
+                name="state"
+                type="text"
+                placeholder="e.g. Oyo"
+                value={formData.state}
+                onChange={handleChange}
+              />
 
-                  <h2>
-                    Your Present Location
-                  </h2>
-                </div>
+            </div>
 
-                <p>
-                  Enter where you are currently
-                  located so we can search for nearby
-                  hospitals and clinics.
-                </p>
-              </div>
+
+            <div className="find-hospital-field">
+
+              <label htmlFor="city">
+                City
+              </label>
+
+              <input
+                id="city"
+                name="city"
+                type="text"
+                placeholder="e.g. Ibadan"
+                value={formData.city}
+                onChange={handleChange}
+              />
+
+            </div>
+
+
+            <div className="find-hospital-field">
+
+              <label htmlFor="area">
+                Area
+              </label>
+
+              <input
+                id="area"
+                name="area"
+                type="text"
+                placeholder="e.g. Samonda"
+                value={formData.area}
+                onChange={handleChange}
+              />
+
+            </div>
+
+
+            <div className="find-hospital-field">
+
+              <label htmlFor="address">
+                Present Address
+              </label>
+
+              <input
+                id="address"
+                name="address"
+                type="text"
+                placeholder="Street address or landmark"
+                value={formData.address}
+                onChange={handleChange}
+              />
+
+            </div>
+
+
+            <div className="find-hospital-form-actions">
 
               <button
                 type="button"
-                className="hospital-location-close"
-                onClick={() =>
-                  setShowLocationForm(false)
-                }
-                aria-label="Close location form"
+                className="find-hospital-clear"
+                onClick={handleClear}
+                disabled={loading}
               >
-                <X size={20} />
+                Clear
+              </button>
+
+              <button
+                type="submit"
+                className="find-hospital-search-button"
+                disabled={loading}
+              >
+                <Search size={17} />
+
+                {loading
+                  ? "Searching..."
+                  : "Find Hospitals"}
               </button>
 
             </div>
 
-            <form
-              className="hospital-location-form"
-              onSubmit={handleSearch}
-            >
+          </form>
 
-              <div className="hospital-form-group">
 
-                <label htmlFor="state">
-                  State
-                </label>
+          {error && (
+            <div className="find-hospital-error">
 
-                <input
-                  id="state"
-                  name="state"
-                  type="text"
-                  placeholder="e.g. Lagos"
-                  value={location.state}
-                  onChange={handleChange}
-                  required
-                />
+              <AlertCircle size={18} />
 
-              </div>
+              <span>
+                {error}
+              </span>
 
-              <div className="hospital-form-group">
+            </div>
+          )}
 
-                <label htmlFor="city">
-                  City
-                </label>
+        </section>
 
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  placeholder="e.g. Ikeja"
-                  value={location.city}
-                  onChange={handleChange}
-                  required
-                />
 
-              </div>
+        {/* ============================================
+            SEARCH RESULTS
+        ============================================ */}
 
-              <div className="hospital-form-group">
+        {searched && (
+          <section className="find-hospital-results">
 
-                <label htmlFor="area">
-                  Area / Community
-                </label>
-
-                <input
-                  id="area"
-                  name="area"
-                  type="text"
-                  placeholder="e.g. Allen Avenue"
-                  value={location.area}
-                  onChange={handleChange}
-                />
-
-              </div>
-
-              <div className="hospital-form-group hospital-form-full">
-
-                <label htmlFor="address">
-                  Present Address / Location
-                </label>
-
-                <textarea
-                  id="address"
-                  name="address"
-                  placeholder="Enter your current address or location"
-                  value={location.address}
-                  onChange={handleChange}
-                  rows="3"
-                  required
-                />
-
-              </div>
-
-              <div className="hospital-location-actions">
-
-                <button
-                  type="button"
-                  className="hospital-location-cancel"
-                  onClick={() =>
-                    setShowLocationForm(false)
-                  }
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="hospital-location-search"
-                  disabled={loading}
-                >
-                  <Search size={17} />
-
-                  {loading
-                    ? "Searching..."
-                    : "Search Hospitals"}
-                </button>
-
-              </div>
-
-            </form>
-
-          </section>
-
-        )}
-
-        {error && (
-
-          <section className="hospital-search-message hospital-search-error">
-            {error}
-          </section>
-
-        )}
-
-        {searched && !loading && !error && (
-
-          <section className="hospital-results-section">
-
-            <div className="hospital-results-header">
+            <div className="find-hospital-results-header">
 
               <div>
-                <h2>
-                  Hospitals Near You
-                </h2>
+
+                <div className="find-hospital-results-title">
+
+                  <Hospital size={19} />
+
+                  <h2>
+                    Nearby Hospitals
+                  </h2>
+
+                </div>
 
                 <p>
                   {hospitals.length === 0
-                    ? "No registered hospitals were found for this location."
+                    ? "No hospitals were found for this location."
                     : `${hospitals.length} hospital${
                         hospitals.length === 1
                           ? ""
                           : "s"
-                      } found`}
+                      } found near your location.`}
                 </p>
+
               </div>
+
+              {patientLocation?.formattedAddress && (
+                <div className="find-hospital-location">
+
+                  <MapPin size={16} />
+
+                  <span>
+                    {patientLocation.formattedAddress}
+                  </span>
+
+                </div>
+              )}
 
             </div>
 
-            {hospitals.length > 0 ? (
 
-              <div className="hospital-results-list">
+            {/* ========================================
+                NO RESULTS
+            ======================================== */}
 
-                {hospitals.map((hospital) => (
+            {hospitals.length === 0 ? (
+              <div className="find-hospital-empty">
 
-                  <article
-                    key={hospital.id}
-                    className="hospital-result-card"
-                  >
-
-                    <div className="hospital-result-icon">
-                      <Hospital size={22} />
-                    </div>
-
-                    <div className="hospital-result-content">
-
-                      <h3>
-                        {hospital.name}
-                      </h3>
-
-                      <p className="hospital-result-location">
-                        <MapPin size={15} />
-
-                        {[
-                          hospital.address,
-                          hospital.city,
-                          hospital.state,
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-
-                      {hospital.distance_text && (
-
-                        <p className="hospital-result-distance">
-                          <Navigation size={15} />
-
-                          {hospital.distance_text}
-                        </p>
-
-                      )}
-
-                      {hospital.description && (
-
-                        <p className="hospital-result-description">
-                          {hospital.description}
-                        </p>
-
-                      )}
-
-                      {hospital.phone && (
-
-                        <p className="hospital-result-contact">
-                          {hospital.phone}
-                        </p>
-
-                      )}
-
-                    </div>
-
-                    <button
-                      type="button"
-                      className="hospital-result-button"
-                      onClick={() =>
-                        handleSelectHospital(hospital)
-                      }
-                    >
-                      Select Hospital
-                    </button>
-
-                  </article>
-
-                ))}
-
-              </div>
-
-            ) : (
-
-              <div className="hospital-search-empty">
-
-                <div className="hospital-search-empty-icon">
+                <div className="find-hospital-empty-icon">
                   <Hospital size={28} />
                 </div>
 
                 <h3>
-                  No hospitals found
+                  No Hospitals Found
                 </h3>
 
                 <p>
-                  We could not find a registered
-                  hospital matching the location you
-                  entered.
+                  We could not find any registered hospitals
+                  with available location information near
+                  the location you entered.
                 </p>
 
-              </div>
+                <button
+                  type="button"
+                  onClick={handleClear}
+                >
+                  Search Another Location
+                </button>
 
+              </div>
+            ) : (
+
+              /* ======================================
+                 HOSPITAL CARDS
+              ====================================== */
+
+              <div className="find-hospital-grid">
+
+                {hospitals.map((hospital) => {
+
+                  const hospitalAddress =
+                    getHospitalAddress(hospital);
+
+                  return (
+                    <article
+                      className="hospital-result-card"
+                      key={hospital.id}
+                    >
+
+                      {/* CARD HEADER */}
+
+                      <div className="hospital-result-card-header">
+
+                        <div className="hospital-result-icon">
+                          <Hospital size={25} />
+                        </div>
+
+                        <div className="hospital-result-title">
+
+                          <h3>
+                            {hospital.name}
+                          </h3>
+
+                          <span>
+                            Healthcare Provider
+                          </span>
+
+                        </div>
+
+                      </div>
+
+
+                      {/* DISTANCE */}
+
+                      {hospital.distance_text && (
+                        <div className="hospital-result-distance">
+
+                          <Navigation size={15} />
+
+                          <strong>
+                            {hospital.distance_text}
+                          </strong>
+
+                        </div>
+                      )}
+
+
+                      {/* ADDRESS */}
+
+                      {hospitalAddress && (
+                        <div className="hospital-result-info">
+
+                          <MapPin size={16} />
+
+                          <span>
+                            {hospitalAddress}
+                          </span>
+
+                        </div>
+                      )}
+
+
+                      {/* DESCRIPTION */}
+
+                      {hospital.description && (
+                        <p className="hospital-result-description">
+                          {hospital.description}
+                        </p>
+                      )}
+
+
+                      {/* CONTACT INFORMATION */}
+
+                      <div className="hospital-result-contact">
+
+                        {hospital.phone && (
+                          <div className="hospital-result-contact-item">
+
+                            <Phone size={15} />
+
+                            <span>
+                              {hospital.phone}
+                            </span>
+
+                          </div>
+                        )}
+
+                        {hospital.email && (
+                          <div className="hospital-result-contact-item">
+
+                            <Mail size={15} />
+
+                            <span>
+                              {hospital.email}
+                            </span>
+
+                          </div>
+                        )}
+
+                        {hospital.website && (
+                          <div className="hospital-result-contact-item">
+
+                            <Globe size={15} />
+
+                            <span>
+                              {hospital.website}
+                            </span>
+
+                          </div>
+                        )}
+
+                      </div>
+
+
+                      {/* CARD ACTION */}
+
+                      <button
+                        type="button"
+                        className="hospital-result-button"
+                        onClick={() =>
+                          handleViewHospital(hospital)
+                        }
+                      >
+                        View Hospital
+
+                        <ArrowRight size={17} />
+
+                      </button>
+
+                    </article>
+                  );
+                })}
+
+              </div>
             )}
 
           </section>
-
         )}
 
       </main>
+
     </div>
   );
 }

@@ -1,21 +1,37 @@
 const db = require("../config/db");
+
 const notificationService = require("../services/notificationService");
 const reminderService = require("../services/reminderService");
+const emailService = require("../services/emailService");
+
 const allowedStatusTransitions = {
   PENDING: ["CONFIRMED", "CANCELLED"],
-  CONFIRMED: ["RESCHEDULED", "COMPLETED", "CANCELLED"],
+  CONFIRMED: [
+    "RESCHEDULED",
+    "COMPLETED",
+    "CANCELLED",
+  ],
   RESCHEDULED: ["CONFIRMED", "CANCELLED"],
   COMPLETED: [],
   CANCELLED: [],
   NO_SHOW: [],
 };
 
-const isAllowedStatusTransition = (currentStatus, newStatus) => {
-  const allowed = allowedStatusTransitions[currentStatus] || [];
+const isAllowedStatusTransition = (
+  currentStatus,
+  newStatus
+) => {
+  const allowed =
+    allowedStatusTransitions[currentStatus] || [];
+
   return allowed.includes(newStatus);
 };
 
-// Get appointment by ID
+
+// ======================================================
+// GET APPOINTMENT BY ID
+// ======================================================
+
 const getAppointment = (req, res) => {
   const appointmentId = req.params.id;
 
@@ -26,7 +42,11 @@ const getAppointment = (req, res) => {
       a.hospital_id,
       h.name AS hospital_name,
       a.doctor_id,
-      CONCAT(d.first_name, ' ', d.last_name) AS doctor_name,
+      CONCAT(
+        d.first_name,
+        ' ',
+        d.last_name
+      ) AS doctor_name,
       a.hospital_service_id,
       ms.name AS service_name,
       DATE_FORMAT(
@@ -53,29 +73,37 @@ const getAppointment = (req, res) => {
     WHERE a.id = ?
   `;
 
-  db.query(sql, [appointmentId], (error, results) => {
-    if (error) {
-      console.error(
-        "Get appointment error:",
-        error.message
-      );
+  db.query(
+    sql,
+    [appointmentId],
+    (error, results) => {
+      if (error) {
+        console.error(
+          "Get appointment error:",
+          error.message
+        );
 
-      return res.status(500).json({
-        message: "Failed to get appointment",
-      });
+        return res.status(500).json({
+          message: "Failed to get appointment",
+        });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({
+          message: "Appointment not found",
+        });
+      }
+
+      res.json(results[0]);
     }
-
-    if (results.length === 0) {
-      return res.status(404).json({
-        message: "Appointment not found",
-      });
-    }
-
-    res.json(results[0]);
-  });
+  );
 };
 
-// Get appointment status history
+
+// ======================================================
+// GET APPOINTMENT STATUS HISTORY
+// ======================================================
+
 const getAppointmentHistory = (req, res) => {
   const appointmentId = req.params.id;
 
@@ -96,24 +124,32 @@ const getAppointmentHistory = (req, res) => {
     ORDER BY ash.created_at ASC, ash.id ASC
   `;
 
-  db.query(sql, [appointmentId], (error, results) => {
-    if (error) {
-      console.error(
-        "Get appointment history error:",
-        error.message
-      );
+  db.query(
+    sql,
+    [appointmentId],
+    (error, results) => {
+      if (error) {
+        console.error(
+          "Get appointment history error:",
+          error.message
+        );
 
-      return res.status(500).json({
-        message:
-          "Failed to get appointment status history",
-      });
+        return res.status(500).json({
+          message:
+            "Failed to get appointment status history",
+        });
+      }
+
+      res.json(results);
     }
-
-    res.json(results);
-  });
+  );
 };
 
-// Update appointment status
+
+// ======================================================
+// UPDATE APPOINTMENT STATUS
+// ======================================================
+
 const updateAppointmentStatus = (req, res) => {
   const appointmentId = req.params.id;
 
@@ -193,11 +229,19 @@ const updateAppointmentStatus = (req, res) => {
 
       const oldStatus =
         appointmentResults[0].status;
-        if (!isAllowedStatusTransition(oldStatus, status)) {
-  return res.status(400).json({
-    message: `Invalid appointment status transition: ${oldStatus} -> ${status}.`,
-  });
-}
+
+      if (
+        !isAllowedStatusTransition(
+          oldStatus,
+          status
+        )
+      ) {
+        return res.status(400).json({
+          message:
+            `Invalid appointment status transition: ${oldStatus} -> ${status}.`,
+        });
+      }
+
       if (oldStatus === status) {
         return res.status(400).json({
           message:
@@ -300,7 +344,18 @@ const updateAppointmentStatus = (req, res) => {
                     });
                   }
 
+
+                  // ==================================================
+                  // CONFIRMED
+                  // ==================================================
+
                   if (status === "CONFIRMED") {
+                    /*
+                      The appointment has been changed to CONFIRMED.
+
+                      First create the in-app notification.
+                    */
+
                     notificationService.notifyAppointmentConfirmed(
                       appointmentId,
                       (notificationError) => {
@@ -317,6 +372,13 @@ const updateAppointmentStatus = (req, res) => {
                             });
                           });
                         }
+
+                        /*
+                          Commit the appointment confirmation.
+
+                          Once committed, the appointment is
+                          officially CONFIRMED.
+                        */
 
                         db.commit(
                           (commitError) => {
@@ -336,18 +398,221 @@ const updateAppointmentStatus = (req, res) => {
                               );
                             }
 
-                            res.json({
-                              message:
-                                "Appointment status updated successfully",
-                              appointmentId:
-                                Number(
-                                  appointmentId
-                                ),
-                              old_status:
-                                oldStatus,
-                              new_status:
-                                status,
-                            });
+
+                            // ==========================================
+                            // CREATE APPOINTMENT REMINDERS
+                            // ==========================================
+
+                            reminderService.createAppointmentReminders(
+                              appointmentId,
+                              (
+                                reminderError,
+                                reminderResult
+                              ) => {
+                                if (reminderError) {
+                                  console.error(
+                                    "Create appointment confirmation reminders error:",
+                                    reminderError.message
+                                  );
+                                }
+
+
+                                // ======================================
+                                // GET PATIENT EMAIL INFORMATION
+                                // ======================================
+
+                                const emailSql = `
+                                  SELECT
+                                    u.email AS patient_email,
+                                    u.name AS patient_name,
+                                    h.name AS hospital_name,
+                                    CONCAT(
+                                      d.first_name,
+                                      ' ',
+                                      d.last_name
+                                    ) AS doctor_name,
+                                    ms.name AS service_name,
+                                    DATE_FORMAT(
+                                      a.appointment_date,
+                                      '%Y-%m-%d'
+                                    ) AS appointment_date,
+                                    a.start_time
+                                  FROM appointments a
+                                  INNER JOIN patient_profiles pp
+                                    ON a.patient_id = pp.id
+                                  INNER JOIN users_tbl u
+                                    ON pp.user_id = u.id
+                                  INNER JOIN hospitals h
+                                    ON a.hospital_id = h.id
+                                  INNER JOIN doctors d
+                                    ON a.doctor_id = d.id
+                                  INNER JOIN hospital_services hs
+                                    ON a.hospital_service_id = hs.id
+                                  INNER JOIN medical_services ms
+                                    ON hs.service_id = ms.id
+                                  WHERE a.id = ?
+                                `;
+
+                                db.query(
+                                  emailSql,
+                                  [appointmentId],
+                                  (
+                                    emailDataError,
+                                    emailResults
+                                  ) => {
+                                    if (
+                                      emailDataError
+                                    ) {
+                                      console.error(
+                                        "Get appointment email information error:",
+                                        emailDataError.message
+                                      );
+
+                                      return res.json({
+                                        message:
+                                          "Appointment confirmed successfully, but email information could not be retrieved.",
+                                        appointmentId:
+                                          Number(
+                                            appointmentId
+                                          ),
+                                        old_status:
+                                          oldStatus,
+                                        new_status:
+                                          status,
+                                        reminders_created:
+                                          reminderResult
+                                            ? reminderResult.remindersCreated
+                                            : 0,
+                                        email_sent:
+                                          false,
+                                        email_warning:
+                                          emailDataError.message,
+                                      });
+                                    }
+
+                                    if (
+                                      emailResults.length ===
+                                      0
+                                    ) {
+                                      return res.json({
+                                        message:
+                                          "Appointment confirmed successfully, but patient email information was not found.",
+                                        appointmentId:
+                                          Number(
+                                            appointmentId
+                                          ),
+                                        old_status:
+                                          oldStatus,
+                                        new_status:
+                                          status,
+                                        reminders_created:
+                                          reminderResult
+                                            ? reminderResult.remindersCreated
+                                            : 0,
+                                        email_sent:
+                                          false,
+                                        email_warning:
+                                          "Patient email information not found.",
+                                      });
+                                    }
+
+                                    const appointmentEmailData =
+                                      emailResults[0];
+
+
+                                    // ==================================
+                                    // SEND CONFIRMATION EMAIL
+                                    // ==================================
+
+                                    emailService.sendAppointmentConfirmationEmail(
+                                      {
+                                        recipientEmail:
+                                          appointmentEmailData.patient_email,
+
+                                        patientName:
+                                          appointmentEmailData.patient_name,
+
+                                        hospitalName:
+                                          appointmentEmailData.hospital_name,
+
+                                        doctorName:
+                                          appointmentEmailData.doctor_name,
+
+                                        serviceName:
+                                          appointmentEmailData.service_name,
+
+                                        appointmentDate:
+                                          appointmentEmailData.appointment_date,
+
+                                        startTime:
+                                          appointmentEmailData.start_time,
+                                      },
+                                      (emailError) => {
+                                        if (
+                                          emailError
+                                        ) {
+                                          console.error(
+                                            "Appointment confirmation email error:",
+                                            emailError.message
+                                          );
+
+                                          return res.json({
+                                            message:
+                                              "Appointment confirmed successfully, but the confirmation email could not be sent.",
+
+                                            appointmentId:
+                                              Number(
+                                                appointmentId
+                                              ),
+
+                                            old_status:
+                                              oldStatus,
+
+                                            new_status:
+                                              status,
+
+                                            reminders_created:
+                                              reminderResult
+                                                ? reminderResult.remindersCreated
+                                                : 0,
+
+                                            email_sent:
+                                              false,
+
+                                            email_warning:
+                                              emailError.message,
+                                          });
+                                        }
+
+                                        return res.json({
+                                          message:
+                                            "Appointment confirmed successfully.",
+
+                                          appointmentId:
+                                            Number(
+                                              appointmentId
+                                            ),
+
+                                          old_status:
+                                            oldStatus,
+
+                                          new_status:
+                                            status,
+
+                                          reminders_created:
+                                            reminderResult
+                                              ? reminderResult.remindersCreated
+                                              : 0,
+
+                                          email_sent:
+                                            true,
+                                        });
+                                      }
+                                    );
+                                  }
+                                );
+                              }
+                            );
                           }
                         );
                       }
@@ -355,6 +620,11 @@ const updateAppointmentStatus = (req, res) => {
 
                     return;
                   }
+
+
+                  // ==================================================
+                  // CANCELLED
+                  // ==================================================
 
                   if (status === "CANCELLED") {
                     db.commit(
@@ -424,6 +694,11 @@ const updateAppointmentStatus = (req, res) => {
                     return;
                   }
 
+
+                  // ==================================================
+                  // OTHER STATUS CHANGES
+                  // ==================================================
+
                   db.commit(
                     (commitError) => {
                       if (commitError) {
@@ -445,12 +720,15 @@ const updateAppointmentStatus = (req, res) => {
                       res.json({
                         message:
                           "Appointment status updated successfully",
+
                         appointmentId:
                           Number(
                             appointmentId
                           ),
+
                         old_status:
                           oldStatus,
+
                         new_status:
                           status,
                       });
@@ -466,7 +744,11 @@ const updateAppointmentStatus = (req, res) => {
   );
 };
 
-// Reschedule appointment
+
+// ======================================================
+// RESCHEDULE APPOINTMENT
+// ======================================================
+
 const rescheduleAppointment = (req, res) => {
   const appointmentId = req.params.id;
 
@@ -559,7 +841,10 @@ const rescheduleAppointment = (req, res) => {
         return `${String(hours).padStart(
           2,
           "0"
-        )}:${String(mins).padStart(2, "0")}:00`;
+        )}:${String(mins).padStart(
+          2,
+          "0"
+        )}:00`;
       };
 
       const startMinutes =
@@ -629,7 +914,10 @@ const rescheduleAppointment = (req, res) => {
           dayOfWeek,
           appointment_date,
         ],
-        (availabilityError, availabilityResults) => {
+        (
+          availabilityError,
+          availabilityResults
+        ) => {
           if (availabilityError) {
             console.error(
               "Get reschedule availability error:",
@@ -782,7 +1070,10 @@ const rescheduleAppointment = (req, res) => {
                   calculatedEndTime,
                   start_time,
                 ],
-                (conflictError, conflictResults) => {
+                (
+                  conflictError,
+                  conflictResults
+                ) => {
                   if (conflictError) {
                     return db.rollback(() => {
                       console.error(
@@ -906,7 +1197,9 @@ const rescheduleAppointment = (req, res) => {
                                     AND status = 'PENDING'
                                 `,
                                 [appointmentId],
-                                (reminderCancelError) => {
+                                (
+                                  reminderCancelError
+                                ) => {
                                   if (
                                     reminderCancelError
                                   ) {
@@ -918,20 +1211,25 @@ const rescheduleAppointment = (req, res) => {
                                     return res.json({
                                       message:
                                         "Appointment rescheduled successfully, but old reminders could not be cancelled",
+
                                       appointmentId:
                                         Number(
                                           appointmentId
                                         ),
+
                                       old_status:
                                         oldStatus,
+
                                       new_status:
                                         "RESCHEDULED",
+
                                       appointment: {
                                         appointment_date,
                                         start_time,
                                         end_time:
                                           calculatedEndTime,
                                       },
+
                                       reminder_warning:
                                         reminderCancelError.message,
                                     });
@@ -954,20 +1252,25 @@ const rescheduleAppointment = (req, res) => {
                                         return res.json({
                                           message:
                                             "Appointment rescheduled successfully, but new reminders could not be created",
+
                                           appointmentId:
                                             Number(
                                               appointmentId
                                             ),
+
                                           old_status:
                                             oldStatus,
+
                                           new_status:
                                             "RESCHEDULED",
+
                                           appointment: {
                                             appointment_date,
                                             start_time,
                                             end_time:
                                               calculatedEndTime,
                                           },
+
                                           reminder_warning:
                                             reminderCreateError.message,
                                         });
@@ -976,22 +1279,28 @@ const rescheduleAppointment = (req, res) => {
                                       res.json({
                                         message:
                                           "Appointment rescheduled successfully",
+
                                         appointmentId:
                                           Number(
                                             appointmentId
                                           ),
+
                                         old_status:
                                           oldStatus,
+
                                         new_status:
                                           "RESCHEDULED",
+
                                         appointment: {
                                           appointment_date,
                                           start_time,
                                           end_time:
                                             calculatedEndTime,
                                         },
+
                                         reminders_created:
-                                          reminderResult.remindersCreated,
+                                          reminderResult
+                                            .remindersCreated,
                                       });
                                     }
                                   );
@@ -1012,6 +1321,7 @@ const rescheduleAppointment = (req, res) => {
     }
   );
 };
+
 
 module.exports = {
   getAppointment,

@@ -1,247 +1,783 @@
+/* ========================================
+   HOSPITAL DETAILS PAGE
+======================================== */
+
 .hospital-details-page {
   min-height: 100vh;
+  width: 100%;
+
   background: var(--nb-bg);
   color: var(--nb-text);
-  display: flex;
 }
 
+
+/* ========================================
+   MAIN CONTENT
+======================================== */
+
 .hospital-details-main {
-  margin-left: 260px;
   width: calc(100% - 260px);
+  margin-left: 260px;
+
   min-height: 100vh;
-  padding: 32px 36px 50px;
+
+  padding: 34px 42px 60px;
+
   box-sizing: border-box;
 }
+
+
+/* ========================================
+   BACK BUTTON
+======================================== */
 
 .hospital-details-back {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: none;
-  background: transparent;
-  color: var(--nb-muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
+
+  margin-bottom: 26px;
   padding: 0;
-  margin-bottom: 28px;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 14px;
+  font-weight: 650;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .hospital-details-back:hover {
-  color: var(--nb-accent);
+  color: var(--nb-text);
+  transform: translateX(-2px);
 }
 
-.hospital-details-header {
+
+/* ========================================
+   HOSPITAL HERO
+======================================== */
+
+.hospital-hero {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
+
   margin-bottom: 28px;
+  padding: 26px;
+
+  border: 1px solid rgba(230, 191, 63, 0.16);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(230, 191, 63, 0.09),
+      rgba(255, 255, 255, 0.025)
+    );
 }
 
-.hospital-details-icon {
-  width: 68px;
-  height: 68px;
-  border-radius: 16px;
-  background: rgba(230, 191, 63, 0.12);
-  color: var(--nb-accent);
+.hospital-hero-icon {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  width: 68px;
+  height: 68px;
+
   flex-shrink: 0;
+
+  border-radius: 17px;
+
+  background: rgba(230, 191, 63, 0.13);
+  color: var(--nb-accent, #e6bf3f);
 }
 
-.hospital-details-eyebrow {
-  color: var(--nb-accent);
-  font-size: 13px;
+.hospital-hero-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.hospital-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 7px;
+}
+
+.hospital-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.hospital-status {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 4px 9px;
+
+  border: 1px solid rgba(230, 191, 63, 0.18);
+  border-radius: 999px;
+
+  background: rgba(230, 191, 63, 0.07);
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 11px;
   font-weight: 700;
-  margin-bottom: 5px;
 }
 
-.hospital-details-heading h1 {
-  margin: 0 0 6px;
-  font-size: 30px;
+.hospital-hero h1 {
+  margin: 0 0 10px;
+
+  font-size: 31px;
   line-height: 1.2;
+  font-weight: 750;
 }
 
-.hospital-details-heading p {
-  margin: 0;
-  color: var(--nb-muted);
-  font-size: 14px;
-}
-
-.hospital-details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
-}
-
-.hospital-details-card {
-  background: var(--nb-card);
-  border: 1px solid var(--nb-border);
-  border-radius: 16px;
-  padding: 24px;
-}
-
-.hospital-details-card h2 {
-  margin: 0 0 20px;
-  font-size: 18px;
-}
-
-.hospital-detail-row {
+.hospital-hero-address {
   display: flex;
   align-items: flex-start;
-  gap: 13px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--nb-border);
-  color: var(--nb-accent);
+  gap: 8px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-.hospital-detail-row:last-child {
-  border-bottom: none;
+.hospital-hero-address svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+
+  color: var(--nb-accent, #e6bf3f);
 }
 
-.hospital-detail-row div {
+.hospital-hero-distance {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 10px;
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+
+/* ========================================
+   MAIN TWO-COLUMN LAYOUT
+======================================== */
+
+.hospital-details-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    minmax(300px, 0.85fr);
+
+  gap: 22px;
+
+  align-items: start;
+}
+
+.hospital-details-left {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+
+/* ========================================
+   INFORMATION CARDS
+======================================== */
+
+.hospital-info-card {
+  padding: 24px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.hospital-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding-bottom: 18px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hospital-card-heading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  border-radius: 11px;
+
+  background: rgba(230, 191, 63, 0.1);
+  color: var(--nb-accent, #e6bf3f);
+}
+
+.hospital-card-heading h2 {
+  margin: 0 0 3px;
+
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.hospital-card-heading p {
+  margin: 0;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 12px;
+}
+
+
+/* ========================================
+   ABOUT
+======================================== */
+
+.hospital-about {
+  padding-top: 19px;
+}
+
+.hospital-about p {
+  margin: 0;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+
+/* ========================================
+   CONTACT GRID
+======================================== */
+
+.hospital-contact-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 0 20px;
+
+  padding-top: 7px;
+}
+
+.hospital-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  min-width: 0;
+
+  padding: 16px 0;
+
+  border-bottom: 1px solid
+    rgba(255, 255, 255, 0.06);
+}
+
+.hospital-contact-item-full {
+  grid-column: 1 / -1;
+}
+
+.hospital-contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border-radius: 9px;
+
+  background: rgba(230, 191, 63, 0.08);
+  color: var(--nb-accent, #e6bf3f);
+}
+
+.hospital-contact-item > div:last-child {
+  display: flex;
+  flex-direction: column;
+
   min-width: 0;
 }
 
-.hospital-detail-row span {
-  display: block;
-  color: var(--nb-muted);
-  font-size: 12px;
-  margin-bottom: 3px;
+.hospital-contact-item span {
+  margin-bottom: 4px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 11px;
+  font-weight: 600;
 }
 
-.hospital-detail-row strong {
-  display: block;
+.hospital-contact-item strong,
+.hospital-contact-item a {
+  overflow-wrap: anywhere;
+
   color: var(--nb-text);
-  font-size: 14px;
-  font-weight: 600;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  text-decoration: none;
+}
+
+.hospital-contact-item a {
+  color: var(--nb-accent, #e6bf3f);
+  font-weight: 650;
+}
+
+.hospital-contact-item a:hover {
+  text-decoration: underline;
+}
+
+
+/* ========================================
+   BOOKING PANEL
+======================================== */
+
+.hospital-booking-panel {
+  position: sticky;
+  top: 24px;
+
+  padding: 25px;
+
+  border: 1px solid rgba(230, 191, 63, 0.2);
+  border-radius: 17px;
+
+  background:
+    linear-gradient(
+      160deg,
+      rgba(230, 191, 63, 0.105),
+      rgba(255, 255, 255, 0.025)
+    );
+}
+
+.hospital-booking-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 52px;
+  height: 52px;
+
+  margin-bottom: 17px;
+
+  border-radius: 14px;
+
+  background: rgba(230, 191, 63, 0.13);
+  color: var(--nb-accent, #e6bf3f);
+}
+
+.hospital-booking-label {
+  margin-bottom: 7px;
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hospital-booking-panel h2 {
+  margin: 0 0 9px;
+
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 750;
+}
+
+.hospital-booking-panel > p {
+  margin: 0 0 22px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+
+/* ========================================
+   BOOKING STEPS
+======================================== */
+
+.hospital-booking-steps {
+  display: flex;
+  flex-direction: column;
+
+  margin-bottom: 22px;
+}
+
+.hospital-booking-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  padding: 12px 0;
+
+  border-bottom: 1px solid
+    rgba(255, 255, 255, 0.07);
+}
+
+.hospital-booking-step:last-child {
+  border-bottom: 0;
+}
+
+.hospital-booking-step > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 26px;
+  height: 26px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: rgba(230, 191, 63, 0.12);
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.hospital-booking-step div {
+  display: flex;
+  flex-direction: column;
+
+  gap: 2px;
+}
+
+.hospital-booking-step strong {
+  color: var(--nb-text);
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.hospital-booking-step small {
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 11px;
   line-height: 1.5;
 }
 
-.hospital-details-description {
-  color: var(--nb-muted);
-  font-size: 14px;
-  line-height: 1.7;
-  margin: 0;
-}
 
-.hospital-booking-card {
-  margin-top: 20px;
-  padding: 24px;
-  background: var(--nb-card);
-  border: 1px solid var(--nb-border);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-}
-
-.hospital-booking-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  background: rgba(230, 191, 63, 0.12);
-  color: var(--nb-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.hospital-booking-card h2 {
-  margin: 0 0 6px;
-  font-size: 19px;
-}
-
-.hospital-booking-card p {
-  margin: 0;
-  color: var(--nb-muted);
-  font-size: 14px;
-}
+/* ========================================
+   BOOKING BUTTON
+======================================== */
 
 .hospital-booking-button {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-width: 190px;
-  border: none;
-  border-radius: 10px;
-  background: var(--nb-accent);
-  color: #111;
-  padding: 13px 18px;
+  gap: 9px;
+
+  width: 100%;
+  min-height: 46px;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: var(--nb-accent, #e6bf3f);
+  color: #111111;
+
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 750;
+
   cursor: pointer;
-  flex-shrink: 0;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .hospital-booking-button:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
+  opacity: 0.92;
 }
 
-.hospital-details-loading,
-.hospital-details-error {
-  min-height: 300px;
+.hospital-booking-button:active {
+  transform: translateY(0);
+}
+
+
+/* ========================================
+   BOOKING NOTE
+======================================== */
+
+.hospital-booking-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+
+  margin-top: 14px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.hospital-booking-note svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+
+/* ========================================
+   LOADING
+======================================== */
+
+.hospital-details-loading {
+  min-height: 400px;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
   justify-content: center;
+
   text-align: center;
 }
 
-.hospital-details-loading {
-  color: var(--nb-muted);
+.hospital-details-loading-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 58px;
+  height: 58px;
+
+  margin-bottom: 15px;
+
+  border-radius: 15px;
+
+  background: rgba(230, 191, 63, 0.1);
+  color: var(--nb-accent, #e6bf3f);
 }
 
-.hospital-details-spinner {
-  animation: hospital-details-spin 1s linear infinite;
-  color: var(--nb-accent);
-  margin-bottom: 12px;
+.hospital-details-loading h2 {
+  margin: 0 0 7px;
+
+  font-size: 19px;
 }
+
+.hospital-details-loading p {
+  margin: 0;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 13px;
+}
+
+
+/* ========================================
+   ERROR
+======================================== */
 
 .hospital-details-error {
-  background: var(--nb-card);
-  border: 1px solid var(--nb-border);
-  border-radius: 16px;
+  min-height: 300px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
   padding: 32px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  text-align: center;
 }
 
-.hospital-details-error svg {
-  color: var(--nb-accent);
-  margin-bottom: 12px;
+.hospital-details-error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 56px;
+  height: 56px;
+
+  margin-bottom: 15px;
+
+  border-radius: 14px;
+
+  background: rgba(230, 191, 63, 0.1);
+  color: var(--nb-accent, #e6bf3f);
 }
 
 .hospital-details-error h2 {
-  margin: 0 0 6px;
+  margin: 0 0 7px;
+
+  font-size: 20px;
 }
 
 .hospital-details-error p {
+  max-width: 520px;
+
   margin: 0;
-  color: var(--nb-muted);
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 14px;
+  line-height: 1.6;
 }
 
-@keyframes hospital-details-spin {
-  to {
-    transform: rotate(360deg);
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1100px) {
+
+  .hospital-details-layout {
+    grid-template-columns:
+      minmax(0, 1.35fr)
+      minmax(280px, 0.85fr);
   }
+
+  .hospital-details-main {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
 }
+
 
 @media (max-width: 900px) {
+
   .hospital-details-main {
-    margin-left: 230px;
     width: calc(100% - 230px);
-    padding: 28px 24px 45px;
+    margin-left: 230px;
+
+    padding: 30px 25px 50px;
   }
+
+  .hospital-details-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .hospital-booking-panel {
+    position: static;
+  }
+
 }
 
+
 @media (max-width: 700px) {
+
   .hospital-details-main {
-    margin-left: 0;
     width: 100%;
+    margin-left: 0;
+
     min-width: 0;
-    padding: 24px 16px 40px;
+
+    padding: 25px 18px 42px;
   }
+
+  .hospital-hero {
+    flex-direction: column;
+
+    padding: 21px;
+  }
+
+  .hospital-hero-icon {
+    width: 58px;
+    height: 58px;
+  }
+
+  .hospital-hero h1 {
+    font-size: 27px;
+  }
+
+  .hospital-contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hospital-contact-item-full {
+    grid-column: auto;
+  }
+
+}
+
+
+@media (max-width: 520px) {
+
+  .hospital-details-main {
+    padding: 22px 15px 35px;
+  }
+
+  .hospital-details-back {
+    margin-bottom: 20px;
+  }
+
+  .hospital-hero {
+    padding: 18px;
+    gap: 15px;
+  }
+
+  .hospital-hero h1 {
+    font-size: 24px;
+  }
+
+  .hospital-hero-top {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .hospital-info-card,
+  .hospital-booking-panel {
+    padding: 18px;
+  }
+
+  .hospital-card-heading {
+    align-items: flex-start;
+  }
+
+  .hospital-booking-panel h2 {
+    font-size: 20px;
+  }
+
 }

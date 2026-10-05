@@ -1,146 +1,72 @@
-const NOMINATIM_URL =
-  "https://nominatim.openstreetmap.org/search";
 
-const USER_AGENT =
-  "NutriBot/1.0 (NutriBot hospital location search)";
 
-const cleanValue = (value) => {
-  if (!value) {
-    return "";
-  }
+const PHOTON_URL = "https://photon.komoot.io/api/";
 
-  return String(value)
-    .trim()
-    .replace(/\s+/g, " ");
-};
 
-const normalizeForComparison = (value) => {
-  return cleanValue(value)
-    .toLowerCase()
-    .replace(/[,.]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-};
-
-const isDuplicateLocation = (first, second) => {
-  const a = normalizeForComparison(first);
-  const b = normalizeForComparison(second);
-
-  if (!a || !b) {
-    return false;
-  }
-
-  if (a === b) {
-    return true;
-  }
-
-  if (a.includes(b) || b.includes(a)) {
-    return true;
-  }
-
-  return false;
-};
-
-const buildSearchAddress = ({
-  state,
-  city,
-  area,
-  address,
-  country = "Nigeria",
-}) => {
-  const cleanedState = cleanValue(state);
-  const cleanedCity = cleanValue(city);
-  const cleanedArea = cleanValue(area);
-  const cleanedAddress = cleanValue(address);
-  const cleanedCountry = cleanValue(country);
-
-  const parts = [];
-
-  if (cleanedAddress) {
-    parts.push(cleanedAddress);
-  }
-
-  if (
-    cleanedArea &&
-    !isDuplicateLocation(cleanedAddress, cleanedArea)
-  ) {
-    parts.push(cleanedArea);
-  }
-
-  if (
-    cleanedCity &&
-    !isDuplicateLocation(
-      `${cleanedAddress}, ${cleanedArea}`,
-      cleanedCity
-    )
-  ) {
-    parts.push(cleanedCity);
-  }
-
-  if (
-    cleanedState &&
-    !isDuplicateLocation(
-      `${cleanedAddress}, ${cleanedArea}, ${cleanedCity}`,
-      cleanedState
-    )
-  ) {
-    parts.push(cleanedState);
-  }
-
-  if (cleanedCountry) {
-    parts.push(cleanedCountry);
-  }
-
-  return parts.join(", ");
-};
-
-/**
- * Ask Nominatim for coordinates.
- */
-const searchNominatim = async (searchAddress) => {
-  const cleanedSearch = cleanValue(searchAddress);
-
-  if (!cleanedSearch) {
-    return null;
-  }
-
+const searchPhoton = async (searchAddress) => {
   console.log(
-    `Nominatim search: "${cleanedSearch}"`
+    `Photon search: "${searchAddress}"`
   );
 
-  const url = new URL(NOMINATIM_URL);
+  const url = new URL(PHOTON_URL);
 
-  url.searchParams.set("q", cleanedSearch);
-  url.searchParams.set("format", "json");
-  url.searchParams.set("limit", "1");
-  url.searchParams.set("addressdetails", "1");
-  url.searchParams.set("countrycodes", "ng");
+  url.searchParams.set(
+    "q",
+    searchAddress
+  );
+
+  url.searchParams.set(
+    "limit",
+    "1"
+  );
 
   const response = await fetch(url, {
     method: "GET",
-
     headers: {
-      "User-Agent": USER_AGENT,
       Accept: "application/json",
     },
   });
 
   if (!response.ok) {
     throw new Error(
-      `OpenStreetMap Geocoding request failed with status ${response.status}.`
+      `Photon request failed with status ${response.status}.`
     );
   }
 
   const data = await response.json();
 
-  if (!Array.isArray(data) || data.length === 0) {
+  if (
+    !data ||
+    !Array.isArray(data.features) ||
+    data.features.length === 0
+  ) {
     return null;
   }
 
-  const result = data[0];
+  const feature = data.features[0];
 
-  const latitude = Number(result.lat);
-  const longitude = Number(result.lon);
+  const coordinates =
+    feature?.geometry?.coordinates;
+
+  if (
+    !Array.isArray(coordinates) ||
+    coordinates.length < 2
+  ) {
+    return null;
+  }
+
+  /*
+   * GeoJSON coordinates are:
+   *
+   * [longitude, latitude]
+   */
+  const longitude = Number(
+    coordinates[0]
+  );
+
+  const latitude = Number(
+    coordinates[1]
+  );
 
   if (
     !Number.isFinite(latitude) ||
@@ -149,140 +75,35 @@ const searchNominatim = async (searchAddress) => {
     return null;
   }
 
+  const properties =
+    feature.properties || {};
+
+  const formattedAddress =
+    [
+      properties.name,
+      properties.street,
+      properties.city,
+      properties.state,
+      properties.country,
+    ]
+      .filter(Boolean)
+      .join(", ") ||
+    searchAddress;
+
   return {
     latitude,
     longitude,
-    formattedAddress:
-      result.display_name || cleanedSearch,
+    formattedAddress,
   };
 };
 
 /**
- * Create several increasingly broader searches.
+ * Convert a human-readable address
+ * into latitude and longitude.
  *
- * This is important because Nigerian addresses are not
- * always indexed by Nominatim exactly as entered.
+ * The service progressively broadens the search
+ * if Photon cannot find the complete address.
  */
-const buildSearchCandidates = ({
-  state,
-  city,
-  area,
-  address,
-  country = "Nigeria",
-}) => {
-  const cleanedState = cleanValue(state);
-  const cleanedCity = cleanValue(city);
-  const cleanedArea = cleanValue(area);
-  const cleanedAddress = cleanValue(address);
-  const cleanedCountry = cleanValue(country);
-
-  const candidates = [];
-
-  const addCandidate = (parts) => {
-    const value = parts
-      .map(cleanValue)
-      .filter(Boolean)
-      .join(", ");
-
-    if (!value) {
-      return;
-    }
-
-    const alreadyExists = candidates.some(
-      (candidate) =>
-        normalizeForComparison(candidate) ===
-        normalizeForComparison(value)
-    );
-
-    if (!alreadyExists) {
-      candidates.push(value);
-    }
-  };
-
-  /*
-   * 1. Complete address.
-   */
-  addCandidate([
-    cleanedAddress,
-    cleanedArea,
-    cleanedCity,
-    cleanedState,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 2. Address + city + state.
-   */
-  addCandidate([
-    cleanedAddress,
-    cleanedCity,
-    cleanedState,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 3. Area + city + state.
-   *
-   * Example:
-   * Thomas Estate, Ajah, Lagos, Nigeria
-   */
-  addCandidate([
-    cleanedArea,
-    cleanedCity,
-    cleanedState,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 4. Address + area + state.
-   */
-  addCandidate([
-    cleanedAddress,
-    cleanedArea,
-    cleanedState,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 5. Address + city.
-   */
-  addCandidate([
-    cleanedAddress,
-    cleanedCity,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 6. Area + city.
-   */
-  addCandidate([
-    cleanedArea,
-    cleanedCity,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 7. City + state.
-   *
-   * This is the broader fallback.
-   */
-  addCandidate([
-    cleanedCity,
-    cleanedState,
-    cleanedCountry,
-  ]);
-
-  /*
-   * 8. State.
-   */
-  addCandidate([
-    cleanedState,
-    cleanedCountry,
-  ]);
-
-  return candidates;
-};
-
 const geocodeAddress = async ({
   state,
   city,
@@ -290,78 +111,150 @@ const geocodeAddress = async ({
   address,
   country = "Nigeria",
 }) => {
-  const cleanedState = cleanValue(state);
-  const cleanedCity = cleanValue(city);
-  const cleanedArea = cleanValue(area);
-  const cleanedAddress = cleanValue(address);
-  const cleanedCountry = cleanValue(country);
+  const searches = [];
+
+  /*
+   * 1. Full search
+   *
+   * Example:
+   * Dominican University, Samonda,
+   * Ibadan, Oyo, Nigeria
+   */
+  const fullAddress = [
+    address,
+    area,
+    city,
+    state,
+    country,
+  ].filter(Boolean);
+
+  if (fullAddress.length > 0) {
+    searches.push(
+      fullAddress.join(", ")
+    );
+  }
+
+  /*
+   * 2. Address + city + state + country
+   *
+   * Useful if the area name causes
+   * the full search to fail.
+   */
+  const addressCitySearch = [
+    address,
+    city,
+    state,
+    country,
+  ].filter(Boolean);
 
   if (
-    !cleanedState &&
-    !cleanedCity &&
-    !cleanedArea &&
-    !cleanedAddress
+    addressCitySearch.length > 0 &&
+    addressCitySearch.join(", ") !==
+      searches[searches.length - 1]
   ) {
+    searches.push(
+      addressCitySearch.join(", ")
+    );
+  }
+
+  /*
+   * 3. Area + city + state + country
+   *
+   * Example:
+   * Samonda, Ibadan, Oyo, Nigeria
+   */
+  const areaSearch = [
+    area,
+    city,
+    state,
+    country,
+  ].filter(Boolean);
+
+  if (
+    areaSearch.length > 0 &&
+    areaSearch.join(", ") !==
+      searches[searches.length - 1]
+  ) {
+    searches.push(
+      areaSearch.join(", ")
+    );
+  }
+
+  /*
+   * 4. City + state + country
+   */
+  const citySearch = [
+    city,
+    state,
+    country,
+  ].filter(Boolean);
+
+  if (
+    citySearch.length > 0 &&
+    citySearch.join(", ") !==
+      searches[searches.length - 1]
+  ) {
+    searches.push(
+      citySearch.join(", ")
+    );
+  }
+
+  /*
+   * 5. State + country
+   */
+  const stateSearch = [
+    state,
+    country,
+  ].filter(Boolean);
+
+  if (
+    stateSearch.length > 0 &&
+    stateSearch.join(", ") !==
+      searches[searches.length - 1]
+  ) {
+    searches.push(
+      stateSearch.join(", ")
+    );
+  }
+
+  if (searches.length === 0) {
     throw new Error(
       "A location or address is required."
     );
   }
 
-  const candidates = buildSearchCandidates({
-    state: cleanedState,
-    city: cleanedCity,
-    area: cleanedArea,
-    address: cleanedAddress,
-    country: cleanedCountry,
-  });
-
-  console.log(
-    "Geocoding candidates:",
-    candidates
-  );
-
-  let lastError = null;
-
-  for (const candidate of candidates) {
+  /*
+   * Try each search until Photon returns
+   * a valid location.
+   */
+  for (const searchAddress of searches) {
     try {
       const result =
-        await searchNominatim(candidate);
+        await searchPhoton(
+          searchAddress
+        );
 
       if (result) {
         console.log(
-          `Geocoding successful: "${candidate}"`
+          `Photon geocoding successful: "${result.formattedAddress}"`
         );
 
         return result;
       }
 
       console.log(
-        `No geocoding result for: "${candidate}"`
+        `Photon found no result for "${searchAddress}".`
       );
     } catch (error) {
-      lastError = error;
-
       console.error(
-        `Geocoding attempt failed for "${candidate}":`,
+        `Photon search failed for "${searchAddress}":`,
         error.message
       );
     }
   }
 
-  if (lastError) {
-    throw lastError;
-  }
-
-  const originalAddress = buildSearchAddress({
-    state: cleanedState,
-    city: cleanedCity,
-    area: cleanedArea,
-    address: cleanedAddress,
-    country: cleanedCountry,
-  });
-
   throw new Error(
-    `Unable to find coordinates for "${originalAddress}".`
+    `Unable to find coordinates for "${searches[0]}".`
   );
 };
 

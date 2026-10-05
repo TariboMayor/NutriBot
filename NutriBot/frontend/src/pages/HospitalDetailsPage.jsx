@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import {
   ArrowLeft,
+  CalendarDays,
+  Globe,
   Hospital,
+  Mail,
   MapPin,
   Navigation,
   Phone,
-  Mail,
-  Globe,
-  CalendarDays,
-  AlertCircle,
+  ShieldCheck,
+  Stethoscope,
 } from "lucide-react";
 
 import UserSidebar from "../components/navigation/UserSidebar";
@@ -26,9 +31,8 @@ function HospitalDetailsPage() {
     location.state?.hospital || null
   );
 
-  const [patientLocation] = useState(
-    location.state?.patientLocation || null
-  );
+  const patientLocation =
+    location.state?.patientLocation || null;
 
   const [loading, setLoading] = useState(
     !location.state?.hospital
@@ -46,12 +50,10 @@ function HospitalDetailsPage() {
           setError(
             "Your session has expired. Please log in again."
           );
-
           setLoading(false);
           return;
         }
 
-        // Hospital was already supplied from Find Hospital.
         if (location.state?.hospital) {
           setLoading(false);
           return;
@@ -96,14 +98,20 @@ function HospitalDetailsPage() {
 
     fetchHospital();
   }, [id, location.state]);
-const handleBookAppointment = () => {
-  navigate(`/hospitals/${id}/doctors`, {
-    state: {
-      hospital,
-      patientLocation,
-    },
-  });
-};
+
+  const handleBookAppointment = () => {
+    navigate(`/hospitals/${id}/doctors`, {
+      state: {
+        hospital,
+        patientLocation,
+      },
+    });
+  };
+
+  const handleBack = () => {
+    navigate("/hospitals");
+  };
+
   if (loading) {
     return (
       <div className="hospital-details-page">
@@ -111,7 +119,15 @@ const handleBookAppointment = () => {
 
         <main className="hospital-details-main">
           <div className="hospital-details-loading">
-            Loading hospital details...
+            <div className="hospital-details-loading-icon">
+              <Hospital size={28} />
+            </div>
+
+            <h2>Loading Hospital</h2>
+
+            <p>
+              Please wait while we load the hospital information.
+            </p>
           </div>
         </main>
       </div>
@@ -128,26 +144,22 @@ const handleBookAppointment = () => {
           <button
             type="button"
             className="hospital-details-back"
-            onClick={() => navigate("/hospitals")}
+            onClick={handleBack}
           >
             <ArrowLeft size={18} />
             Back to Hospitals
           </button>
 
           <section className="hospital-details-error">
-
             <div className="hospital-details-error-icon">
-              <AlertCircle size={28} />
+              <Hospital size={28} />
             </div>
 
             <h2>
               Unable to Load Hospital
             </h2>
 
-            <p>
-              {error}
-            </p>
-
+            <p>{error}</p>
           </section>
 
         </main>
@@ -165,14 +177,13 @@ const handleBookAppointment = () => {
           <button
             type="button"
             className="hospital-details-back"
-            onClick={() => navigate("/hospitals")}
+            onClick={handleBack}
           >
             <ArrowLeft size={18} />
             Back to Hospitals
           </button>
 
           <section className="hospital-details-error">
-
             <div className="hospital-details-error-icon">
               <Hospital size={28} />
             </div>
@@ -184,7 +195,6 @@ const handleBookAppointment = () => {
             <p>
               We could not find the hospital you selected.
             </p>
-
           </section>
 
         </main>
@@ -201,6 +211,13 @@ const handleBookAppointment = () => {
     .filter(Boolean)
     .join(", ");
 
+  const website =
+    hospital.website
+      ? hospital.website.startsWith("http")
+        ? hospital.website
+        : `https://${hospital.website}`
+      : null;
+
   return (
     <div className="hospital-details-page">
 
@@ -211,23 +228,37 @@ const handleBookAppointment = () => {
         <button
           type="button"
           className="hospital-details-back"
-          onClick={() => navigate("/hospitals")}
+          onClick={handleBack}
         >
           <ArrowLeft size={18} />
           Back to Hospitals
         </button>
 
-        <section className="hospital-details-header">
+        {/* =========================================
+            HOSPITAL HERO
+        ========================================= */}
 
-          <div className="hospital-details-icon">
+        <section className="hospital-hero">
+
+          <div className="hospital-hero-icon">
             <Hospital size={34} />
           </div>
 
-          <div className="hospital-details-header-content">
+          <div className="hospital-hero-content">
 
-            <div className="hospital-details-eyebrow">
-              <Hospital size={15} />
-              Healthcare Provider
+            <div className="hospital-hero-top">
+
+              <div className="hospital-hero-eyebrow">
+                <ShieldCheck size={15} />
+                Healthcare Provider
+              </div>
+
+              {hospital.status && (
+                <span className="hospital-status">
+                  {hospital.status}
+                </span>
+              )}
+
             </div>
 
             <h1>
@@ -235,145 +266,187 @@ const handleBookAppointment = () => {
             </h1>
 
             {hospitalAddress && (
-              <p className="hospital-details-location">
+              <div className="hospital-hero-address">
                 <MapPin size={17} />
-                {hospitalAddress}
-              </p>
+                <span>{hospitalAddress}</span>
+              </div>
             )}
 
             {hospital.distance_text && (
-              <p className="hospital-details-distance">
+              <div className="hospital-hero-distance">
                 <Navigation size={16} />
                 {hospital.distance_text}
-              </p>
+              </div>
             )}
 
           </div>
 
         </section>
 
-        <section className="hospital-details-grid">
+        {/* =========================================
+            MAIN CONTENT
+        ========================================= */}
 
-          <div className="hospital-details-card">
+        <div className="hospital-details-layout">
 
-            <div className="hospital-details-card-header">
-              <h2>
-                Hospital Information
-              </h2>
-            </div>
+          {/* LEFT COLUMN */}
 
-            {hospital.description && (
-              <div className="hospital-details-description">
+          <div className="hospital-details-left">
 
-                <h3>
-                  About this Hospital
-                </h3>
+            <section className="hospital-info-card">
 
-                <p>
-                  {hospital.description}
-                </p>
+              <div className="hospital-card-heading">
+
+                <div className="hospital-card-heading-icon">
+                  <Hospital size={19} />
+                </div>
+
+                <div>
+                  <h2>
+                    About This Hospital
+                  </h2>
+
+                  <p>
+                    Hospital information and contact details
+                  </p>
+                </div>
 
               </div>
-            )}
 
-            <div className="hospital-details-contact-list">
-
-              {hospital.phone && (
-                <div className="hospital-details-contact">
-
-                  <div className="hospital-details-contact-icon">
-                    <Phone size={18} />
-                  </div>
-
-                  <div>
-                    <span>
-                      Phone
-                    </span>
-
-                    <strong>
-                      {hospital.phone}
-                    </strong>
-                  </div>
-
+              {hospital.description && (
+                <div className="hospital-about">
+                  <p>
+                    {hospital.description}
+                  </p>
                 </div>
               )}
 
-              {hospital.email && (
-                <div className="hospital-details-contact">
-
-                  <div className="hospital-details-contact-icon">
-                    <Mail size={18} />
-                  </div>
-
-                  <div>
-                    <span>
-                      Email
-                    </span>
-
-                    <strong>
-                      {hospital.email}
-                    </strong>
-                  </div>
-
+              {!hospital.description && (
+                <div className="hospital-about">
+                  <p>
+                    Hospital information is available through
+                    NutriBot. You can contact the healthcare
+                    provider directly using the details below.
+                  </p>
                 </div>
               )}
 
-              {hospital.website && (
-                <div className="hospital-details-contact">
+            </section>
 
-                  <div className="hospital-details-contact-icon">
-                    <Globe size={18} />
-                  </div>
+            <section className="hospital-info-card">
 
-                  <div>
-                    <span>
-                      Website
-                    </span>
+              <div className="hospital-card-heading">
 
-                    <a
-                      href={
-                        hospital.website.startsWith("http")
-                          ? hospital.website
-                          : `https://${hospital.website}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {hospital.website}
-                    </a>
-                  </div>
-
+                <div className="hospital-card-heading-icon">
+                  <MapPin size={19} />
                 </div>
-              )}
 
-              {hospitalAddress && (
-                <div className="hospital-details-contact">
+                <div>
+                  <h2>
+                    Contact & Location
+                  </h2>
 
-                  <div className="hospital-details-contact-icon">
-                    <MapPin size={18} />
-                  </div>
-
-                  <div>
-                    <span>
-                      Address
-                    </span>
-
-                    <strong>
-                      {hospitalAddress}
-                    </strong>
-                  </div>
-
+                  <p>
+                    How to reach this healthcare provider
+                  </p>
                 </div>
-              )}
 
-            </div>
+              </div>
+
+              <div className="hospital-contact-grid">
+
+                {hospital.phone && (
+                  <div className="hospital-contact-item">
+
+                    <div className="hospital-contact-icon">
+                      <Phone size={18} />
+                    </div>
+
+                    <div>
+                      <span>Phone</span>
+
+                      <strong>
+                        {hospital.phone}
+                      </strong>
+                    </div>
+
+                  </div>
+                )}
+
+                {hospital.email && (
+                  <div className="hospital-contact-item">
+
+                    <div className="hospital-contact-icon">
+                      <Mail size={18} />
+                    </div>
+
+                    <div>
+                      <span>Email</span>
+
+                      <strong>
+                        {hospital.email}
+                      </strong>
+                    </div>
+
+                  </div>
+                )}
+
+                {website && (
+                  <div className="hospital-contact-item">
+
+                    <div className="hospital-contact-icon">
+                      <Globe size={18} />
+                    </div>
+
+                    <div>
+                      <span>Website</span>
+
+                      <a
+                        href={website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Visit Website
+                      </a>
+                    </div>
+
+                  </div>
+                )}
+
+                {hospitalAddress && (
+                  <div className="hospital-contact-item hospital-contact-item-full">
+
+                    <div className="hospital-contact-icon">
+                      <MapPin size={18} />
+                    </div>
+
+                    <div>
+                      <span>Address</span>
+
+                      <strong>
+                        {hospitalAddress}
+                      </strong>
+                    </div>
+
+                  </div>
+                )}
+
+              </div>
+
+            </section>
 
           </div>
 
-          <aside className="hospital-booking-card">
+          {/* RIGHT COLUMN */}
 
-            <div className="hospital-booking-icon">
-              <CalendarDays size={27} />
+          <aside className="hospital-booking-panel">
+
+            <div className="hospital-booking-panel-icon">
+              <CalendarDays size={28} />
+            </div>
+
+            <div className="hospital-booking-label">
+              Appointment Booking
             </div>
 
             <h2>
@@ -381,24 +454,65 @@ const handleBookAppointment = () => {
             </h2>
 
             <p>
-              Choose a doctor, select a service,
-              view available appointment times and
-              book your appointment directly through
-              NutriBot.
+              Find a doctor at this hospital, choose
+              a medical service and select an available
+              appointment time.
             </p>
+
+            <div className="hospital-booking-steps">
+
+              <div className="hospital-booking-step">
+                <span>1</span>
+                <div>
+                  <strong>Choose a Doctor</strong>
+                  <small>
+                    View doctors available at this hospital
+                  </small>
+                </div>
+              </div>
+
+              <div className="hospital-booking-step">
+                <span>2</span>
+                <div>
+                  <strong>Select a Service</strong>
+                  <small>
+                    Choose the service you need
+                  </small>
+                </div>
+              </div>
+
+              <div className="hospital-booking-step">
+                <span>3</span>
+                <div>
+                  <strong>Choose a Time</strong>
+                  <small>
+                    Select an available appointment slot
+                  </small>
+                </div>
+              </div>
+
+            </div>
 
             <button
               type="button"
               className="hospital-booking-button"
               onClick={handleBookAppointment}
             >
-              <CalendarDays size={18} />
+              <Stethoscope size={19} />
               Find a Doctor
             </button>
 
+            <div className="hospital-booking-note">
+              <ShieldCheck size={16} />
+              <span>
+                Appointment booking is handled securely
+                inside NutriBot.
+              </span>
+            </div>
+
           </aside>
 
-        </section>
+        </div>
 
       </main>
     </div>

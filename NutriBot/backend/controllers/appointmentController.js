@@ -1,8 +1,13 @@
 const db = require("../config/db");
+
 const appointmentService = require("../services/appointmentService");
 const reminderService = require("../services/reminderService");
 
-// Get available appointment slots
+
+// ======================================================
+// GET AVAILABLE APPOINTMENT SLOTS
+// ======================================================
+
 const getAvailableSlots = (req, res) => {
   const {
     doctorId,
@@ -56,7 +61,11 @@ const getAvailableSlots = (req, res) => {
   );
 };
 
-// Create appointment
+
+// ======================================================
+// CREATE APPOINTMENT
+// ======================================================
+
 const createAppointment = (req, res) => {
   const {
     hospital_id,
@@ -106,6 +115,7 @@ const createAppointment = (req, res) => {
 
     req.user.id comes from the verified JWT.
   */
+
   const patientProfileSql = `
     SELECT
       id,
@@ -143,24 +153,35 @@ const createAppointment = (req, res) => {
 
       const patient_id = patientProfile.id;
 
-      // Step 1: Verify doctor + hospital service relationship
+
+      // ==================================================
+      // VERIFY DOCTOR + HOSPITAL SERVICE
+      // ==================================================
+
       const serviceSql = `
         SELECT
           hs.id AS hospital_service_id,
           hs.hospital_id,
           hs.duration_minutes,
           hs.status AS hospital_service_status,
+
           d.id AS doctor_id,
           d.status AS doctor_status,
+
           ds.status AS doctor_service_status
+
         FROM hospital_services hs
+
         INNER JOIN doctor_services ds
           ON ds.hospital_service_id = hs.id
+
         INNER JOIN doctors d
           ON d.id = ds.doctor_id
+
         WHERE hs.id = ?
           AND hs.hospital_id = ?
           AND d.id = ?
+
         LIMIT 1
       `;
 
@@ -222,7 +243,11 @@ const createAppointment = (req, res) => {
           const durationMinutes =
             service.duration_minutes;
 
-          // Convert HH:MM or HH:MM:SS into minutes
+
+          // ==================================================
+          // TIME HELPERS
+          // ==================================================
+
           const timeToMinutes = (time) => {
             const parts = String(time)
               .substring(0, 5)
@@ -240,6 +265,7 @@ const createAppointment = (req, res) => {
             return parts[0] * 60 + parts[1];
           };
 
+
           const minutesToTime = (minutes) => {
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
@@ -247,8 +273,12 @@ const createAppointment = (req, res) => {
             return `${String(hours).padStart(
               2,
               "0"
-            )}:${String(mins).padStart(2, "0")}:00`;
+            )}:${String(mins).padStart(
+              2,
+              "0"
+            )}:00`;
           };
+
 
           const startMinutes =
             timeToMinutes(start_time);
@@ -277,15 +307,11 @@ const createAppointment = (req, res) => {
           const calculatedEndTime =
             minutesToTime(endMinutes);
 
-          /*
-            IMPORTANT:
 
-            Verify that the requested start time is
-            actually one of the currently available slots.
+          // ==================================================
+          // VERIFY REQUESTED SLOT
+          // ==================================================
 
-            This prevents someone from manually sending
-            an arbitrary time that was never offered.
-          */
           appointmentService.getAvailableSlots(
             doctor_id,
             hospital_service_id,
@@ -317,13 +343,10 @@ const createAppointment = (req, res) => {
                 });
               }
 
-              /*
-                Start transaction.
 
-                The transaction makes the booking operation
-                atomic: either everything succeeds or nothing
-                is saved.
-              */
+              // ==================================================
+              // START TRANSACTION
+              // ==================================================
 
               db.beginTransaction(
                 (transactionError) => {
@@ -339,23 +362,32 @@ const createAppointment = (req, res) => {
                     });
                   }
 
-                  // Lock conflicting appointments for this doctor/date
+
+                  // ==================================================
+                  // CHECK FOR CONFLICTING APPOINTMENTS
+                  // ==================================================
+
                   const conflictSql = `
                     SELECT
                       id,
                       start_time,
                       end_time,
                       status
+
                     FROM appointments
+
                     WHERE doctor_id = ?
                       AND appointment_date = ?
+
                       AND status IN (
                         'PENDING',
                         'CONFIRMED',
                         'RESCHEDULED'
                       )
+
                       AND start_time < ?
                       AND end_time > ?
+
                     FOR UPDATE
                   `;
 
@@ -367,7 +399,10 @@ const createAppointment = (req, res) => {
                       calculatedEndTime,
                       start_time,
                     ],
-                    (conflictError, conflictResults) => {
+                    (
+                      conflictError,
+                      conflictResults
+                    ) => {
                       if (conflictError) {
                         return db.rollback(() => {
                           console.error(
@@ -393,12 +428,11 @@ const createAppointment = (req, res) => {
                         });
                       }
 
-                      /*
-                        Create appointment.
 
-                        patient_id comes from the authenticated
-                        user's patient profile, NOT the request body.
-                      */
+                      // ==================================================
+                      // CREATE APPOINTMENT
+                      // ==================================================
+
                       const insertSql = `
                         INSERT INTO appointments (
                           patient_id,
@@ -412,7 +446,19 @@ const createAppointment = (req, res) => {
                           patient_notes,
                           status
                         )
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING')
+
+                        VALUES (
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          ?,
+                          'PENDING'
+                        )
                       `;
 
                       const insertValues = [
@@ -430,7 +476,10 @@ const createAppointment = (req, res) => {
                       db.query(
                         insertSql,
                         insertValues,
-                        (insertError, insertResult) => {
+                        (
+                          insertError,
+                          insertResult
+                        ) => {
                           if (insertError) {
                             return db.rollback(() => {
                               console.error(
@@ -448,7 +497,11 @@ const createAppointment = (req, res) => {
                           const appointmentId =
                             insertResult.insertId;
 
-                          // Create initial status history
+
+                          // ==================================================
+                          // CREATE INITIAL STATUS HISTORY
+                          // ==================================================
+
                           const historySql = `
                             INSERT INTO appointment_status_history (
                               appointment_id,
@@ -456,7 +509,13 @@ const createAppointment = (req, res) => {
                               new_status,
                               reason
                             )
-                            VALUES (?, NULL, 'PENDING', ?)
+
+                            VALUES (
+                              ?,
+                              NULL,
+                              'PENDING',
+                              ?
+                            )
                           `;
 
                           db.query(
@@ -480,7 +539,11 @@ const createAppointment = (req, res) => {
                                 });
                               }
 
-                              // Commit appointment transaction
+
+                              // ==================================================
+                              // COMMIT APPOINTMENT
+                              // ==================================================
+
                               db.commit(
                                 (commitError) => {
                                   if (commitError) {
@@ -499,14 +562,11 @@ const createAppointment = (req, res) => {
                                     );
                                   }
 
-                                  /*
-                                    Appointment has now been
-                                    successfully saved.
 
-                                    Create automatic reminders
-                                    after the appointment transaction
-                                    has completed.
-                                  */
+                                  // ==================================================
+                                  // CREATE REMINDERS
+                                  // ==================================================
+
                                   reminderService.createAppointmentReminders(
                                     appointmentId,
                                     (
@@ -524,9 +584,12 @@ const createAppointment = (req, res) => {
                                           .json({
                                             message:
                                               "Appointment created successfully, but reminders could not be created",
+
                                             appointmentId,
+
                                             status:
                                               "PENDING",
+
                                             appointment: {
                                               patient_id,
                                               hospital_id,
@@ -543,6 +606,7 @@ const createAppointment = (req, res) => {
                                                 patient_notes ||
                                                 null,
                                             },
+
                                             reminder_error:
                                               reminderError.message,
                                           });
@@ -553,9 +617,12 @@ const createAppointment = (req, res) => {
                                         .json({
                                           message:
                                             "Appointment created successfully",
+
                                           appointmentId,
+
                                           status:
                                             "PENDING",
+
                                           appointment: {
                                             patient_id,
                                             hospital_id,
@@ -572,6 +639,7 @@ const createAppointment = (req, res) => {
                                               patient_notes ||
                                               null,
                                           },
+
                                           reminders_created:
                                             reminderResult.remindersCreated,
                                         });
@@ -595,6 +663,11 @@ const createAppointment = (req, res) => {
   );
 };
 
+
+// ======================================================
+// NORMALIZE START TIME
+// ======================================================
+
 /*
   Normalize a supplied time to HH:MM:SS.
 
@@ -602,6 +675,7 @@ const createAppointment = (req, res) => {
     09:00     -> 09:00:00
     09:00:00  -> 09:00:00
 */
+
 const calculatedStartTime = (time) => {
   const value = String(time).trim();
 
@@ -615,7 +689,12 @@ const calculatedStartTime = (time) => {
 
   return value;
 };
-// Get appointments belonging to the authenticated patient
+
+
+// ======================================================
+// GET PATIENT APPOINTMENTS
+// ======================================================
+
 const getMyAppointments = (req, res) => {
   const sql = `
     SELECT
@@ -624,9 +703,11 @@ const getMyAppointments = (req, res) => {
       a.hospital_id,
       a.doctor_id,
       a.hospital_service_id,
+
       a.appointment_date,
       a.start_time,
       a.end_time,
+
       a.reason,
       a.patient_notes,
       a.status,
@@ -637,11 +718,17 @@ const getMyAppointments = (req, res) => {
       h.city AS hospital_city,
       h.state AS hospital_state,
 
-      CONCAT(d.first_name, ' ', d.last_name) AS doctor_name,
+      CONCAT(
+        d.first_name,
+        ' ',
+        d.last_name
+      ) AS doctor_name,
+
       d.specialty AS doctor_specialty,
 
       ms.name AS service_name,
       ms.category AS service_category,
+
       hs.duration_minutes,
       hs.price
 
@@ -689,8 +776,214 @@ const getMyAppointments = (req, res) => {
   );
 };
 
+
+// ======================================================
+// GET HOSPITAL APPOINTMENTS
+// ======================================================
+//
+// This endpoint is for the Hospital Dashboard.
+//
+// The hospital is determined from the authenticated
+// hospital staff user's hospital_staff record.
+//
+// IMPORTANT:
+// We do NOT accept hospital_id from the frontend.
+//
+// This prevents hospital staff from manually requesting
+// another hospital's appointments.
+//
+
+const getHospitalAppointments = (req, res) => {
+  const userId = req.user.id;
+
+
+  // ====================================================
+  // FIND ACTIVE HOSPITAL STAFF RECORD
+  // ====================================================
+
+  const staffSql = `
+    SELECT
+      hs.hospital_id,
+      hs.staff_role,
+      hs.status AS staff_status,
+
+      h.name AS hospital_name,
+      h.address AS hospital_address,
+      h.city AS hospital_city,
+      h.state AS hospital_state,
+      h.phone AS hospital_phone,
+      h.email AS hospital_email
+
+    FROM hospital_staff hs
+
+    INNER JOIN hospitals h
+      ON hs.hospital_id = h.id
+
+    WHERE hs.user_id = ?
+      AND hs.status = 'ACTIVE'
+
+    ORDER BY hs.id ASC
+
+    LIMIT 1
+  `;
+
+  db.query(
+    staffSql,
+    [userId],
+    (staffError, staffResults) => {
+      if (staffError) {
+        console.error(
+          "Get hospital staff information error:",
+          staffError.message
+        );
+
+        return res.status(500).json({
+          message:
+            "Failed to verify hospital staff information",
+        });
+      }
+
+      if (staffResults.length === 0) {
+        return res.status(403).json({
+          message:
+            "You are not an active staff member of a hospital.",
+        });
+      }
+
+      const hospital = staffResults[0];
+
+
+      // ==================================================
+      // GET HOSPITAL APPOINTMENTS
+      // ==================================================
+
+      const appointmentsSql = `
+        SELECT
+          a.id,
+          a.patient_id,
+          a.hospital_id,
+          a.doctor_id,
+          a.hospital_service_id,
+
+          DATE_FORMAT(
+            a.appointment_date,
+            '%Y-%m-%d'
+          ) AS appointment_date,
+
+          a.start_time,
+          a.end_time,
+
+          a.reason,
+          a.patient_notes,
+          a.status,
+          a.cancellation_reason,
+          a.created_at,
+          a.updated_at,
+
+
+          -- ==============================================
+          -- PATIENT
+          -- ==============================================
+
+          pp.user_id AS patient_user_id,
+
+          pu.name AS patient_name,
+          pu.email AS patient_email,
+          pu.phone AS patient_phone,
+
+
+          -- ==============================================
+          -- DOCTOR
+          -- ==============================================
+
+          CONCAT(
+            d.first_name,
+            ' ',
+            d.last_name
+          ) AS doctor_name,
+
+          d.specialty AS doctor_specialty,
+
+
+          -- ==============================================
+          -- SERVICE
+          -- ==============================================
+
+          ms.name AS service_name,
+          ms.category AS service_category,
+
+          hs.duration_minutes,
+          hs.price
+
+
+        FROM appointments a
+
+        INNER JOIN patient_profiles pp
+          ON a.patient_id = pp.id
+
+        INNER JOIN users_tbl pu
+          ON pp.user_id = pu.id
+
+        INNER JOIN doctors d
+          ON a.doctor_id = d.id
+
+        INNER JOIN hospital_services hs
+          ON a.hospital_service_id = hs.id
+
+        INNER JOIN medical_services ms
+          ON hs.service_id = ms.id
+
+        WHERE a.hospital_id = ?
+
+        ORDER BY
+          a.appointment_date ASC,
+          a.start_time ASC
+      `;
+
+      db.query(
+        appointmentsSql,
+        [hospital.hospital_id],
+        (appointmentsError, appointments) => {
+          if (appointmentsError) {
+            console.error(
+              "Get hospital appointments error:",
+              appointmentsError.message
+            );
+
+            return res.status(500).json({
+              message:
+                "Failed to get hospital appointments",
+            });
+          }
+
+          return res.json({
+            hospital: {
+              id: hospital.hospital_id,
+              name: hospital.hospital_name,
+              address: hospital.hospital_address,
+              city: hospital.hospital_city,
+              state: hospital.hospital_state,
+              phone: hospital.hospital_phone,
+              email: hospital.hospital_email,
+              staff_role: hospital.staff_role,
+            },
+
+            appointments,
+          });
+        }
+      );
+    }
+  );
+};
+
+
+// ======================================================
+// EXPORT CONTROLLERS
+// ======================================================
+
 module.exports = {
   getAvailableSlots,
   createAppointment,
   getMyAppointments,
+  getHospitalAppointments,
 };
