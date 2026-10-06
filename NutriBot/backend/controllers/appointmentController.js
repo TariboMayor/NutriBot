@@ -3,6 +3,10 @@ const db = require("../config/db");
 const appointmentService = require("../services/appointmentService");
 const reminderService = require("../services/reminderService");
 
+const {
+  sendAppointmentReplyEmail,
+} = require("../services/emailService");
+
 
 // ======================================================
 // GET AVAILABLE APPOINTMENT SLOTS
@@ -978,6 +982,649 @@ const getHospitalAppointments = (req, res) => {
 
 
 // ======================================================
+// REPLY TO PATIENT ABOUT AN APPOINTMENT
+// ======================================================
+//
+// Hospital staff can:
+//
+// 1. Save the message
+// 2. Save the message recipient
+// 3. Create an in-app notification
+// 4. Save the notification recipient
+// 5. Send an email to the patient
+//
+// The appointment is always checked against the hospital
+// belonging to the authenticated hospital staff account.
+//
+
+const replyToAppointment = (req, res) => {
+  const {
+    appointmentId,
+  } = req.params;
+
+  const {
+    subject,
+    message,
+  } = req.body;
+
+
+  // ====================================================
+  // VALIDATE REQUEST
+  // ====================================================
+
+  if (!appointmentId) {
+    return res.status(400).json({
+      message:
+        "Appointment ID is required.",
+    });
+  }
+
+
+  if (
+    !message ||
+    !String(message).trim()
+  ) {
+    return res.status(400).json({
+      message:
+        "Reply message is required.",
+    });
+  }
+
+
+  const cleanMessage =
+    String(message).trim();
+
+
+  const cleanSubject =
+    subject
+      ? String(subject).trim()
+      : null;
+
+
+  if (cleanMessage.length > 5000) {
+    return res.status(400).json({
+      message:
+        "Reply message cannot exceed 5000 characters.",
+    });
+  }
+
+
+  // ====================================================
+  // FIND ACTIVE HOSPITAL STAFF
+  // ====================================================
+
+  const staffSql = `
+    SELECT
+      hs.hospital_id,
+      h.name AS hospital_name
+
+    FROM hospital_staff hs
+
+    INNER JOIN hospitals h
+      ON hs.hospital_id = h.id
+
+    WHERE hs.user_id = ?
+      AND hs.status = 'ACTIVE'
+
+    ORDER BY hs.id ASC
+
+    LIMIT 1
+  `;
+
+
+  db.query(
+    staffSql,
+    [req.user.id],
+    (staffError, staffResults) => {
+
+      if (staffError) {
+        console.error(
+          "Reply staff verification error:",
+          staffError.message
+        );
+
+        return res.status(500).json({
+          message:
+            "Failed to verify hospital staff information.",
+        });
+      }
+
+
+      if (
+        staffResults.length === 0
+      ) {
+        return res.status(403).json({
+          message:
+            "You are not an active staff member of a hospital.",
+        });
+      }
+
+
+      const hospital =
+        staffResults[0];
+
+
+      const hospitalId =
+        hospital.hospital_id;
+
+
+      // ==================================================
+      // GET APPOINTMENT
+      // ==================================================
+
+      const appointmentSql = `
+        SELECT
+
+          a.id,
+          a.hospital_id,
+          a.appointment_date,
+          a.start_time,
+          a.status,
+
+          pp.user_id AS patient_user_id,
+
+          pu.name AS patient_name,
+          pu.email AS patient_email,
+
+          CONCAT(
+            d.first_name,
+            ' ',
+            d.last_name
+          ) AS doctor_name,
+
+          ms.name AS service_name,
+
+          h.name AS hospital_name
+
+        FROM appointments a
+
+        INNER JOIN patient_profiles pp
+          ON a.patient_id = pp.id
+
+        INNER JOIN users_tbl pu
+          ON pp.user_id = pu.id
+
+        INNER JOIN doctors d
+          ON a.doctor_id = d.id
+
+        INNER JOIN hospital_services hs
+          ON a.hospital_service_id = hs.id
+
+        INNER JOIN medical_services ms
+          ON hs.service_id = ms.id
+
+        INNER JOIN hospitals h
+          ON a.hospital_id = h.id
+
+        WHERE a.id = ?
+          AND a.hospital_id = ?
+
+        LIMIT 1
+      `;
+
+
+      db.query(
+        appointmentSql,
+        [
+          appointmentId,
+          hospitalId,
+        ],
+        (
+          appointmentError,
+          appointmentResults
+        ) => {
+
+          if (appointmentError) {
+            console.error(
+              "Get appointment for reply error:",
+              appointmentError.message
+            );
+
+            return res.status(500).json({
+              message:
+                "Failed to get appointment information.",
+            });
+          }
+
+
+          if (
+            appointmentResults.length === 0
+          ) {
+            return res.status(404).json({
+              message:
+                "Appointment not found for your hospital.",
+            });
+          }
+
+
+          const appointment =
+            appointmentResults[0];
+
+
+          // ==================================================
+          // START TRANSACTION
+          // ==================================================
+
+          db.beginTransaction(
+            (transactionError) => {
+
+              if (transactionError) {
+                console.error(
+                  "Begin reply transaction error:",
+                  transactionError.message
+                );
+
+                return res.status(500).json({
+                  message:
+                    "Failed to start reply transaction.",
+                });
+              }
+
+
+              // ==============================================
+              // 1. SAVE MESSAGE
+              // ==============================================
+
+              const messageSql = `
+                INSERT INTO messages (
+                  sender_user_id,
+                  hospital_id,
+                  appointment_id,
+                  subject,
+                  message
+                )
+
+                VALUES (?, ?, ?, ?, ?)
+              `;
+
+
+              db.query(
+                messageSql,
+                [
+                  req.user.id,
+                  hospitalId,
+                  appointmentId,
+                  cleanSubject,
+                  cleanMessage,
+                ],
+                (
+                  messageError,
+                  messageResult
+                ) => {
+
+                  if (messageError) {
+                    return db.rollback(() => {
+
+                      console.error(
+                        "Save appointment reply error:",
+                        messageError.message
+                      );
+
+                      res.status(500).json({
+                        message:
+                          "Failed to save hospital reply.",
+                      });
+
+                    });
+                  }
+
+
+                  const messageId =
+                    messageResult.insertId;
+
+
+                  // ==========================================
+                  // 2. SAVE MESSAGE RECIPIENT
+                  // ==========================================
+
+                  const messageRecipientSql = `
+                    INSERT INTO message_recipients (
+                      message_id,
+                      recipient_user_id,
+                      is_read
+                    )
+
+                    VALUES (?, ?, FALSE)
+                  `;
+
+
+                  db.query(
+                    messageRecipientSql,
+                    [
+                      messageId,
+                      appointment.patient_user_id,
+                    ],
+                    (recipientError) => {
+
+                      if (recipientError) {
+                        return db.rollback(() => {
+
+                          console.error(
+                            "Save message recipient error:",
+                            recipientError.message
+                          );
+
+                          res.status(500).json({
+                            message:
+                              "Failed to save message recipient.",
+                          });
+
+                        });
+                      }
+
+
+                      // ========================================
+                      // 3. CREATE NOTIFICATION
+                      // ========================================
+
+                      const notificationTitle =
+                        `Message from ${
+                          appointment.hospital_name ||
+                          hospital.hospital_name ||
+                          "Hospital"
+                        }`;
+
+
+                      const notificationMessage =
+                        `You have received a message from ${
+                          appointment.hospital_name ||
+                          hospital.hospital_name ||
+                          "your hospital"
+                        } regarding your appointment with Dr. ${
+                          appointment.doctor_name ||
+                          "your doctor"
+                        }.`;
+
+
+                      const notificationSql = `
+                        INSERT INTO notifications (
+                          sender_user_id,
+                          hospital_id,
+                          appointment_id,
+                          notification_type,
+                          title,
+                          message
+                        )
+
+                        VALUES (?, ?, ?, ?, ?, ?)
+                      `;
+
+
+                      db.query(
+                        notificationSql,
+                        [
+                          req.user.id,
+                          hospitalId,
+                          appointmentId,
+                          "APPOINTMENT",
+                          notificationTitle,
+                          notificationMessage,
+                        ],
+                        (
+                          notificationError,
+                          notificationResult
+                        ) => {
+
+                          if (notificationError) {
+                            return db.rollback(() => {
+
+                              console.error(
+                                "Create appointment reply notification error:",
+                                notificationError.message
+                              );
+
+                              res.status(500).json({
+                                message:
+                                  "Failed to create patient notification.",
+                              });
+
+                            });
+                          }
+
+
+                          const notificationId =
+                            notificationResult.insertId;
+
+
+                          // ======================================
+                          // 4. SAVE NOTIFICATION RECIPIENT
+                          // ======================================
+
+                          const notificationRecipientSql = `
+                            INSERT INTO notification_recipients (
+                              notification_id,
+                              user_id,
+                              is_read,
+                              in_app_sent,
+                              email_sent,
+                              sms_sent
+                            )
+
+                            VALUES (
+                              ?,
+                              ?,
+                              FALSE,
+                              TRUE,
+                              FALSE,
+                              FALSE
+                            )
+                          `;
+
+
+                          db.query(
+                            notificationRecipientSql,
+                            [
+                              notificationId,
+                              appointment.patient_user_id,
+                            ],
+                            (
+                              notificationRecipientError
+                            ) => {
+
+                              if (
+                                notificationRecipientError
+                              ) {
+                                return db.rollback(() => {
+
+                                  console.error(
+                                    "Save notification recipient error:",
+                                    notificationRecipientError.message
+                                  );
+
+                                  res.status(500).json({
+                                    message:
+                                      "Failed to save patient notification recipient.",
+                                  });
+
+                                });
+                              }
+
+
+                              // ==================================
+                              // 5. COMMIT
+                              // ==================================
+
+                              db.commit(
+                                (commitError) => {
+
+                                  if (commitError) {
+
+                                    return db.rollback(
+                                      () => {
+
+                                        console.error(
+                                          "Commit appointment reply error:",
+                                          commitError.message
+                                        );
+
+                                        res.status(500).json({
+                                          message:
+                                            "Failed to complete hospital reply.",
+                                        });
+
+                                      }
+                                    );
+
+                                  }
+
+
+                                  // ==================================
+                                  // DATABASE WORK IS COMPLETE
+                                  // ==================================
+
+                                  /*
+                                   * Send email AFTER the database
+                                   * transaction has successfully
+                                   * committed.
+                                   *
+                                   * This means an email failure
+                                   * cannot delete the saved message
+                                   * or notification.
+                                   */
+
+                                  if (
+                                    !appointment.patient_email
+                                  ) {
+
+                                    return res.status(201).json({
+                                      message:
+                                        "Reply saved and patient notified in NutriBot. Patient email is not available.",
+
+                                      messageId,
+
+                                      notificationId,
+
+                                      emailSent: false,
+                                    });
+
+                                  }
+
+
+                                  sendAppointmentReplyEmail(
+                                    {
+                                      recipientEmail:
+                                        appointment.patient_email,
+
+                                      patientName:
+                                        appointment.patient_name,
+
+                                      hospitalName:
+                                        appointment.hospital_name ||
+                                        hospital.hospital_name,
+
+                                      doctorName:
+                                        appointment.doctor_name,
+
+                                      serviceName:
+                                        appointment.service_name,
+
+                                      appointmentDate:
+                                        appointment.appointment_date,
+
+                                      startTime:
+                                        appointment.start_time,
+
+                                      subject:
+                                        cleanSubject,
+
+                                      message:
+                                        cleanMessage,
+                                    },
+
+                                    (emailError) => {
+
+                                      if (emailError) {
+
+                                        console.error(
+                                          "Hospital appointment reply email error:",
+                                          emailError.message
+                                        );
+
+                                        return res.status(201).json({
+                                          message:
+                                            "Reply saved and patient notified in NutriBot. Email could not be sent.",
+
+                                          messageId,
+
+                                          notificationId,
+
+                                          emailSent: false,
+                                        });
+
+                                      }
+
+
+                                      // ==================================
+                                      // MARK EMAIL AS SENT
+                                      // ==================================
+
+                                      db.query(
+                                        `
+                                          UPDATE notification_recipients
+
+                                          SET email_sent = TRUE
+
+                                          WHERE notification_id = ?
+                                            AND user_id = ?
+                                        `,
+                                        [
+                                          notificationId,
+                                          appointment.patient_user_id,
+                                        ],
+                                        (updateError) => {
+
+                                          if (updateError) {
+                                            console.error(
+                                              "Update email notification status error:",
+                                              updateError.message
+                                            );
+                                          }
+
+
+                                          return res.status(201).json({
+                                            message:
+                                              "Reply sent successfully.",
+
+                                            messageId,
+
+                                            notificationId,
+
+                                            emailSent: true,
+                                          });
+
+                                        }
+                                      );
+
+                                    }
+                                  );
+
+                                }
+                              );
+
+                            }
+                          );
+
+                        }
+                      );
+
+                    }
+                  );
+
+                }
+              );
+
+            }
+          );
+
+        }
+      );
+
+    }
+  );
+};
+
+
+// ======================================================
 // EXPORT CONTROLLERS
 // ======================================================
 
@@ -986,4 +1633,5 @@ module.exports = {
   createAppointment,
   getMyAppointments,
   getHospitalAppointments,
+  replyToAppointment,
 };
