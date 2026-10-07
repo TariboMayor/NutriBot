@@ -1,12 +1,6 @@
 const express = require("express");
 
-const {
-  getAvailableSlots,
-  createAppointment,
-  getMyAppointments,
-  getHospitalAppointments,
-  replyToAppointment,
-} = require("../controllers/appointmentController");
+const router = express.Router();
 
 const {
   authenticateToken,
@@ -16,18 +10,22 @@ const {
   requireRole,
 } = require("../middleware/roleMiddleware");
 
-const router = express.Router();
+const {
+  getAvailableSlots,
+  createAppointment,
+  getMyAppointments,
+  getHospitalAppointments,
+  replyToAppointment,
+} = require("../controllers/appointmentController");
+
+
+/* =========================================================
+   PATIENT APPOINTMENT ROUTES
+========================================================= */
 
 
 /*
-=========================================================
-PATIENT ROUTES
-=========================================================
-*/
-
-
-/*
- * Get patient's appointments
+ * GET MY APPOINTMENTS
  */
 router.get(
   "/my",
@@ -38,7 +36,7 @@ router.get(
 
 
 /*
- * Get available appointment slots
+ * GET AVAILABLE APPOINTMENT SLOTS
  */
 router.get(
   "/available-slots",
@@ -49,7 +47,7 @@ router.get(
 
 
 /*
- * Create a new appointment
+ * CREATE APPOINTMENT
  */
 router.post(
   "/",
@@ -59,16 +57,13 @@ router.post(
 );
 
 
-/*
-=========================================================
-HOSPITAL STAFF ROUTES
-=========================================================
-*/
+/* =========================================================
+   HOSPITAL APPOINTMENT ROUTES
+========================================================= */
 
 
 /*
- * Get appointments belonging to the
- * authenticated hospital staff member's hospital.
+ * GET HOSPITAL APPOINTMENTS
  */
 router.get(
   "/hospital",
@@ -79,14 +74,7 @@ router.get(
 
 
 /*
- * Hospital staff reply to a patient's appointment.
- *
- * This will:
- * - save the message
- * - save the message recipient
- * - create an in-app notification
- * - save the notification recipient
- * - send an email to the patient
+ * HOSPITAL REPLY TO PATIENT
  */
 router.post(
   "/:appointmentId/reply",
@@ -96,4 +84,8 @@ router.post(
 );
 
 
+/*
+ * IMPORTANT:
+ * Export the router itself.
+ */
 module.exports = router;

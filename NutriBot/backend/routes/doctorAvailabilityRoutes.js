@@ -1,29 +1,66 @@
 const express = require("express");
 
-const {
-  createDoctorAvailability,
-  getDoctorAvailability,
-  getDoctorAvailabilities,
-  updateDoctorAvailability,
-  deactivateDoctorAvailability,
-} = require("../controllers/doctorAvailabilityController");
-
 const router = express.Router();
 
-router.post("/", createDoctorAvailability);
+const {
+  authenticateToken,
+} = require("../middleware/authMiddleware");
 
+const {
+  requireRole,
+} = require("../middleware/roleMiddleware");
+
+const {
+  getDoctorAvailability,
+  saveWeeklySchedule,
+  addDoctorLeave,
+  removeDoctorAvailability,
+} = require("../controllers/doctorAvailabilityController");
+
+/*
+========================================================
+HOSPITAL STAFF
+========================================================
+*/
+
+/*
+  Get doctor's complete availability
+*/
 router.get(
   "/doctor/:doctorId",
-  getDoctorAvailabilities
+  authenticateToken,
+  requireRole("HOSPITAL_STAFF"),
+  getDoctorAvailability
 );
 
-router.get("/:id", getDoctorAvailability);
+/*
+  Save doctor's weekly schedule
+*/
+router.put(
+  "/doctor/:doctorId/schedule",
+  authenticateToken,
+  requireRole("HOSPITAL_STAFF"),
+  saveWeeklySchedule
+);
 
-router.put("/:id", updateDoctorAvailability);
+/*
+  Add doctor leave / blocked date
+*/
+router.post(
+  "/doctor/:doctorId/leave",
+  authenticateToken,
+  requireRole("HOSPITAL_STAFF"),
+  addDoctorLeave
+);
 
+/*
+  Remove doctor leave
+*/
 router.delete(
-  "/:id",
-  deactivateDoctorAvailability
+  "/:availabilityId",
+  authenticateToken,
+  requireRole("HOSPITAL_STAFF"),
+  removeDoctorAvailability
 );
 
 module.exports = router;

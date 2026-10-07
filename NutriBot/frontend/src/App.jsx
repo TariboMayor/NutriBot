@@ -5,16 +5,11 @@ import {
   Navigate,
 } from "react-router-dom";
 
+
 import Dashboard from "./pages/Dashboard";
 import ChatPage from "./pages/ChatPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import FindHospitalPage from "./pages/FindHospitalPage";
-import HospitalDetailsPage from "./pages/HospitalDetailsPage";
-import FindDoctorPage from "./pages/FindDoctorPage";
-import SelectServicePage from "./pages/SelectServicePage";
-import AvailabilityPage from "./pages/AvailabilityPage";
-import ConfirmationPage from "./pages/ConfirmationPage";
-
 import RemindersPage from "./pages/RemindersPage";
 import NutritionPage from "./pages/NutritionPage";
 import WellnessPage from "./pages/WellnessPage";
@@ -25,11 +20,38 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import FoodDashboard from "./pages/FoodDashboard";
 
-import HospitalDashboard from "./pages/hospital/HospitalDashboard";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import HospitalDashboard
+  from "./pages/hospital/HospitalDashboard";
 
+import HospitalDoctorsPage
+  from "./pages/hospital/HospitalDoctorsPage";
+
+
+import AdminDashboard
+  from "./pages/admin/AdminDashboard";
+
+
+import ProtectedRoute
+  from "./components/auth/ProtectedRoute";
+
+
+import HospitalDetailsPage
+  from "./pages/HospitalDetailsPage";
+
+import FindDoctorPage
+  from "./pages/FindDoctorPage";
+
+import SelectServicePage
+  from "./pages/SelectServicePage";
+
+import AvailabilityPage
+  from "./pages/AvailabilityPage";
+
+import ConfirmationPage
+  from "./pages/ConfirmationPage";
+
+  import ServicesManagementPage from "./pages/hospital/ServicesManagementPage";
 
 function App() {
   return (
@@ -66,105 +88,71 @@ function App() {
             PROTECTED PATIENT ROUTES
         ================================================= */}
 
-        <Route element={<ProtectedRoute />}>
-
-          {/* Dashboard */}
+        <Route
+          element={
+            <ProtectedRoute />
+          }
+        >
 
           <Route
             path="/dashboard"
             element={<Dashboard />}
           />
 
-
-          {/* Chat */}
-
           <Route
             path="/chat"
             element={<ChatPage />}
           />
-
-
-          {/* Food */}
 
           <Route
             path="/foods"
             element={<FoodDashboard />}
           />
 
-
-          {/* =================================================
-              APPOINTMENTS
-          ================================================= */}
-
           <Route
             path="/appointments"
             element={<AppointmentsPage />}
           />
-
-
-          {/* =================================================
-              HOSPITAL SEARCH
-          ================================================= */}
 
           <Route
             path="/hospitals"
             element={<FindHospitalPage />}
           />
 
-
-          {/* =================================================
-              HOSPITAL DETAILS
-          ================================================= */}
-
           <Route
             path="/hospitals/:id"
-            element={<HospitalDetailsPage />}
+            element={
+              <HospitalDetailsPage />
+            }
           />
-
-
-          {/* =================================================
-              FIND DOCTOR
-          ================================================= */}
 
           <Route
             path="/hospitals/:hospitalId/doctors"
-            element={<FindDoctorPage />}
+            element={
+              <FindDoctorPage />
+            }
           />
-
-
-          {/* =================================================
-              SELECT SERVICE
-          ================================================= */}
 
           <Route
             path="/appointments/service/:doctorId"
-            element={<SelectServicePage />}
+            element={
+              <SelectServicePage />
+            }
           />
-
-
-          {/* =================================================
-              DATE & TIME / AVAILABILITY
-          ================================================= */}
 
           <Route
             path="/appointments/availability"
-            element={<AvailabilityPage />}
+            element={
+              <AvailabilityPage />
+            }
           />
-
-
-          {/* =================================================
-              APPOINTMENT CONFIRMATION
-          ================================================= */}
 
           <Route
             path="/appointments/confirm"
-            element={<ConfirmationPage />}
+            element={
+              <ConfirmationPage />
+            }
           />
-
-
-          {/* =================================================
-              OTHER PATIENT PAGES
-          ================================================= */}
 
           <Route
             path="/reminders"
@@ -193,14 +181,28 @@ function App() {
 
         </Route>
 
+        <Route
+            path="/hospital/services"
+            element={<ServicesManagementPage />}
+          />
+
 
         {/* =================================================
-            HOSPITAL STAFF
+            HOSPITAL
         ================================================= */}
 
         <Route
           path="/hospital/dashboard"
-          element={<HospitalDashboard />}
+          element={
+            <HospitalDashboard />
+          }
+        />
+
+        <Route
+          path="/hospital/doctors"
+          element={
+            <HospitalDoctorsPage />
+          }
         />
 
 
@@ -210,7 +212,9 @@ function App() {
 
         <Route
           path="/admin/dashboard"
-          element={<AdminDashboard />}
+          element={
+            <AdminDashboard />
+          }
         />
 
       </Routes>

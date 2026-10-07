@@ -1,0 +1,7 @@
+Hospital login
+Email: staff@testhospital.com
+Password: NutriBot123!
+
+Patient login
+Email: mandlania28@gmail.com
+Password: mandlania28

@@ -33,8 +33,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * URL PARAMETERS
+   * =========================================================
    */
+
   const doctorId =
     searchParams.get("doctorId");
 
@@ -49,8 +52,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * BOOKING DATA
+   * =========================================================
    */
+
   const hospital =
     location.state?.hospital || null;
 
@@ -68,8 +74,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * FORM STATE
+   * =========================================================
    */
+
   const [reason, setReason] =
     useState("");
 
@@ -90,7 +99,8 @@ function ConfirmationPage() {
 
 
   /*
-   * IMPORTANT:
+   * =========================================================
+   * IMPORTANT
    *
    * The backend appointment endpoint needs
    * the ACTUAL hospital service ID.
@@ -103,7 +113,9 @@ function ConfirmationPage() {
    *
    * We intentionally DO NOT use doctorServiceId
    * as a fallback because they are different IDs.
+   * =========================================================
    */
+
   const hospitalServiceId =
     service?.hospital_service_id ||
     service?.hospitalServiceId ||
@@ -112,8 +124,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * DISPLAY VALUES
+   * =========================================================
    */
+
   const doctorName =
     doctor?.name ||
     doctor?.full_name ||
@@ -147,8 +162,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * FORMAT DATE
+   * =========================================================
    */
+
   const formatDate = (value) => {
     if (!value) {
       return "Not selected";
@@ -170,8 +188,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * FORMAT TIME
+   * =========================================================
    */
+
   const formatTime = (value) => {
     if (!value) {
       return "Not selected";
@@ -202,8 +223,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * FORMAT PRICE
+   * =========================================================
    */
+
   const formatPrice = (value) => {
     if (
       value === null ||
@@ -220,8 +244,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * GO BACK
+   * =========================================================
    */
+
   const handleBack = () => {
     navigate(
       `/appointments/availability?doctorId=${doctorId}&doctorServiceId=${doctorServiceId}&hospitalServiceId=${hospitalServiceId}&appointmentDate=${appointmentDate}`,
@@ -238,8 +265,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * BOOK APPOINTMENT
+   * =========================================================
    */
+
   const handleBooking = async () => {
     setError("");
 
@@ -247,10 +277,12 @@ function ConfirmationPage() {
     /*
      * Validate required booking information.
      */
+
     if (!hospital?.id) {
       setError(
         "Hospital information is missing."
       );
+
       return;
     }
 
@@ -259,6 +291,7 @@ function ConfirmationPage() {
       setError(
         "Doctor information is missing."
       );
+
       return;
     }
 
@@ -267,6 +300,7 @@ function ConfirmationPage() {
       setError(
         "Hospital service information is missing."
       );
+
       return;
     }
 
@@ -275,14 +309,25 @@ function ConfirmationPage() {
       setError(
         "Appointment date is missing."
       );
+
       return;
     }
 
 
     if (!startTime) {
       setError(
-        "Appointment time is missing."
+        "Appointment start time is missing."
       );
+
+      return;
+    }
+
+
+    if (!endTime) {
+      setError(
+        "Appointment end time is missing."
+      );
+
       return;
     }
 
@@ -307,8 +352,15 @@ function ConfirmationPage() {
 
 
       /*
-       * Send appointment to backend.
+       * Send appointment request to backend.
+       *
+       * The backend creates the appointment
+       * with status PENDING.
+       *
+       * PENDING is the internal hospital workflow
+       * state. The patient sees "Request Sent".
        */
+
       const response =
         await fetch(
           "/api/appointments",
@@ -339,6 +391,9 @@ function ConfirmationPage() {
               start_time:
                 startTime,
 
+              end_time:
+                endTime,
+
               reason:
                 reason.trim() || null,
 
@@ -356,7 +411,7 @@ function ConfirmationPage() {
       if (!response.ok) {
         throw new Error(
           data.message ||
-            "Unable to book appointment."
+            "Unable to send appointment request."
         );
       }
 
@@ -364,16 +419,15 @@ function ConfirmationPage() {
       /*
        * SUCCESS
        *
-       * Do NOT navigate away immediately.
-       *
-       * Instead, show the success card.
+       * Do not navigate away immediately.
+       * Show the request-sent confirmation.
        */
+
       setAppointmentResult(data);
 
       setBookingSuccess(true);
 
     } catch (bookingError) {
-
       console.error(
         "Appointment booking error:",
         bookingError
@@ -382,7 +436,7 @@ function ConfirmationPage() {
 
       setError(
         bookingError.message ||
-          "Unable to book appointment."
+          "Unable to send appointment request."
       );
 
     } finally {
@@ -392,22 +446,29 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * GO TO MY APPOINTMENTS
+   * =========================================================
    */
+
   const handleViewAppointments = () => {
     navigate(
       "/appointments",
       {
         replace: true,
+
         state: {
           bookingSuccess: true,
+
           appointmentId:
             appointmentResult?.appointmentId,
+
           appointment:
             appointmentResult?.appointment,
+
           bookingMessage:
             appointmentResult?.message ||
-            "Appointment booked successfully.",
+            "Your appointment request has been sent to the hospital.",
         },
       }
     );
@@ -415,8 +476,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * SUCCESS CARD
+   * =========================================================
    */
+
   if (bookingSuccess) {
     return (
       <div className="confirmation-page">
@@ -436,19 +500,18 @@ function ConfirmationPage() {
             <div className="confirmation-success-content">
 
               <span className="confirmation-success-label">
-                Booking Successful
+                Request Sent
               </span>
 
 
               <h1>
-                Appointment Booked Successfully
+                Appointment Request Sent
               </h1>
 
 
               <p>
-                Your appointment has been
-                successfully created and is
-                currently <strong>Pending</strong>.
+                Your appointment request has been
+                successfully sent to the hospital.
               </p>
 
 
@@ -491,6 +554,11 @@ function ConfirmationPage() {
                     {formatTime(
                       startTime
                     )}
+
+                    {endTime &&
+                      ` - ${formatTime(
+                        endTime
+                      )}`}
                   </span>
                 </div>
 
@@ -502,10 +570,10 @@ function ConfirmationPage() {
                 <CheckCircle2 size={17} />
 
                 <span>
-                  Your appointment request has
-                  been submitted successfully.
-                  You can view its status in
-                  My Appointments.
+                  Your request has been submitted
+                  to the hospital. The hospital will
+                  review your request and respond to
+                  you through NutriBot.
                 </span>
 
               </div>
@@ -539,8 +607,11 @@ function ConfirmationPage() {
 
 
   /*
+   * =========================================================
    * NORMAL CONFIRMATION PAGE
+   * =========================================================
    */
+
   return (
     <div className="confirmation-page">
 
@@ -854,8 +925,8 @@ function ConfirmationPage() {
           <CheckCircle2 size={18} />
 
           <span>
-            Your appointment will be created
-            as <strong>Pending</strong>.
+            Your appointment request will be
+            sent to the hospital for review.
           </span>
 
         </div>
@@ -887,7 +958,7 @@ function ConfirmationPage() {
                   className="confirmation-spinner"
                 />
 
-                Booking...
+                Sending Request...
               </>
             ) : (
               <>

@@ -1,19 +1,36 @@
 const nodemailer = require("nodemailer");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_APP_PASSWORD,
-  },
-});
+
+/* =========================================================
+   EMAIL TRANSPORTER
+========================================================= */
+
+const transporter =
+  nodemailer.createTransport({
+    service: "gmail",
+
+    auth: {
+      user:
+        process.env.EMAIL_USER,
+
+      pass:
+        process.env.EMAIL_APP_PASSWORD,
+    },
+
+    /*
+     * Prevent SMTP operations from waiting forever.
+     */
+    connectionTimeout: 10000,
+
+    greetingTimeout: 10000,
+
+    socketTimeout: 10000,
+  });
 
 
-/**
- * ======================================================
- * SEND APPOINTMENT CONFIRMATION EMAIL
- * ======================================================
- */
+/* =========================================================
+   SEND APPOINTMENT CONFIRMATION EMAIL
+========================================================= */
 
 const sendAppointmentConfirmationEmail = (
   {
@@ -25,34 +42,80 @@ const sendAppointmentConfirmationEmail = (
     appointmentDate,
     startTime,
   },
+
   callback
 ) => {
+
+  /*
+   * Validate recipient.
+   */
   if (!recipientEmail) {
+
     return callback(
-      new Error("Recipient email is required")
+      new Error(
+        "Recipient email is required"
+      )
     );
   }
 
-  const formattedTime = String(startTime)
-    .substring(0, 5);
+
+  const formattedTime =
+    String(
+      startTime || ""
+    ).substring(
+      0,
+      5
+    );
+
 
   const mailOptions = {
-    from: `"NutriBot" <${process.env.EMAIL_USER}>`,
-    to: recipientEmail,
-    subject: "NutriBot - Appointment Confirmed",
+
+    from:
+      `"NutriBot" <${process.env.EMAIL_USER}>`,
+
+    to:
+      recipientEmail,
+
+    subject:
+      "NutriBot - Appointment Confirmed",
+
 
     text:
-      `Hello ${patientName || "NutriBot User"},\n\n` +
+      `Hello ${
+        patientName ||
+        "NutriBot User"
+      },\n\n` +
+
       `Your appointment has been confirmed.\n\n` +
-      `Hospital: ${hospitalName}\n` +
-      `Doctor: Dr. ${doctorName}\n` +
-      `Service: ${serviceName}\n` +
-      `Date: ${appointmentDate}\n` +
-      `Time: ${formattedTime}\n\n` +
+
+      `Hospital: ${
+        hospitalName || "—"
+      }\n` +
+
+      `Doctor: Dr. ${
+        doctorName || "—"
+      }\n` +
+
+      `Service: ${
+        serviceName || "—"
+      }\n` +
+
+      `Date: ${
+        appointmentDate || "—"
+      }\n` +
+
+      `Time: ${
+        formattedTime || "—"
+      }\n\n` +
+
       `Please arrive on time for your appointment.\n\n` +
+
       `Thank you for using NutriBot.\n\n` +
+
       `NutriBot\n` +
+
       `Your AI Health Assistant`,
+
 
     html: `
       <div style="
@@ -60,6 +123,7 @@ const sendAppointmentConfirmationEmail = (
         background: #f5f5f5;
         padding: 30px;
       ">
+
         <div style="
           max-width: 600px;
           margin: 0 auto;
@@ -75,14 +139,21 @@ const sendAppointmentConfirmationEmail = (
             Appointment Confirmed
           </h2>
 
-          <p>
-            Hello ${patientName || "NutriBot User"},
-          </p>
 
           <p>
-            Your appointment has been successfully
-            confirmed by the hospital.
+            Hello ${
+              patientName ||
+              "NutriBot User"
+            },
           </p>
+
+
+          <p>
+            Your appointment has been
+            successfully confirmed by
+            the hospital.
+          </p>
+
 
           <div style="
             background: #f8f8f8;
@@ -93,39 +164,62 @@ const sendAppointmentConfirmationEmail = (
 
             <p>
               <strong>Hospital:</strong>
-              ${hospitalName}
+              ${
+                hospitalName ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Doctor:</strong>
-              Dr. ${doctorName}
+              Dr. ${
+                doctorName ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Service:</strong>
-              ${serviceName}
+              ${
+                serviceName ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Date:</strong>
-              ${appointmentDate}
+              ${
+                appointmentDate ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Time:</strong>
-              ${formattedTime}
+              ${
+                formattedTime ||
+                "—"
+              }
             </p>
 
           </div>
 
+
           <p>
-            Please arrive on time for your appointment.
+            Please arrive on time for
+            your appointment.
           </p>
+
 
           <p>
             Thank you for using
             <strong>NutriBot</strong>.
           </p>
+
 
           <p style="
             color: #777777;
@@ -135,40 +229,90 @@ const sendAppointmentConfirmationEmail = (
           </p>
 
         </div>
+
       </div>
     `,
   };
 
+
+  /*
+   * Prevent callback from being executed
+   * more than once.
+   */
+  let callbackFinished = false;
+
+
+  const finish = (
+    error,
+    info
+  ) => {
+
+    if (callbackFinished) {
+      return;
+    }
+
+    callbackFinished = true;
+
+    callback(
+      error || null,
+      info || null
+    );
+  };
+
+
+  /*
+   * Send email.
+   */
   transporter.sendMail(
     mailOptions,
-    (error, info) => {
+
+    (
+      error,
+      info
+    ) => {
+
       if (error) {
+
         console.error(
           "Appointment confirmation email error:",
           error.message
         );
 
-        return callback(error);
+        return finish(
+          error
+        );
       }
+
 
       console.log(
         "Appointment confirmation email sent:",
         info.messageId
       );
 
-      callback(null, info);
+
+      finish(
+        null,
+        info
+      );
     }
   );
 };
 
 
-/**
- * ======================================================
- * SEND HOSPITAL APPOINTMENT REPLY EMAIL
- * ======================================================
+/* =========================================================
+   SEND HOSPITAL APPOINTMENT REPLY EMAIL
+========================================================= */
+
+/*
+ * IMPORTANT:
  *
- * Used when hospital staff sends a message to a patient
- * regarding a specific appointment.
+ * This function is designed so that email delivery
+ * does not have to keep the API request open forever.
+ *
+ * The appointment reply itself should already have been
+ * saved in the database by the controller.
+ *
+ * Email delivery is treated as a secondary operation.
  */
 
 const sendAppointmentReplyEmail = (
@@ -183,47 +327,110 @@ const sendAppointmentReplyEmail = (
     subject,
     message,
   },
+
   callback
 ) => {
-  if (!recipientEmail) {
+
+  /*
+   * Validate message.
+   */
+  if (!message) {
+
     return callback(
-      new Error("Recipient email is required")
+      new Error(
+        "Reply message is required"
+      )
     );
   }
 
-  if (!message) {
+
+  /*
+   * Validate recipient.
+   */
+  if (!recipientEmail) {
+
     return callback(
-      new Error("Reply message is required")
+      new Error(
+        "Recipient email is required"
+      )
     );
   }
+
 
   const formattedTime =
-    String(startTime || "").substring(0, 5);
+    String(
+      startTime || ""
+    ).substring(
+      0,
+      5
+    );
+
 
   const emailSubject =
     subject ||
-    `NutriBot - Message from ${hospitalName || "Hospital"}`;
+    `NutriBot - Message from ${
+      hospitalName ||
+      "Hospital"
+    }`;
+
 
   const mailOptions = {
-    from: `"NutriBot" <${process.env.EMAIL_USER}>`,
-    to: recipientEmail,
-    subject: emailSubject,
+
+    from:
+      `"NutriBot" <${process.env.EMAIL_USER}>`,
+
+    to:
+      recipientEmail,
+
+    subject:
+      emailSubject,
+
 
     text:
-      `Hello ${patientName || "NutriBot User"},\n\n` +
-      `${hospitalName || "Your hospital"} has sent you a message regarding your appointment.\n\n` +
+      `Hello ${
+        patientName ||
+        "NutriBot User"
+      },\n\n` +
+
+      `${
+        hospitalName ||
+        "Your hospital"
+      } has sent you a message regarding your appointment.\n\n` +
+
       `Appointment Details:\n` +
-      `Hospital: ${hospitalName || "—"}\n` +
-      `Doctor: Dr. ${doctorName || "—"}\n` +
-      `Service: ${serviceName || "—"}\n` +
-      `Date: ${appointmentDate || "—"}\n` +
-      `Time: ${formattedTime || "—"}\n\n` +
+
+      `Hospital: ${
+        hospitalName || "—"
+      }\n` +
+
+      `Doctor: Dr. ${
+        doctorName || "—"
+      }\n` +
+
+      `Service: ${
+        serviceName || "—"
+      }\n` +
+
+      `Date: ${
+        appointmentDate || "—"
+      }\n` +
+
+      `Time: ${
+        formattedTime || "—"
+      }\n\n` +
+
       `Message from the hospital:\n` +
+
       `${message}\n\n` +
+
       `Please log in to NutriBot to view your appointment and any related messages.\n\n` +
+
       `Thank you for using NutriBot.\n\n` +
+
       `NutriBot\n` +
+
       `Your AI Health Assistant`,
+
 
     html: `
       <div style="
@@ -244,17 +451,26 @@ const sendAppointmentReplyEmail = (
             margin-top: 0;
             color: #111111;
           ">
-            Message from ${hospitalName || "Your Hospital"}
+            Message from ${
+              hospitalName ||
+              "Your Hospital"
+            }
           </h2>
 
-          <p>
-            Hello ${patientName || "NutriBot User"},
-          </p>
 
           <p>
-            Your hospital has sent you a message
-            regarding your appointment.
+            Hello ${
+              patientName ||
+              "NutriBot User"
+            },
           </p>
+
+
+          <p>
+            Your hospital has sent you a
+            message regarding your appointment.
+          </p>
+
 
           <div style="
             background: #f8f8f8;
@@ -270,32 +486,53 @@ const sendAppointmentReplyEmail = (
               Appointment Details
             </h3>
 
+
             <p>
               <strong>Hospital:</strong>
-              ${hospitalName || "—"}
+              ${
+                hospitalName ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Doctor:</strong>
-              Dr. ${doctorName || "—"}
+              Dr. ${
+                doctorName ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Service:</strong>
-              ${serviceName || "—"}
+              ${
+                serviceName ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Date:</strong>
-              ${appointmentDate || "—"}
+              ${
+                appointmentDate ||
+                "—"
+              }
             </p>
+
 
             <p>
               <strong>Time:</strong>
-              ${formattedTime || "—"}
+              ${
+                formattedTime ||
+                "—"
+              }
             </p>
 
           </div>
+
 
           <div style="
             background: #fff9e6;
@@ -312,6 +549,7 @@ const sendAppointmentReplyEmail = (
               Message from the Hospital
             </h3>
 
+
             <p style="
               white-space: pre-wrap;
               line-height: 1.7;
@@ -322,15 +560,19 @@ const sendAppointmentReplyEmail = (
 
           </div>
 
+
           <p>
-            Please log in to NutriBot to view your
-            appointment and any related messages.
+            Please log in to NutriBot to view
+            your appointment and any related
+            messages.
           </p>
+
 
           <p>
             Thank you for using
             <strong>NutriBot</strong>.
           </p>
+
 
           <p style="
             color: #777777;
@@ -345,30 +587,108 @@ const sendAppointmentReplyEmail = (
     `,
   };
 
+
+  /*
+   * Prevent multiple callback executions.
+   */
+  let finished = false;
+
+
+  const finish = (
+    error,
+    info
+  ) => {
+
+    if (finished) {
+      return;
+    }
+
+    finished = true;
+
+    callback(
+      error || null,
+      info || null
+    );
+  };
+
+
+  /*
+   * Protect against SMTP hanging indefinitely.
+   */
+  const timeout =
+    setTimeout(
+      () => {
+
+        console.error(
+          "Appointment reply email timed out."
+        );
+
+
+        finish(
+          new Error(
+            "Appointment reply email timed out."
+          )
+        );
+
+      },
+
+      10000
+    );
+
+
+  /*
+   * Send the email.
+   */
   transporter.sendMail(
     mailOptions,
-    (error, info) => {
+
+    (
+      error,
+      info
+    ) => {
+
+      clearTimeout(
+        timeout
+      );
+
+
       if (error) {
+
         console.error(
           "Appointment reply email error:",
           error.message
         );
 
-        return callback(error);
+
+        return finish(
+          error
+        );
       }
+
 
       console.log(
         "Appointment reply email sent:",
         info.messageId
       );
 
-      callback(null, info);
+
+      finish(
+        null,
+        info
+      );
     }
   );
 };
 
 
+/* =========================================================
+   EXPORTS
+========================================================= */
+
 module.exports = {
+
   sendAppointmentConfirmationEmail,
+
   sendAppointmentReplyEmail,
+
 };

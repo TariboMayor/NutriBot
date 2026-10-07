@@ -1,0 +1,1126 @@
+/* ========================================
+   HOSPITAL DOCTORS PAGE
+======================================== */
+
+.hospital-doctors-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(230, 191, 63, 0.07),
+      transparent 30%
+    ),
+    var(--nb-bg);
+
+  color: var(--nb-text);
+}
+
+
+/* ========================================
+   MAIN
+======================================== */
+
+.hospital-doctors-main {
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 42px 42px 60px;
+
+  box-sizing: border-box;
+}
+
+
+/* ========================================
+   HEADER
+======================================== */
+
+.hospital-doctors-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-bottom: 30px;
+}
+
+
+.hospital-doctors-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 20px;
+  padding: 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.hospital-doctors-back:hover {
+  color: var(--nb-text);
+}
+
+
+.hospital-doctors-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-bottom: 8px;
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  letter-spacing: 0.04em;
+}
+
+
+.hospital-doctors-header h1 {
+  margin: 0 0 8px;
+
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+
+.hospital-doctors-header p {
+  margin: 0;
+
+  max-width: 650px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+
+.hospital-doctors-header p strong {
+  color: var(--nb-text);
+}
+
+
+/* ========================================
+   HEADER ACTIONS
+======================================== */
+
+.hospital-doctors-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  flex-shrink: 0;
+}
+
+
+.hospital-doctors-refresh,
+.hospital-doctors-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-height: 42px;
+
+  padding: 0 16px;
+
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.hospital-doctors-refresh {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  background: rgba(255, 255, 255, 0.035);
+
+  color: var(--nb-text);
+}
+
+
+.hospital-doctors-add {
+  border: 0;
+
+  background: var(--nb-accent, #e6bf3f);
+
+  color: #111;
+}
+
+
+.hospital-doctors-refresh:hover,
+.hospital-doctors-add:hover {
+  transform: translateY(-1px);
+}
+
+
+.hospital-doctors-add:hover {
+  opacity: 0.92;
+}
+
+
+.hospital-doctors-refresh:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+
+/* ========================================
+   ERROR
+======================================== */
+
+.hospital-doctors-inline-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 14px 16px;
+
+  margin-bottom: 20px;
+
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 11px;
+
+  background: rgba(239, 68, 68, 0.08);
+
+  color: #fca5a5;
+
+  font-size: 14px;
+}
+
+
+.hospital-doctors-error {
+  max-width: 600px;
+
+  margin: 80px auto;
+  padding: 40px;
+
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  text-align: center;
+}
+
+
+.hospital-doctors-error svg {
+  color: #ef4444;
+}
+
+
+.hospital-doctors-error h2 {
+  margin: 18px 0 8px;
+}
+
+
+.hospital-doctors-error p {
+  margin: 0;
+
+  color: var(--nb-muted, #9da3ad);
+
+  line-height: 1.6;
+}
+
+
+/* ========================================
+   TOOLBAR
+======================================== */
+
+.hospital-doctors-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 18px 20px;
+
+  margin-bottom: 24px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.025);
+}
+
+
+.hospital-doctors-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+.hospital-doctors-summary-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 11px;
+
+  background: rgba(230, 191, 63, 0.11);
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+
+.hospital-doctors-summary div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+
+.hospital-doctors-summary strong {
+  font-size: 20px;
+}
+
+
+.hospital-doctors-summary span {
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 12px;
+}
+
+
+/* ========================================
+   SEARCH
+======================================== */
+
+.hospital-doctors-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  width: 300px;
+
+  height: 42px;
+
+  padding: 0 13px;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  color: var(--nb-muted, #9da3ad);
+}
+
+
+.hospital-doctors-search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: var(--nb-text);
+
+  font-family: inherit;
+  font-size: 14px;
+}
+
+
+.hospital-doctors-search input::placeholder {
+  color: rgba(157, 163, 173, 0.7);
+}
+
+
+/* ========================================
+   DOCTORS GRID
+======================================== */
+
+.hospital-doctors-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+
+.hospital-doctor-card {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 15px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  overflow: hidden;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+
+.hospital-doctor-card:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(230, 191, 63, 0.2);
+}
+
+
+/* ========================================
+   DOCTOR CARD TOP
+======================================== */
+
+.hospital-doctor-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 20px 20px 0;
+}
+
+
+.hospital-doctor-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 13px;
+
+  background: rgba(230, 191, 63, 0.12);
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+
+.hospital-doctor-status {
+  display: inline-flex;
+  align-items: center;
+
+  min-height: 26px;
+
+  padding: 0 9px;
+
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 0.03em;
+}
+
+
+.hospital-doctor-status.active {
+  background: rgba(34, 197, 94, 0.1);
+
+  color: #86efac;
+}
+
+
+.hospital-doctor-status.inactive {
+  background: rgba(239, 68, 68, 0.1);
+
+  color: #fca5a5;
+}
+
+
+/* ========================================
+   DOCTOR CARD BODY
+======================================== */
+
+.hospital-doctor-card-body {
+  padding: 18px 20px 20px;
+
+  flex: 1;
+}
+
+
+.hospital-doctor-card-body h2 {
+  margin: 0 0 5px;
+
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+
+.hospital-doctor-specialty {
+  margin: 0 0 18px;
+
+  color: var(--nb-accent, #e6bf3f);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+
+.hospital-doctor-detail {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 8px;
+
+  margin-top: 9px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 12px;
+
+  line-height: 1.45;
+}
+
+
+.hospital-doctor-detail svg {
+  flex-shrink: 0;
+
+  margin-top: 1px;
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+
+/* ========================================
+   CARD ACTIONS
+======================================== */
+
+.hospital-doctor-card-actions {
+  display: flex;
+  gap: 8px;
+
+  padding: 14px 20px;
+
+  border-top:
+    1px solid rgba(255, 255, 255, 0.07);
+}
+
+
+.hospital-doctor-edit,
+.hospital-doctor-deactivate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  min-height: 36px;
+
+  padding: 0 12px;
+
+  border-radius: 8px;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.hospital-doctor-edit {
+  flex: 1;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  background: rgba(255, 255, 255, 0.035);
+
+  color: var(--nb-text);
+}
+
+
+.hospital-doctor-deactivate {
+  border: 1px solid rgba(239, 68, 68, 0.2);
+
+  background: rgba(239, 68, 68, 0.07);
+
+  color: #fca5a5;
+}
+
+
+.hospital-doctor-edit:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+
+.hospital-doctor-deactivate:hover {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+
+/* ========================================
+   EMPTY STATE
+======================================== */
+
+.hospital-doctors-empty {
+  padding: 70px 30px;
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  text-align: center;
+}
+
+
+.hospital-doctors-empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 17px;
+
+  border-radius: 15px;
+
+  background: rgba(230, 191, 63, 0.11);
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+
+.hospital-doctors-empty h2 {
+  margin: 0 0 8px;
+
+  font-size: 20px;
+}
+
+
+.hospital-doctors-empty p {
+  max-width: 500px;
+
+  margin: 0 auto 22px;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+/* ========================================
+   LOADING
+======================================== */
+
+.hospital-doctors-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 60vh;
+
+  text-align: center;
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+
+.hospital-doctors-loading h2 {
+  margin: 17px 0 7px;
+
+  color: var(--nb-text);
+}
+
+
+.hospital-doctors-loading p {
+  margin: 0;
+
+  color: var(--nb-muted, #9da3ad);
+}
+
+
+.hospital-doctors-loading svg {
+  animation:
+    hospital-doctors-pulse 1.4s
+    ease-in-out infinite;
+}
+
+
+@keyframes hospital-doctors-pulse {
+
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+}
+
+
+/* ========================================
+   MODAL
+======================================== */
+
+.hospital-doctor-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 20000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 24px;
+
+  background:
+    rgba(0, 0, 0, 0.72);
+
+  overflow-y: auto;
+}
+
+
+.hospital-doctor-modal {
+  width: min(650px, 100%);
+
+  max-height: calc(100vh - 48px);
+
+  overflow-y: auto;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  border-radius: 17px;
+
+  background: #181818;
+
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.45);
+}
+
+
+/* ========================================
+   MODAL HEADER
+======================================== */
+
+.hospital-doctor-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 24px;
+
+  border-bottom:
+    1px solid rgba(255, 255, 255, 0.08);
+}
+
+
+.hospital-doctor-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  margin-bottom: 13px;
+
+  border-radius: 11px;
+
+  background: rgba(230, 191, 63, 0.11);
+
+  color: var(--nb-accent, #e6bf3f);
+}
+
+
+.hospital-doctor-modal-header h2 {
+  margin: 0 0 5px;
+
+  font-size: 20px;
+}
+
+
+.hospital-doctor-modal-header p {
+  margin: 0;
+
+  color: var(--nb-muted, #9da3ad);
+
+  font-size: 13px;
+}
+
+
+.hospital-doctor-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  flex-shrink: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  border-radius: 9px;
+
+  background: rgba(255, 255, 255, 0.035);
+
+  color: var(--nb-muted, #9da3ad);
+
+  cursor: pointer;
+}
+
+
+.hospital-doctor-modal-close:hover {
+  color: var(--nb-text);
+
+  background:
+    rgba(255, 255, 255, 0.06);
+}
+
+
+/* ========================================
+   FORM
+======================================== */
+
+.hospital-doctor-form {
+  padding: 24px;
+}
+
+
+.hospital-doctor-form-row {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+
+.hospital-doctor-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+
+  margin-bottom: 17px;
+}
+
+
+.hospital-doctor-field label {
+  color: var(--nb-text);
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+
+.hospital-doctor-field input,
+.hospital-doctor-field textarea {
+  width: 100%;
+
+  box-sizing: border-box;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  color: var(--nb-text);
+
+  font-family: inherit;
+
+  font-size: 14px;
+}
+
+
+.hospital-doctor-field input {
+  height: 43px;
+
+  padding: 0 12px;
+}
+
+
+.hospital-doctor-field textarea {
+  min-height: 95px;
+
+  padding: 11px 12px;
+
+  resize: vertical;
+}
+
+
+.hospital-doctor-field input::placeholder,
+.hospital-doctor-field textarea::placeholder {
+  color: rgba(157, 163, 173, 0.65);
+}
+
+
+.hospital-doctor-field input:focus,
+.hospital-doctor-field textarea:focus {
+  border-color:
+    rgba(230, 191, 63, 0.55);
+
+  background:
+    rgba(255, 255, 255, 0.045);
+}
+
+
+/* ========================================
+   FORM ERROR
+======================================== */
+
+.hospital-doctor-form-error {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  margin: 20px 24px 0;
+
+  padding: 12px 13px;
+
+  border:
+    1px solid rgba(239, 68, 68, 0.22);
+
+  border-radius: 9px;
+
+  background:
+    rgba(239, 68, 68, 0.08);
+
+  color: #fca5a5;
+
+  font-size: 13px;
+}
+
+
+/* ========================================
+   FORM ACTIONS
+======================================== */
+
+.hospital-doctor-form-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  padding-top: 4px;
+}
+
+
+.hospital-doctor-cancel,
+.hospital-doctor-save {
+  min-height: 42px;
+
+  padding: 0 17px;
+
+  border-radius: 9px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.hospital-doctor-cancel {
+  border:
+    1px solid rgba(255, 255, 255, 0.1);
+
+  background:
+    rgba(255, 255, 255, 0.035);
+
+  color: var(--nb-text);
+}
+
+
+.hospital-doctor-save {
+  border: 0;
+
+  background:
+    var(--nb-accent, #e6bf3f);
+
+  color: #111;
+}
+
+
+.hospital-doctor-cancel:hover {
+  background:
+    rgba(255, 255, 255, 0.06);
+}
+
+
+.hospital-doctor-save:hover {
+  opacity: 0.92;
+}
+
+
+.hospital-doctor-cancel:disabled,
+.hospital-doctor-save:disabled,
+.hospital-doctor-modal-close:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 1000px) {
+
+  .hospital-doctors-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+@media (max-width: 760px) {
+
+  .hospital-doctors-main {
+    padding: 30px 22px 45px;
+  }
+
+
+  .hospital-doctors-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .hospital-doctors-header-actions {
+    width: 100%;
+  }
+
+
+  .hospital-doctors-refresh,
+  .hospital-doctors-add {
+    flex: 1;
+  }
+
+
+  .hospital-doctors-toolbar {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .hospital-doctors-search {
+    width: 100%;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .hospital-doctors-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .hospital-doctors-main {
+    padding: 24px 16px 35px;
+  }
+
+
+  .hospital-doctors-header h1 {
+    font-size: 27px;
+  }
+
+
+  .hospital-doctors-header-actions {
+    flex-direction: column;
+  }
+
+
+  .hospital-doctors-refresh,
+  .hospital-doctors-add {
+    width: 100%;
+  }
+
+
+  .hospital-doctor-form-row {
+    grid-template-columns: 1fr;
+
+    gap: 0;
+  }
+
+
+  .hospital-doctor-modal-overlay {
+    padding: 12px;
+  }
+
+
+  .hospital-doctor-modal {
+    max-height:
+      calc(100vh - 24px);
+  }
+
+
+  .hospital-doctor-modal-header,
+  .hospital-doctor-form {
+    padding: 19px;
+  }
+
+
+  .hospital-doctor-form-error {
+    margin-left: 19px;
+    margin-right: 19px;
+  }
+
+
+  .hospital-doctor-form-actions {
+    flex-direction: column;
+  }
+
+
+  .hospital-doctor-cancel,
+  .hospital-doctor-save {
+    width: 100%;
+  }
+
+}

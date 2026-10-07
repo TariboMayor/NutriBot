@@ -21,6 +21,10 @@ import UserSidebar from "../components/navigation/UserSidebar";
 import "./AvailabilityPage.css";
 
 
+const API_URL =
+  "http://localhost:5000/api";
+
+
 function AvailabilityPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -28,13 +32,22 @@ function AvailabilityPage() {
   const [searchParams] =
     useSearchParams();
 
+
+  /*
+   * URL parameters.
+   */
   const doctorId =
     searchParams.get("doctorId");
 
   const doctorServiceId =
-    searchParams.get("doctorServiceId");
+    searchParams.get(
+      "doctorServiceId"
+    );
 
 
+  /*
+   * Data passed from Select Service page.
+   */
   const hospital =
     location.state?.hospital || null;
 
@@ -45,85 +58,60 @@ function AvailabilityPage() {
     location.state?.service || null;
 
   const patientLocation =
-    location.state?.patientLocation ||
-    null;
+    location.state?.patientLocation || null;
 
 
   /*
    * IMPORTANT:
    *
-   * doctorServiceId = ID of the doctor-service
-   * relationship/assignment.
+   * The backend needs hospital_services.id.
    *
-   * hospitalServiceId = actual hospital service
-   * required by the appointment availability API.
-   *
-   * The selected service from SelectServicePage
-   * contains hospital_service_id.
+   * The service object can contain this value
+   * under different names depending on the
+   * response returned by the backend.
    */
   const hospitalServiceId =
     service?.hospital_service_id ||
     service?.hospitalServiceId ||
-    null;
+    service?.hospital_service?.id ||
+    searchParams.get(
+      "hospitalServiceId"
+    ) ||
+    service?.id ||
+    doctorServiceId ||
+    "";
 
 
   /*
-   * Create the next 14 dates.
-   */
-  const availableDates =
-    Array.from(
-      { length: 14 },
-      (_, index) => {
-        const date = new Date();
-
-        date.setHours(
-          0,
-          0,
-          0,
-          0
-        );
-
-        date.setDate(
-          date.getDate() + index
-        );
-
-        return date;
-      }
-    );
-
-
-  /*
-   * Format date as YYYY-MM-DD.
-   */
-  const formatDateForApi = (
-    date
-  ) => {
-    const year =
-      date.getFullYear();
-
-    const month =
-      String(
-        date.getMonth() + 1
-      ).padStart(2, "0");
-
-    const day =
-      String(
-        date.getDate()
-      ).padStart(2, "0");
-
-    return `${year}-${month}-${day}`;
-  };
-
-
-  /*
-   * Initialize today's date.
+   * Appointment date.
    */
   const [selectedDate, setSelectedDate] =
-    useState(() =>
-      formatDateForApi(
-        new Date()
-      )
-    );
+    useState(() => {
+      const today =
+        new Date();
+
+      today.setHours(
+        0,
+        0,
+        0,
+        0
+      );
+
+      const year =
+        today.getFullYear();
+
+      const month =
+        String(
+          today.getMonth() + 1
+        ).padStart(2, "0");
+
+      const day =
+        String(
+          today.getDate()
+        ).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    });
 
 
   const [slots, setSlots] =
@@ -140,24 +128,90 @@ function AvailabilityPage() {
 
 
   /*
+   * DEBUG INFORMATION
+   */
+  console.log(
+    "BOOKING IDs:",
+    {
+      doctorId,
+      doctorServiceId,
+      hospitalServiceId,
+      selectedDate,
+    }
+  );
+
+
+  /*
+   * Create the next 14 dates.
+   */
+  const availableDates =
+    Array.from(
+      { length: 14 },
+      (_, index) => {
+        const date =
+          new Date();
+
+        date.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+        date.setDate(
+          date.getDate() +
+            index
+        );
+
+        return date;
+      }
+    );
+
+
+  /*
+   * Convert date to YYYY-MM-DD.
+   */
+  const formatDateForApi =
+    (date) => {
+      const year =
+        date.getFullYear();
+
+      const month =
+        String(
+          date.getMonth() + 1
+        ).padStart(2, "0");
+
+      const day =
+        String(
+          date.getDate()
+        ).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    };
+
+
+  /*
    * Fetch available appointment slots.
    */
   useEffect(() => {
     const fetchAvailableSlots =
       async () => {
 
-        /*
-         * We now require:
-         *
-         * doctorId
-         * hospitalServiceId
-         * selectedDate
-         */
         if (
           !doctorId ||
           !hospitalServiceId ||
           !selectedDate
         ) {
+          console.log(
+            "BOOKING REQUEST NOT SENT:",
+            {
+              doctorId,
+              doctorServiceId,
+              hospitalServiceId,
+              selectedDate,
+            }
+          );
+
           return;
         }
 
@@ -169,6 +223,9 @@ function AvailabilityPage() {
           setSelectedSlot(null);
 
 
+          /*
+           * Get authentication token.
+           */
           const token =
             localStorage.getItem(
               "nutribot_token"
@@ -185,31 +242,49 @@ function AvailabilityPage() {
 
 
           /*
-           * IMPORTANT FIX:
+           * Backend expects:
            *
-           * Previously this incorrectly used:
-           *
-           * hospitalServiceId: doctorServiceId
-           *
-           * We now send the actual hospital
-           * service ID from the selected service.
+           * doctorId
+           * hospitalServiceId
+           * appointmentDate
            */
           const query =
             new URLSearchParams({
               doctorId:
-                String(doctorId),
+                String(
+                  doctorId
+                ),
 
               hospitalServiceId:
-                String(hospitalServiceId),
+                String(
+                  hospitalServiceId
+                ),
 
               appointmentDate:
                 selectedDate,
             });
 
 
+          const requestUrl =
+            `${API_URL}/appointments/available-slots?${query.toString()}`;
+
+
+          console.log(
+            "AVAILABLE SLOTS REQUEST:",
+            {
+              doctorId,
+              hospitalServiceId,
+              appointmentDate:
+                selectedDate,
+              url:
+                requestUrl,
+            }
+          );
+
+
           const response =
             await fetch(
-              `/api/appointments/available-slots?${query.toString()}`,
+              requestUrl,
               {
                 method: "GET",
 
@@ -222,12 +297,27 @@ function AvailabilityPage() {
 
 
           const data =
-            await response.json();
+            await response
+              .json()
+              .catch(
+                () => ({})
+              );
+
+
+          console.log(
+            "AVAILABLE SLOTS RESPONSE:",
+            {
+              status:
+                response.status,
+              data,
+            }
+          );
 
 
           if (!response.ok) {
             throw new Error(
               data.message ||
+                data.error ||
                 "Unable to load available appointment slots."
             );
           }
@@ -241,10 +331,12 @@ function AvailabilityPage() {
               : []
           );
 
-        } catch (fetchError) {
+        } catch (
+          fetchError
+        ) {
 
           console.error(
-            "Available slots error:",
+            "Get available slots error:",
             fetchError
           );
 
@@ -267,6 +359,7 @@ function AvailabilityPage() {
 
   }, [
     doctorId,
+    doctorServiceId,
     hospitalServiceId,
     selectedDate,
   ]);
@@ -275,61 +368,68 @@ function AvailabilityPage() {
   /*
    * Go back to Select Service.
    */
-  const handleBack = () => {
-    navigate(
-      `/appointments/service/${doctorId}`,
-      {
-        state: {
-          hospital,
-          doctor,
-          patientLocation,
-        },
-      }
-    );
-  };
+  const handleBack =
+    () => {
+      navigate(
+        `/appointments/service/${doctorId}`,
+        {
+          state: {
+            hospital,
+            doctor,
+            patientLocation,
+          },
+        }
+      );
+    };
 
 
   /*
    * Continue to appointment confirmation.
    */
-  const handleContinue = () => {
+  const handleContinue =
+    () => {
 
-    if (!selectedSlot) {
-      return;
-    }
-
-
-    /*
-     * Keep BOTH IDs available.
-     *
-     * doctorServiceId:
-     * doctor-service relationship ID.
-     *
-     * hospitalServiceId:
-     * actual hospital service ID.
-     */
-    navigate(
-      `/appointments/confirm?doctorId=${doctorId}&doctorServiceId=${doctorServiceId}&hospitalServiceId=${hospitalServiceId}&appointmentDate=${selectedDate}`,
-      {
-        state: {
-          hospital,
-          doctor,
-          service,
-          slot: selectedSlot,
-          patientLocation,
-        },
+      if (!selectedSlot) {
+        return;
       }
-    );
-  };
 
 
+      navigate(
+        `/appointments/confirm?doctorId=${doctorId}&doctorServiceId=${doctorServiceId}&hospitalServiceId=${hospitalServiceId}&appointmentDate=${selectedDate}`,
+        {
+          state: {
+            hospital,
+            doctor,
+            service,
+            slot:
+              selectedSlot,
+            patientLocation,
+            hospitalServiceId,
+          },
+        }
+      );
+    };
+
+
+  /*
+   * Doctor name.
+   */
   const doctorName =
     doctor?.name ||
     doctor?.full_name ||
     doctor?.doctor_name ||
+    (
+      doctor?.first_name &&
+      doctor?.last_name
+        ? `${doctor.first_name} ${doctor.last_name}`
+        : null
+    ) ||
     "Doctor";
 
 
+  /*
+   * Doctor specialty.
+   */
   const doctorSpecialty =
     doctor?.specialty ||
     doctor?.specialisation ||
@@ -337,6 +437,9 @@ function AvailabilityPage() {
     "Medical Doctor";
 
 
+  /*
+   * Service name.
+   */
   const serviceName =
     service?.service_name ||
     service?.name ||
@@ -344,13 +447,14 @@ function AvailabilityPage() {
 
 
   /*
-   * Format slot time.
+   * Format appointment slot time.
    */
   const formatSlotTime =
     (slot) => {
 
       if (
-        typeof slot === "string"
+        typeof slot ===
+        "string"
       ) {
         return slot;
       }
@@ -380,7 +484,10 @@ function AvailabilityPage() {
           className="availability-back"
           onClick={handleBack}
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft
+            size={18}
+          />
+
           Back to Service
         </button>
 
@@ -390,8 +497,13 @@ function AvailabilityPage() {
         <section className="availability-header">
 
           <div className="availability-eyebrow">
-            <CalendarDays size={16} />
+
+            <CalendarDays
+              size={16}
+            />
+
             Appointment Booking
+
           </div>
 
 
@@ -413,7 +525,11 @@ function AvailabilityPage() {
         <section className="availability-summary">
 
           <div className="availability-summary-icon">
-            <Stethoscope size={24} />
+
+            <Stethoscope
+              size={24}
+            />
+
           </div>
 
 
@@ -433,15 +549,25 @@ function AvailabilityPage() {
 
               {hospital?.name && (
                 <span>
-                  <Hospital size={15} />
+
+                  <Hospital
+                    size={15}
+                  />
+
                   {hospital.name}
+
                 </span>
               )}
 
 
               <span>
-                <Stethoscope size={15} />
+
+                <Stethoscope
+                  size={15}
+                />
+
                 {serviceName}
+
               </span>
 
             </div>
@@ -456,7 +582,9 @@ function AvailabilityPage() {
         {error && (
           <section className="availability-message availability-error">
 
-            <AlertCircle size={19} />
+            <AlertCircle
+              size={19}
+            />
 
             <span>
               {error}
@@ -522,12 +650,15 @@ function AvailabilityPage() {
                   >
 
                     <span className="availability-date-weekday">
+
                       {date.toLocaleDateString(
                         "en-NG",
                         {
-                          weekday: "short",
+                          weekday:
+                            "short",
                         }
                       )}
+
                     </span>
 
 
@@ -537,12 +668,15 @@ function AvailabilityPage() {
 
 
                     <span className="availability-date-month">
+
                       {date.toLocaleDateString(
                         "en-NG",
                         {
-                          month: "short",
+                          month:
+                            "short",
                         }
                       )}
+
                     </span>
 
 
@@ -603,7 +737,11 @@ function AvailabilityPage() {
             <div className="availability-loading">
 
               <div className="availability-loading-icon">
-                <Clock size={24} />
+
+                <Clock
+                  size={24}
+                />
+
               </div>
 
 
@@ -627,7 +765,11 @@ function AvailabilityPage() {
               <div className="availability-empty">
 
                 <div className="availability-empty-icon">
-                  <Clock size={27} />
+
+                  <Clock
+                    size={27}
+                  />
+
                 </div>
 
 
@@ -707,7 +849,6 @@ function AvailabilityPage() {
 
                       </button>
                     );
-
                   }
                 )}
 
@@ -736,8 +877,13 @@ function AvailabilityPage() {
             onClick={handleContinue}
             disabled={!selectedSlot}
           >
-            <CalendarDays size={17} />
+
+            <CalendarDays
+              size={17}
+            />
+
             Continue to Confirmation
+
           </button>
 
         </div>
