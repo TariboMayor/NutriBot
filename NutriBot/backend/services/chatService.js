@@ -1,3 +1,217 @@
+// ============================================================
+// PYTHON AI SERVICE
+// ============================================================
+
+async function searchNutritionAI(query) {
+  try {
+    const aiServiceUrl =
+      process.env.AI_SERVICE_URL ||
+      "http://127.0.0.1:8000";
+
+    const response = await fetch(
+      `${aiServiceUrl}/search-foods`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          limit: 5,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `AI service returned ${response.status}`
+      );
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error(
+      "Python AI service error:",
+      error?.message || error
+    );
+
+    return null;
+  }
+}
+
+
+// ============================================================
+// DETECT WHETHER THE MESSAGE IS NUTRITION RELATED
+// ============================================================
+
+function isNutritionRelated(message) {
+  const text = String(message || "").toLowerCase();
+
+  const nutritionTerms = [
+    // Food
+    "food",
+    "foods",
+    "eat",
+    "eating",
+    "meal",
+    "meals",
+    "dish",
+    "dishes",
+    "recipe",
+    "recipes",
+
+    // Nutrition
+    "nutrition",
+    "nutrient",
+    "nutrients",
+    "healthy eating",
+    "healthy food",
+    "diet",
+    "dietary",
+
+    // Protein
+    "protein",
+    "proteins",
+
+    // Fibre / Fiber
+    "fibre",
+    "fiber",
+
+    // Calories
+    "calorie",
+    "calories",
+
+    // Macronutrients
+    "carbohydrate",
+    "carbohydrates",
+    "carb",
+    "carbs",
+    "fat",
+    "fats",
+
+    // Weight
+    "weight loss",
+    "lose weight",
+    "losing weight",
+    "weight gain",
+    "gain weight",
+    "gaining weight",
+
+    // Nigerian food terms
+    "garri",
+    "eba",
+    "fufu",
+    "amala",
+    "pounded yam",
+    "semovita",
+    "tuwo",
+    "jollof",
+    "fried rice",
+    "beans",
+    "moi moi",
+    "moin moin",
+    "akara",
+    "plantain",
+    "yam",
+    "eggs",
+    "egg",
+    "egusi",
+    "okra",
+    "ogbono",
+    "zobo",
+    "kunu",
+    "pap",
+    "ogi",
+    "groundnut",
+    "groundnuts",
+    "suya",
+    "dambun nama",
+    "isi ewu",
+
+    // Hydration
+    "water",
+    "hydration",
+    "dehydration",
+
+    // Wellness
+    "wellness",
+    "healthy",
+    "health",
+  ];
+
+  return nutritionTerms.some((term) =>
+    text.includes(term)
+  );
+}
+
+
+// ============================================================
+// FORMAT NUTRITION RESULTS FOR GEMINI
+// ============================================================
+
+function buildNutritionContext(aiResult) {
+  if (
+    !aiResult ||
+    !aiResult.success ||
+    !Array.isArray(aiResult.results) ||
+    aiResult.results.length === 0
+  ) {
+    return "";
+  }
+
+  const results = aiResult.results
+    .map((food, index) => {
+      return `
+Food ${index + 1}:
+- Name: ${food.name}
+- Category: ${food.category}
+- Region/Group: ${food.region_or_group}
+- Serving size: ${food.serving_size}
+- Calories: ${food.calories}
+- Protein: ${food.protein} g
+- Carbohydrates: ${food.carbs} g
+- Fat: ${food.fat} g
+- Fibre: ${food.fibre} g
+- Vitamins: ${food.vitamins || "Not specified"}
+- Minerals: ${food.minerals || "Not specified"}
+- Description: ${food.description || "Not specified"}
+- Semantic relevance score: ${food.similarity}
+- Final nutrition relevance score: ${food.final_score}
+`;
+    })
+    .join("\n");
+
+  return `
+NUTRITION DATABASE RESULTS
+==========================
+
+The following information was retrieved from NutriBot's
+nutrition knowledge system.
+
+Nutrition goal detected:
+${aiResult.nutrition_goal || "None"}
+
+Use these database results as the factual source when answering
+the user's food or nutrition question.
+
+${results}
+
+IMPORTANT:
+- Do not invent nutrition values.
+- Do not change the numerical values from the database.
+- If you mention a nutrition value, use the values provided above.
+- You may explain the results naturally.
+- You do not need to mention the database, vector search,
+  embeddings, Supabase, Python, or internal scoring to the user.
+`;
+}
+
+
+// ============================================================
+// GEMINI
+// ============================================================
+
 const { GoogleGenAI } = require("@google/genai");
 
 const apiKey = process.env.GEMINI_API_KEY;
@@ -12,17 +226,21 @@ const ai = new GoogleGenAI({
   apiKey,
 });
 
-/*
-  Gemini models to try.
 
-  If the first model is temporarily unavailable,
-  we automatically try the next one.
-*/
+// ============================================================
+// GEMINI MODELS
+// ============================================================
+
 const MODELS = [
   "gemini-3.8-flash",
   "gemini-3.5-flash",
   "gemini-3.5-flash-lite",
 ];
+
+
+// ============================================================
+// SYSTEM INSTRUCTION
+// ============================================================
 
 const SYSTEM_INSTRUCTION = `
 You are Nia, the AI health and nutrition assistant inside NutriBot.
@@ -72,6 +290,9 @@ Understand Nigerian foods and everyday expressions such as:
 - kunu
 - pap/ogi
 - groundnuts
+- suya
+- dambun nama
+- isi ewu
 
 CONVERSATION RULES:
 
@@ -149,7 +370,24 @@ understand.
 20. If the user simply wants to talk about food or nutrition,
 respond conversationally instead of turning every response into
 a lecture.
+
+21. When reliable nutrition database information is provided in the
+conversation context, use it as the factual source for food-specific
+nutrition values.
+
+22. Never invent nutrition numbers when database results are provided.
+
+23. If the database results contain several suitable foods, compare
+them naturally and help the user understand the differences.
+
+24. Do not mention internal database scores, embeddings, vector search,
+Python, Supabase, or other implementation details to the user.
 `;
+
+
+// ============================================================
+// CLEAN CHAT HISTORY
+// ============================================================
 
 function cleanHistory(history = []) {
   if (!Array.isArray(history)) {
@@ -183,6 +421,11 @@ function cleanHistory(history = []) {
     });
 }
 
+
+// ============================================================
+// CHECK TEMPORARY GEMINI ERRORS
+// ============================================================
+
 function isTemporaryGeminiError(error) {
   const message = String(
     error?.message || error || ""
@@ -197,8 +440,14 @@ function isTemporaryGeminiError(error) {
   );
 }
 
+
+// ============================================================
+// GENERATE NIA RESPONSE
+// ============================================================
+
 async function generateReply(message, history = []) {
-  const userMessage = String(message || "").trim();
+  const userMessage =
+    String(message || "").trim();
 
   if (!userMessage) {
     return "Please tell me what you would like help with.";
@@ -210,8 +459,75 @@ async function generateReply(message, history = []) {
     );
   }
 
+
+  // ==========================================================
+  // NUTRITION AI SEARCH
+  // ==========================================================
+
+  let nutritionContext = "";
+
+  if (isNutritionRelated(userMessage)) {
+    console.log(
+      "Nutrition-related question detected."
+    );
+
+    const nutritionResult =
+      await searchNutritionAI(userMessage);
+
+    if (nutritionResult) {
+      nutritionContext =
+        buildNutritionContext(
+          nutritionResult
+        );
+
+      if (nutritionContext) {
+        console.log(
+          "Nutrition AI results added to Gemini context."
+        );
+      } else {
+        console.log(
+          "Nutrition AI returned no usable results."
+        );
+      }
+    } else {
+      console.log(
+        "Python AI service unavailable. Continuing with Gemini."
+      );
+    }
+  }
+
+
+  // ==========================================================
+  // CHAT HISTORY
+  // ==========================================================
+
   const contents = [
     ...cleanHistory(history),
+
+    // Nutrition database context is inserted immediately
+    // before the current user question.
+    ...(nutritionContext
+      ? [
+          {
+            role: "user",
+            parts: [
+              {
+                text: nutritionContext,
+              },
+            ],
+          },
+          {
+            role: "model",
+            parts: [
+              {
+                text:
+                  "I will use the provided nutrition information as the factual source for this response.",
+              },
+            ],
+          },
+        ]
+      : []),
+
     {
       role: "user",
       parts: [
@@ -222,11 +538,18 @@ async function generateReply(message, history = []) {
     },
   ];
 
+
+  // ==========================================================
+  // TRY GEMINI MODELS
+  // ==========================================================
+
   let lastError = null;
 
   for (const model of MODELS) {
     try {
-      console.log(`Trying Gemini model: ${model}`);
+      console.log(
+        `Trying Gemini model: ${model}`
+      );
 
       const response =
         await ai.models.generateContent({
@@ -256,6 +579,7 @@ async function generateReply(message, history = []) {
       );
 
       return reply;
+
     } catch (error) {
       lastError = error;
 
@@ -264,21 +588,20 @@ async function generateReply(message, history = []) {
         error?.message || error
       );
 
-      /*
-        Only continue to another model when the
-        problem appears temporary.
-
-        Other errors should not be hidden.
-      */
       if (!isTemporaryGeminiError(error)) {
         break;
       }
 
       console.log(
-        `Trying the next Gemini model...`
+        "Trying the next Gemini model..."
       );
     }
   }
+
+
+  // ==========================================================
+  // ALL MODELS FAILED
+  // ==========================================================
 
   console.error(
     "All Gemini models failed:",
@@ -289,6 +612,11 @@ async function generateReply(message, history = []) {
     "Nia could not generate a response right now. Please try again."
   );
 }
+
+
+// ============================================================
+// EXPORT
+// ============================================================
 
 module.exports = {
   generateReply,

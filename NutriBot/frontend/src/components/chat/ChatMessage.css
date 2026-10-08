@@ -90,68 +90,6 @@
 
 
 /* =========================================================
-   MESSAGE WRAPPER
-   ========================================================= */
-
-.message-wrapper {
-  max-width:
-    min(74%, 760px);
-
-  min-width: 0;
-
-  display: flex;
-  flex-direction: column;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   USER MESSAGE ALIGNMENT
-   ========================================================= */
-
-.message-wrapper.user {
-  align-items: flex-end;
-}
-
-
-/* =========================================================
-   BOT MESSAGE ALIGNMENT
-   ========================================================= */
-
-.message-wrapper.bot {
-  align-items: flex-start;
-}
-
-
-/* =========================================================
-   MESSAGE LABEL
-   ========================================================= */
-
-.message-label {
-  margin:
-    0 0 5px;
-
-  color: var(--nb-text-muted);
-
-  font-size: 9px;
-  font-weight: 650;
-
-  line-height: 1.2;
-}
-
-
-/* =========================================================
-   USER LABEL
-   ========================================================= */
-
-.message-wrapper.user
-.message-label {
-  padding-right: 2px;
-}
-
-
-/* =========================================================
    MESSAGE CONTENT
    ========================================================= */
 
@@ -159,15 +97,18 @@
   max-width: 100%;
 
   padding:
-    12px 15px;
+    13px 16px;
 
   box-sizing: border-box;
 
   border-radius: 17px;
 
-  font-size: 13.5px;
+  /*
+    Slightly larger than before.
+  */
+  font-size: 15.5px;
 
-  line-height: 1.65;
+  line-height: 1.7;
 
   overflow-wrap: anywhere;
   word-break: break-word;
@@ -176,6 +117,125 @@
     border-color 0.2s ease,
     background-color 0.2s ease,
     box-shadow 0.2s ease;
+}
+
+
+/* =========================================================
+   MARKDOWN BASE
+   ========================================================= */
+
+.message-content p {
+  margin:
+    0 0 10px;
+}
+
+.message-content p:last-child {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   HEADINGS
+   ========================================================= */
+
+.message-content h1,
+.message-content h2,
+.message-content h3,
+.message-content h4 {
+  margin:
+    12px 0 8px;
+
+  line-height: 1.35;
+
+  font-weight: 700;
+}
+
+.message-content h1:first-child,
+.message-content h2:first-child,
+.message-content h3:first-child,
+.message-content h4:first-child {
+  margin-top: 0;
+}
+
+
+/* =========================================================
+   BOLD TEXT
+   ========================================================= */
+
+.message-content strong {
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   UNORDERED LIST
+   ========================================================= */
+
+.message-content ul {
+  margin:
+    8px 0 10px;
+
+  padding-left: 24px;
+}
+
+.message-content ul:last-child {
+  margin-bottom: 0;
+}
+
+.message-content li {
+  margin:
+    5px 0;
+
+  padding-left: 3px;
+}
+
+
+/* =========================================================
+   ORDERED LIST
+   ========================================================= */
+
+.message-content ol {
+  margin:
+    8px 0 10px;
+
+  padding-left: 27px;
+}
+
+.message-content ol:last-child {
+  margin-bottom: 0;
+}
+
+.message-content ol li {
+  margin:
+    6px 0;
+
+  padding-left: 3px;
+}
+
+
+/* =========================================================
+   NESTED LISTS
+   ========================================================= */
+
+.message-content li > ul,
+.message-content li > ol {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.message-content a {
+  color: var(--nb-gold);
+
+  font-weight: 600;
+
+  text-decoration: underline;
+
+  text-underline-offset: 2px;
 }
 
 
@@ -259,7 +319,7 @@
 
 /* =========================================================
    TYPING INDICATOR
-========================================================= */
+   ========================================================= */
 
 .typing-message {
   align-items: flex-end;
@@ -376,9 +436,8 @@
    ========================================================= */
 
 @media (max-width: 1000px) {
-  .message-wrapper {
-    max-width:
-      min(76%, 720px);
+  .message-content {
+    font-size: 15px;
   }
 }
 
@@ -403,25 +462,27 @@
     font-size: 8px;
   }
 
-  .message-wrapper {
-    max-width: 82%;
-  }
-
-  .message-label {
-    margin-bottom: 4px;
-
-    font-size: 8px;
-  }
-
   .message-content {
     padding:
-      10px 13px;
+      11px 14px;
 
     border-radius: 15px;
 
-    font-size: 13px;
+    font-size: 14.5px;
 
-    line-height: 1.58;
+    line-height: 1.65;
+  }
+
+  .message-content ul {
+    padding-left: 21px;
+  }
+
+  .message-content ol {
+    padding-left: 24px;
+  }
+
+  .message-content li {
+    margin: 4px 0;
   }
 
   .message-content.bot {
@@ -461,17 +522,13 @@
     font-size: 7.5px;
   }
 
-  .message-wrapper {
-    max-width: 85%;
-  }
-
   .message-content {
     padding:
-      9px 11px;
+      10px 12px;
 
-    font-size: 12.5px;
+    font-size: 14px;
 
-    line-height: 1.55;
+    line-height: 1.6;
   }
 }
 
@@ -488,15 +545,11 @@
     min-width: 27px;
   }
 
-  .message-wrapper {
-    max-width: 87%;
-  }
-
   .message-content {
     padding:
-      8px 10px;
+      9px 10px;
 
-    font-size: 12px;
+    font-size: 13.5px;
   }
 }
 

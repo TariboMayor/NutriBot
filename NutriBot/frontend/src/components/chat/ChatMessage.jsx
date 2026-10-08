@@ -1,3 +1,5 @@
+import ReactMarkdown from "react-markdown";
+
 import "./ChatMessage.css";
 
 function ChatMessage({ message }) {
@@ -26,7 +28,9 @@ function ChatMessage({ message }) {
           isUser ? "user" : "bot"
         }`}
       >
-        {message.content}s
+        <ReactMarkdown>
+          {message.content || ""}
+        </ReactMarkdown>
       </div>
     </div>
   );
